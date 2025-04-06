@@ -6,7 +6,7 @@ const port = 3001;
 
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI('AIzaSyA5vQnJ8JmExmVJ4q7Zp22ld2C5atl54_k'); // Replace with your Gemini API key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Replace with your Gemini API key
 
 app.post('/chat', async (req, res) => {
   const { messages, input } = req.body;
