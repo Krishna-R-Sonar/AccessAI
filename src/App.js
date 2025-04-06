@@ -1,17 +1,16 @@
 // Filename: src/App.js
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './App.css';
 
-
 // Set the worker source to the copied pdf.worker.mjs in public/
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-const genAI = new GoogleGenerativeAI('AIzaSyA5vQnJ8JmExmVJ4q7Zp22ld2C5atl54_k');
+// Backend API URL
+const API_URL = 'https://accessai-onh4.onrender.com/chat';
 
 function App() {
   const [messages, setMessages] = useState(() => {
@@ -111,14 +110,6 @@ function App() {
         return;
       }
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const chat = model.startChat({
-        history: messages.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }],
-        })),
-      });
-
       let detectedEmotion = 'neutral';
       if (emotionDetection) {
         detectedEmotion = detectEmotion(textToProcess);
@@ -171,8 +162,24 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
-      const result = await chat.sendMessage(prompt);
-      let assistantContent = result.response.text();
+      // Make a request to the backend server
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          input: prompt,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      let assistantContent = data.response;
 
       if (emotionDetection && detectedEmotion === 'frustrated') {
         assistantContent = `**I noticed you might be feeling frustrated. Let’s tackle this together!** Here’s my response:\n\n${assistantContent}\n\nWould you like to take a short break or try a different approach?`;
@@ -358,7 +365,7 @@ Would you like to learn more about a specific AI topic?
   };
 
   const shareResponse = (index, content) => {
-    const shareUrl = `https://my-chatbot.com/share/${index}`; // Mock URL
+    const shareUrl = `https://access-ai-iota.vercel.app/share/${index}`; // Updated to use your deployed domain
     copyToClipboard(shareUrl);
     alert('Shareable link copied to clipboard!');
   };
