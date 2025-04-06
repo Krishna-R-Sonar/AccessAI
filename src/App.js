@@ -408,7 +408,7 @@ Would you like to learn more about a specific AI topic?
         </div>
       )}
       <div className="header">
-        <h1 className="app-title">Chatbot</h1>
+        <h1 className="app-title">AccessAI</h1>
         <div className="header-buttons">
           <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
