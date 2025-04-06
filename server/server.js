@@ -3,11 +3,11 @@ const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
 const app = express();
-const port = process.env.PORT || 3001; // Use Render's PORT env variable
+const port = process.env.PORT || 3001;
 
 // Enable CORS for your frontend domain
 app.use(cors({
-  origin: 'https://access-ai-iota.vercel.app', // Allow requests from your frontend
+  origin: 'https://access-ai-iota.vercel.app',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
@@ -16,6 +16,48 @@ app.use(express.json());
 
 // Initialize Google Generative AI with the API key from environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Root route serving a simple HTML page
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>AccessAI Backend</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          text-align: center;
+          padding: 50px;
+          background-color: #f4f4f4;
+        }
+        h1 {
+          color: #333;
+        }
+        a {
+          color: #007bff;
+          text-decoration: none;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Welcome to the AccessAI Backend API</h1>
+      <p>This is the backend server for the AccessAI chatbot. It handles API requests for chat functionality.</p>
+      <p>Visit the frontend at <a href="https://access-ai-iota.vercel.app/">https://access-ai-iota.vercel.app/</a></p>
+      <p>Available endpoints:</p>
+      <ul style="list-style: none;">
+        <li><strong>/health</strong> - Check server status</li>
+        <li><strong>/chat</strong> - POST endpoint for chat requests (used by the frontend)</li>
+      </ul>
+    </body>
+    </html>
+  `);
+});
 
 // Basic health check endpoint
 app.get('/health', (req, res) => {
