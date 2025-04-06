@@ -9,8 +9,8 @@ import './App.css';
 // Set the worker source to the copied pdf.worker.mjs in public/
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-// Backend API URL
-const API_URL = 'https://accessai-onh4.onrender.com/chat';
+// Backend API URL from environment variable
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat'; // Fallback for local development
 
 function App() {
   const [messages, setMessages] = useState(() => {
