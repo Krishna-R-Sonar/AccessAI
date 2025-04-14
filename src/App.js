@@ -10,7 +10,61 @@ import './App.css';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 // Backend API URL from environment variable
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat'; // Fallback for local development
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
+
+// Mock leaderboard data
+const leaderboardData = [
+  { username: 'CodeMaster', points: 1500 },
+  { username: 'SolidityStar', points: 1200 },
+  { username: 'PythonPro', points: 1000 },
+];
+
+// Learning paths for each language
+const learningPaths = {
+  javascript: [
+    { id: 1, title: 'Variables and Data Types', difficulty: 'Beginner', points: 50 },
+    { id: 2, title: 'Functions and Scope', difficulty: 'Beginner', points: 75 },
+    { id: 3, title: 'Arrays and Loops', difficulty: 'Intermediate', points: 100 },
+    { id: 4, title: 'Promises and Async/Await', difficulty: 'Intermediate', points: 150 },
+    { id: 5, title: 'Build a Mini Project', difficulty: 'Advanced', points: 200 },
+  ],
+  python: [
+    { id: 1, title: 'Basics of Python', difficulty: 'Beginner', points: 50 },
+    { id: 2, title: 'Lists and Dictionaries', difficulty: 'Beginner', points: 75 },
+    { id: 3, title: 'Functions and Modules', difficulty: 'Intermediate', points: 100 },
+    { id: 4, title: 'File Handling', difficulty: 'Intermediate', points: 150 },
+    { id: 5, title: 'Data Analysis with Pandas', difficulty: 'Advanced', points: 200 },
+  ],
+  java: [
+    { id: 1, title: 'Classes and Objects', difficulty: 'Beginner', points: 50 },
+    { id: 2, title: 'Methods and Constructors', difficulty: 'Beginner', points: 75 },
+    { id: 3, title: 'Inheritance and Polymorphism', difficulty: 'Intermediate', points: 100 },
+    { id: 4, title: 'Exception Handling', difficulty: 'Intermediate', points: 150 },
+    { id: 5, title: 'Build a Java App', difficulty: 'Advanced', points: 200 },
+  ],
+  cpp: [
+    { id: 1, title: 'Pointers and Memory', difficulty: 'Beginner', points: 50 },
+    { id: 2, title: 'Classes and Objects', difficulty: 'Beginner', points: 75 },
+    { id: 3, title: 'Templates', difficulty: 'Intermediate', points: 100 },
+    { id: 4, title: 'STL (Standard Template Library)', difficulty: 'Intermediate', points: 150 },
+    { id: 5, title: 'Build a C++ Project', difficulty: 'Advanced', points: 200 },
+  ],
+  solidity: [
+    { id: 1, title: 'Introduction to Smart Contracts', difficulty: 'Beginner', points: 50 },
+    { id: 2, title: 'Writing Your First Contract', difficulty: 'Beginner', points: 75 },
+    { id: 3, title: 'State Variables and Functions', difficulty: 'Intermediate', points: 100 },
+    { id: 4, title: 'Build a Voting Contract', difficulty: 'Intermediate', points: 150 },
+    { id: 5, title: 'Create a Simple Token', difficulty: 'Advanced', points: 200 },
+  ],
+};
+
+// Badges for milestones
+const badges = [
+  { name: 'Beginner Coder', points: 100, description: 'Completed your first lesson!' },
+  { name: 'Challenge Champion', points: 300, description: 'Solved 3 coding challenges!' },
+  { name: 'Solidity Starter', points: 200, description: 'Completed a Solidity lesson!' },
+  { name: 'Master Coder', points: 500, description: 'Earned 500 points!' },
+];
 
 function App() {
   const [messages, setMessages] = useState(() => {
@@ -45,11 +99,22 @@ function App() {
   const [fullCodeView, setFullCodeView] = useState(null);
   const messagesEndRef = useRef(null);
 
+  // Gamification and Learning Path States
+  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [userProgress, setUserProgress] = useState(() => {
+    const savedProgress = localStorage.getItem('userProgress');
+    return savedProgress ? JSON.parse(savedProgress) : { points: 0, completedLessons: {}, badges: [] };
+  });
+  const [currentLesson, setCurrentLesson] = useState(null);
+  const [challengeInput, setChallengeInput] = useState('');
+  const [challengeResult, setChallengeResult] = useState(null);
+
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
+    localStorage.setItem('userProgress', JSON.stringify(userProgress));
     scrollToBottom();
-  }, [messages, projects]);
+  }, [messages, projects, userProgress]);
 
   useEffect(() => {
     scrollToBottom();
@@ -64,7 +129,6 @@ function App() {
   };
 
   const detectEmotion = (text) => {
-    // Simulated sentiment analysis (in a real app, use an NLP library like 'sentiment')
     const lowerText = text.toLowerCase();
     if (lowerText.includes('frustrated') || lowerText.includes('stuck') || lowerText.includes('hard') || lowerText.includes('difficult')) {
       return 'frustrated';
@@ -98,7 +162,6 @@ function App() {
 
     try {
       if (offlineMode) {
-        // Simulate offline mode with a precomputed response
         const assistantMessage = {
           role: 'assistant',
           content: `**Offline Mode**: Limited functionality available. Here's a basic response:\n\nI can help with simple queries offline. For example, if you're asking about basic math, I can assist. What is your question?`,
@@ -162,7 +225,6 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
-      // Make a request to the backend server
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -365,13 +427,13 @@ Would you like to learn more about a specific AI topic?
   };
 
   const shareResponse = (index, content) => {
-    const shareUrl = `https://access-ai-iota.vercel.app/share/${index}`; // Updated to use your deployed domain
+    const shareUrl = `https://access-ai-iota.vercel.app/share/${index}`;
     copyToClipboard(shareUrl);
     alert('Shareable link copied to clipboard!');
   };
 
   const downloadCode = (content, language) => {
-    const extension = language === 'javascript' ? 'js' : language === 'python' ? 'py' : 'txt';
+    const extension = language === 'javascript' ? 'js' : language === 'python' ? 'py' : language === 'solidity' ? 'sol' : 'txt';
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -386,6 +448,91 @@ Would you like to learn more about a specific AI topic?
       ...prev,
       [index]: [...(prev[index] || []), { text: comment, timestamp: new Date().toLocaleTimeString() }],
     }));
+  };
+
+  // Gamification and Learning Path Functions
+  const startLearningPath = (language) => {
+    setSelectedLanguage(language);
+    setCurrentLesson(null);
+    setChallengeInput('');
+    setChallengeResult(null);
+    setCodeLanguage(language);
+    setCodeMode(true);
+  };
+
+  const startLesson = async (lesson) => {
+    setCurrentLesson(lesson);
+    setChallengeInput('');
+    setChallengeResult(null);
+
+    const prompt = `Provide a detailed lesson on "${lesson.title}" for ${selectedLanguage} in Markdown format. Include:
+    - A brief introduction to the topic
+    - Key concepts with examples
+    - A coding challenge for the user to solve
+    - An explanation of the solution
+    If the language is Solidity, include blockchain-specific context (e.g., how this concept applies to smart contracts).`;
+    
+    await handleSubmit(prompt);
+  };
+
+  const submitChallenge = async () => {
+    if (!challengeInput || !currentLesson) return;
+
+    const prompt = `Evaluate the following ${selectedLanguage} code for the challenge in the lesson "${currentLesson.title}":
+    \`\`\`${selectedLanguage}
+    ${challengeInput}
+    \`\`\`
+    Provide feedback in Markdown format, including:
+    - Whether the solution is correct
+    - Any errors or improvements needed
+    - If correct, award the user ${currentLesson.points} points and congratulate them
+    If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages,
+        input: prompt,
+      }),
+    });
+
+    if (!response.ok) {
+      setChallengeResult('Failed to evaluate your solution. Please try again.');
+      return;
+    }
+
+    const data = await response.json();
+    setChallengeResult(data.response);
+
+    // Check if the solution is correct (simplified check based on response content)
+    if (data.response.toLowerCase().includes('correct')) {
+      setUserProgress(prev => {
+        const newProgress = { ...prev };
+        newProgress.points += currentLesson.points;
+        newProgress.completedLessons[selectedLanguage] = newProgress.completedLessons[selectedLanguage] || [];
+        newProgress.completedLessons[selectedLanguage].push(currentLesson.id);
+
+        // Award badges
+        badges.forEach(badge => {
+          if (newProgress.points >= badge.points && !newProgress.badges.includes(badge.name)) {
+            newProgress.badges.push(badge.name);
+            alert(`🎉 Congratulations! You've earned the "${badge.name}" badge: ${badge.description}`);
+          }
+        });
+
+        return newProgress;
+      });
+    }
+  };
+
+  const getProgressPercentage = () => {
+    if (!selectedLanguage) return 0;
+    const totalLessons = learningPaths[selectedLanguage].length;
+    const completed = userProgress.completedLessons[selectedLanguage]?.length || 0;
+    return (completed / totalLessons) * 100;
   };
 
   return (
@@ -415,7 +562,7 @@ Would you like to learn more about a specific AI topic?
         </div>
       )}
       <div className="header">
-        <h1 className="app-title">AccessAI</h1>
+        <h1 className="app-title">AccessAI - CodeQuest</h1>
         <div className="header-buttons">
           <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
@@ -434,6 +581,100 @@ Would you like to learn more about a specific AI topic?
           </button>
         </div>
       </div>
+
+      {/* Gamification Section */}
+      <div className="gamification-bar">
+        <div className="user-stats">
+          <span>Points: {userProgress.points}</span>
+          <span>Badges: {userProgress.badges.length}</span>
+        </div>
+        {selectedLanguage && (
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${getProgressPercentage()}%` }}
+            ></div>
+            <span>{`Progress: ${Math.round(getProgressPercentage())}%`}</span>
+          </div>
+        )}
+        <div className="leaderboard">
+          <h3>Leaderboard</h3>
+          <ul>
+            {leaderboardData.map((entry, index) => (
+              <li key={index}>{`${entry.username}: ${entry.points} points`}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Language Selection and Learning Path */}
+      {!selectedLanguage ? (
+        <div className="language-selection">
+          <h2>Select a Programming Language to Start Your Journey!</h2>
+          <div className="language-options">
+            {Object.keys(learningPaths).map(lang => (
+              <button
+                key={lang}
+                onClick={() => startLearningPath(lang)}
+                className="language-button"
+              >
+                {lang.charAt(0).toUpperCase() + lang.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="learning-path">
+          <h2>{`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}</h2>
+          <button onClick={() => setSelectedLanguage('')} className="back-button">
+            Back to Language Selection
+          </button>
+          <div className="lessons-list">
+            {learningPaths[selectedLanguage].map(lesson => (
+              <div
+                key={lesson.id}
+                className={`lesson-card ${
+                  userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'completed' : ''
+                }`}
+              >
+                <h3>{lesson.title}</h3>
+                <p>Difficulty: {lesson.difficulty}</p>
+                <p>Points: {lesson.points}</p>
+                <button
+                  onClick={() => startLesson(lesson)}
+                  disabled={currentLesson?.id === lesson.id}
+                >
+                  {currentLesson?.id === lesson.id ? 'In Progress' : 'Start Lesson'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Coding Challenge Section */}
+      {currentLesson && (
+        <div className="challenge-section">
+          <h2>{`Challenge: ${currentLesson.title}`}</h2>
+          <textarea
+            value={challengeInput}
+            onChange={e => setChallengeInput(e.target.value)}
+            placeholder="Write your code here..."
+            className="code-editor"
+            rows={10}
+          />
+          <button onClick={submitChallenge} className="submit-challenge">
+            Submit Solution
+          </button>
+          {challengeResult && (
+            <div className="challenge-result">
+              <ReactMarkdown>{challengeResult}</ReactMarkdown>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Existing Settings and Chat Interface */}
       <div className="settings-bar">
         <select value={tone} onChange={e => setTone(e.target.value)}>
           <option value="neutral">Neutral Tone</option>
@@ -498,6 +739,7 @@ Would you like to learn more about a specific AI topic?
             <option value="python">Python</option>
             <option value="java">Java</option>
             <option value="cpp">C++</option>
+            <option value="solidity">Solidity</option>
           </select>
         )}
         <button onClick={generateStudyGuide} className="study-guide-button">
