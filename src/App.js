@@ -99,6 +99,7 @@ function App() {
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -120,6 +121,22 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [loading]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [sidebarOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -541,11 +558,12 @@ Would you like to learn more about a specific AI topic?
   return (
     <div className={`app-container ${theme}`}>
       {fullCodeView && (
-        <div className="modal">
+        <div className="modal" role="dialog" aria-labelledby="full-code-view">
           <div className="modal-content">
-            <button onClick={() => setFullCodeView(null)} className="modal-close" aria-label="Close modal">
+            <button onClick={() => setFullCodeView(null)} className="modal-close" aria-label="Close full code view modal">
               ✕
             </button>
+            <h2 id="full-code-view">Full Code View</h2>
             <SyntaxHighlighter
               style={theme === 'dark' ? vscDarkPlus : vscDarkPlus}
               language={fullCodeView.language}
@@ -568,7 +586,7 @@ Would you like to learn more about a specific AI topic?
       {/* Header */}
       <header className="header">
         <div className="header-left">
-          <button className="hamburger" onClick={toggleSidebar} aria-label="Toggle sidebar">
+          <button className="hamburger" onClick={toggleSidebar} aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen}>
             {sidebarOpen ? '✕' : '☰'}
           </button>
           <h1 className="app-title">AccessAI - CodeQuest</h1>
@@ -578,7 +596,7 @@ Would you like to learn more about a specific AI topic?
             <span>Points: {userProgress.points}</span>
             <span>Badges: {userProgress.badges.length}</span>
           </div>
-          <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
+          <button onClick={toggleTheme} className="theme-toggle" aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
           </button>
         </div>
@@ -586,22 +604,24 @@ Would you like to learn more about a specific AI topic?
 
       <div className="main-layout">
         {/* Sidebar */}
-        <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
           <div className="sidebar-section">
-            <h3>Settings</h3>
+            <h2>Settings</h2>
             <div className="settings-bar">
-              <select value={tone} onChange={e => setTone(e.target.value)}>
-                <option value="neutral">Neutral Tone</option>
-                <option value="formal">Formal Tone</option>
-                <option value="casual">Casual Tone</option>
-                <option value="humorous">Humorous Tone</option>
-                <option value="encouraging">Encouraging Tone</option>
-                <option value="celebratory">Celebratory Tone</option>
+              <label htmlFor="tone-select">Tone:</label>
+              <select id="tone-select" value={tone} onChange={e => setTone(e.target.value)}>
+                <option value="neutral">Neutral</option>
+                <option value="formal">Formal</option>
+                <option value="casual">Casual</option>
+                <option value="humorous">Humorous</option>
+                <option value="encouraging">Encouraging</option>
+                <option value="celebratory">Celebratory</option>
               </select>
-              <select value={responseLength} onChange={e => setResponseLength(e.target.value)}>
-                <option value="short">Short Response</option>
-                <option value="medium">Medium Response</option>
-                <option value="long">Long Response</option>
+              <label htmlFor="response-length-select">Response Length:</label>
+              <select id="response-length-select" value={responseLength} onChange={e => setResponseLength(e.target.value)}>
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
               </select>
               <label>
                 <input type="checkbox" checked={factCheck} onChange={e => setFactCheck(e.target.checked)} />
@@ -648,13 +668,16 @@ Would you like to learn more about a specific AI topic?
                 Collaboration Mode
               </label>
               {(codeMode || auditMode) && (
-                <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)}>
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="cpp">C++</option>
-                  <option value="solidity">Solidity</option>
-                </select>
+                <>
+                  <label htmlFor="code-language-select">Code Language:</label>
+                  <select id="code-language-select" value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)}>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="solidity">Solidity</option>
+                  </select>
+                </>
               )}
               <button onClick={generateStudyGuide} className="study-guide-button">
                 Generate Study Guide
@@ -662,9 +685,11 @@ Would you like to learn more about a specific AI topic?
             </div>
           </div>
           <div className="sidebar-section">
-            <h3>Projects</h3>
+            <h2>Projects</h2>
             <div className="projects-bar">
+              <label htmlFor="project-input">Project Name:</label>
               <input
+                id="project-input"
                 type="text"
                 placeholder="Project Name"
                 value={currentProject}
@@ -717,7 +742,7 @@ Would you like to learn more about a specific AI topic?
               </div>
             )}
             <div className="leaderboard">
-              <h3>Leaderboard</h3>
+              <h2>Leaderboard</h2>
               <ul>
                 {leaderboardData.map((entry, index) => (
                   <li key={index}>{`${entry.username}: ${entry.points} points`}</li>
@@ -775,7 +800,9 @@ Would you like to learn more about a specific AI topic?
           {currentLesson && (
             <div className="challenge-section">
               <h2>{`Challenge: ${currentLesson.title}`}</h2>
+              <label htmlFor="code-editor">Write your code below:</label>
               <textarea
+                id="code-editor"
                 value={challengeInput}
                 onChange={e => setChallengeInput(e.target.value)}
                 placeholder="Write your code here..."
@@ -932,7 +959,9 @@ Would you like to learn more about a specific AI topic?
                           )}
                         </div>
                         <div className="comment-section">
+                          <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
                           <input
+                            id={`comment-input-${index}`}
                             type="text"
                             placeholder="Add a comment..."
                             onKeyPress={(e) => {
@@ -962,7 +991,7 @@ Would you like to learn more about a specific AI topic?
               {loading && (
                 <div className="message bot-message fade-in">
                   <div className="message-content">
-                    <div className="spinner"></div>
+                    <div className="spinner" role="status" aria-label="Loading"></div>
                   </div>
                 </div>
               )}
@@ -976,7 +1005,9 @@ Would you like to learn more about a specific AI topic?
               <div ref={messagesEndRef} />
             </div>
             <div className="input-container">
+              <label htmlFor="chat-input">Type your message:</label>
               <input
+                id="chat-input"
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}

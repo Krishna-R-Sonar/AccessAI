@@ -53,10 +53,16 @@
   font-size: 24px;
   cursor: pointer;
   color: #333;
+  transition: color 0.3s;
 }
 
 .app-container.dark .hamburger {
   color: #ddd;
+}
+
+.hamburger:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .app-title {
@@ -111,6 +117,11 @@
   background-color: #8a9095;
 }
 
+.theme-toggle:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 /* Main Layout */
 .main-layout {
   display: flex;
@@ -126,6 +137,7 @@
   border-right: 1px solid #ddd;
   transition: transform 0.3s ease-in-out;
   overflow-y: auto;
+  z-index: 1000;
 }
 
 .app-container.dark .sidebar {
@@ -137,7 +149,7 @@
   margin-bottom: 20px;
 }
 
-.sidebar-section h3 {
+.sidebar-section h2 {
   font-size: 16px;
   margin-bottom: 10px;
   font-weight: 600;
@@ -147,6 +159,11 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.settings-bar label {
+  font-size: 14px;
+  margin-bottom: 5px;
 }
 
 .settings-bar select,
@@ -179,6 +196,13 @@
 
 .app-container.dark .settings-bar label {
   border: 1px solid #444;
+}
+
+.settings-bar select:focus,
+.settings-bar input:focus,
+.settings-bar button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .code-mode-active,
@@ -224,6 +248,11 @@
   color: #ddd;
 }
 
+.project-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .project-list {
   display: flex;
   flex-direction: column;
@@ -261,6 +290,11 @@
   background-color: #8a9095;
 }
 
+.project-list button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .sidebar-button {
   width: 100%;
   padding: 8px;
@@ -283,6 +317,11 @@
 
 .app-container.dark .sidebar-button:hover {
   background-color: #4a8fe6;
+}
+
+.sidebar-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 /* Main Content Styles */
@@ -357,7 +396,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.leaderboard h3 {
+.leaderboard h2 {
   margin: 0 0 10px;
   font-size: 16px;
 }
@@ -416,6 +455,11 @@
   background-color: #4a8fe6;
 }
 
+.language-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 /* Learning Path Styles */
 .learning-path {
   margin-bottom: 30px;
@@ -451,6 +495,11 @@
 
 .app-container.dark .back-button:hover {
   background-color: #8a9095;
+}
+
+.back-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .lessons-list {
@@ -536,6 +585,11 @@
   background-color: #adb5bd;
 }
 
+.lesson-card button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 /* Challenge Section Styles */
 .challenge-section {
   margin-bottom: 30px;
@@ -557,6 +611,12 @@
   font-weight: 600;
 }
 
+.challenge-section label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
 .code-editor {
   width: 100%;
   padding: 10px;
@@ -574,6 +634,11 @@
   border: 1px solid #444;
   background-color: #3a3a3a;
   color: #ddd;
+}
+
+.code-editor:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .submit-challenge {
@@ -598,6 +663,11 @@
 
 .app-container.dark .submit-challenge:hover {
   background-color: #4a8fe6;
+}
+
+.submit-challenge:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .challenge-result {
@@ -720,8 +790,19 @@
   background-color: #66b0ff;
 }
 
+.action-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .comment-section {
   margin-top: 10px;
+}
+
+.comment-section label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
 }
 
 .comment-input {
@@ -738,6 +819,11 @@
   border: 1px solid #444;
   background-color: #3a3a3a;
   color: #ddd;
+}
+
+.comment-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .comment {
@@ -773,6 +859,12 @@
   flex-wrap: wrap;
 }
 
+.input-container label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
 .chat-input {
   flex: 1;
   padding: 10px;
@@ -786,6 +878,11 @@
   border: 1px solid #444;
   background-color: #3a3a3a;
   color: #ddd;
+}
+
+.chat-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .send-button {
@@ -819,6 +916,11 @@
   background-color: #adb5bd;
 }
 
+.send-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .file-input {
   display: none;
 }
@@ -843,6 +945,11 @@
 
 .app-container.dark .file-label:hover {
   background-color: #2a9d5c;
+}
+
+.file-label:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .spinner {
@@ -901,6 +1008,11 @@
   background-color: #2c2c2c;
 }
 
+.modal-content h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -916,7 +1028,113 @@
   color: #ddd;
 }
 
-/* Responsive Design */
+.modal-close:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Responsive Design with Multiple Breakpoints */
+
+/* Large Screens (Above 1200px) */
+@media (min-width: 1200px) {
+  .app-title {
+    font-size: 24px;
+  }
+
+  .user-stats {
+    gap: 15px;
+    font-size: 14px;
+  }
+
+  .gamification-bar {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 24px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .input-container {
+    flex-direction: row;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    width: auto;
+  }
+}
+
+/* Medium Screens (1024px - 1200px) */
+@media (max-width: 1200px) {
+  .app-title {
+    font-size: 22px;
+  }
+
+  .user-stats {
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .gamification-bar {
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 22px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+  .app-title {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .gamification-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 20px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .lesson-card h3 {
+    font-size: 16px;
+  }
+
+  .lesson-card p {
+    font-size: 12px;
+  }
+}
+
+/* Mobile Devices (Below 768px) */
 @media (max-width: 768px) {
   .hamburger {
     display: block;
@@ -976,16 +1194,28 @@
   .file-label {
     width: 100%;
   }
+
+  .user-message {
+    margin-left: 10%;
+    margin-right: 5%;
+  }
+
+  .bot-message {
+    margin-right: 10%;
+    margin-left: 5%;
+  }
 }
 
+/* Small Mobile Devices (Below 480px) */
 @media (max-width: 480px) {
   .app-title {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .user-stats {
     flex-direction: column;
     gap: 5px;
+    font-size: 11px;
   }
 
   .header-right {
@@ -993,10 +1223,15 @@
     gap: 10px;
   }
 
-  .challenge-section h2,
+  .theme-toggle {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .language-selection h2,
   .learning-path h2,
-  .language-selection h2 {
-    font-size: 20px;
+  .challenge-section h2 {
+    font-size: 18px;
   }
 
   .lesson-card {
@@ -1004,10 +1239,88 @@
   }
 
   .lesson-card h3 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .lesson-card p {
+    font-size: 11px;
+  }
+
+  .lesson-card button {
+    padding: 6px 12px;
     font-size: 12px;
+  }
+
+  .code-editor {
+    font-size: 12px;
+  }
+
+  .submit-challenge {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .response-meta {
+    font-size: 10px;
+  }
+
+  .action-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
+/* Very Small Devices (Below 360px) */
+@media (max-width: 360px) {
+  .app-title {
+    font-size: 16px;
+  }
+
+  .hamburger {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    font-size: 10px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 16px;
+  }
+
+  .language-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .lesson-card h3 {
+    font-size: 12px;
+  }
+
+  .lesson-card p {
+    font-size: 10px;
+  }
+
+  .code-editor {
+    font-size: 11px;
+  }
+
+  .submit-challenge {
+    font-size: 11px;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    font-size: 11px;
   }
 }
