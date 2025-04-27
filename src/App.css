@@ -1,4 +1,4 @@
-/* Filename: src/App.css added*/
+/* Filename: src/App.css */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -63,6 +63,7 @@
 .hamburger:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .app-title {
@@ -101,7 +102,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .theme-toggle {
@@ -111,6 +112,7 @@
 
 .theme-toggle:hover {
   background-color: #5a6268;
+  transform: scale(1.05);
 }
 
 .app-container.dark .theme-toggle:hover {
@@ -120,6 +122,7 @@
 .theme-toggle:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Main Layout */
@@ -203,6 +206,7 @@
 .settings-bar button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .code-mode-active,
@@ -251,6 +255,7 @@
 .project-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .project-list {
@@ -266,7 +271,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .project-list button {
@@ -284,6 +289,7 @@
 
 .project-list button:hover {
   background-color: #5a6268;
+  transform: scale(1.02);
 }
 
 .app-container.dark .project-list button:hover {
@@ -293,6 +299,7 @@
 .project-list button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .sidebar-button {
@@ -304,7 +311,7 @@
   background-color: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .sidebar-button {
@@ -313,6 +320,7 @@
 
 .sidebar-button:hover {
   background-color: #0056b3;
+  transform: scale(1.02);
 }
 
 .app-container.dark .sidebar-button:hover {
@@ -322,6 +330,7 @@
 .sidebar-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Main Content Styles */
@@ -364,6 +373,7 @@
   height: 100%;
   border-radius: 5px;
   transition: width 0.3s ease-in-out;
+  will-change: width; /* Optimize for animation */
 }
 
 .app-container.dark .progress-fill {
@@ -458,6 +468,7 @@
 .language-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Learning Path Styles */
@@ -481,7 +492,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .back-button {
@@ -491,6 +502,7 @@
 
 .back-button:hover {
   background-color: #5a6268;
+  transform: scale(1.02);
 }
 
 .app-container.dark .back-button:hover {
@@ -500,6 +512,7 @@
 .back-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .lessons-list {
@@ -561,7 +574,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .lesson-card button {
@@ -570,6 +583,7 @@
 
 .lesson-card button:hover {
   background-color: #218838;
+  transform: scale(1.02);
 }
 
 .app-container.dark .lesson-card button:hover {
@@ -588,6 +602,7 @@
 .lesson-card button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Challenge Section Styles */
@@ -639,6 +654,7 @@
 .code-editor:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .submit-challenge {
@@ -650,7 +666,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .submit-challenge {
@@ -659,6 +675,7 @@
 
 .submit-challenge:hover {
   background-color: #0056b3;
+  transform: scale(1.02);
 }
 
 .app-container.dark .submit-challenge:hover {
@@ -668,6 +685,7 @@
 .submit-challenge:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .challenge-result {
@@ -765,7 +783,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .action-button {
@@ -775,6 +793,7 @@
 
 .action-button:hover {
   background-color: #5a6268;
+  transform: scale(1.02);
 }
 
 .app-container.dark .action-button:hover {
@@ -792,6 +811,7 @@
 .action-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .comment-section {
@@ -823,6 +843,7 @@
 .comment-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .comment {
@@ -882,6 +903,7 @@
 .chat-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .send-button {
@@ -891,7 +913,7 @@
   background-color: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .send-button {
@@ -900,6 +922,7 @@
 
 .send-button:hover {
   background-color: #0056b3;
+  transform: scale(1.02);
 }
 
 .app-container.dark .send-button:hover {
@@ -918,6 +941,7 @@
 .send-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .file-input {
@@ -931,7 +955,7 @@
   background-color: #28a745;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .file-label {
@@ -940,6 +964,7 @@
 
 .file-label:hover {
   background-color: #218838;
+  transform: scale(1.02);
 }
 
 .app-container.dark .file-label:hover {
@@ -949,6 +974,7 @@
 .file-label:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .spinner {
@@ -978,6 +1004,7 @@
 
 .fade-in {
   animation: fadeIn 0.3s ease-in;
+  will-change: opacity; /* Optimize for animation */
 }
 
 .modal {
@@ -996,15 +1023,17 @@
 .modal-content {
   background-color: white;
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   max-width: 80%;
   max-height: 80%;
   overflow: auto;
   position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .app-container.dark .modal-content {
   background-color: #2c2c2c;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .modal-content h2 {
@@ -1021,15 +1050,26 @@
   font-size: 18px;
   cursor: pointer;
   color: #333;
+  transition: color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .modal-close {
   color: #ddd;
 }
 
+.modal-close:hover {
+  color: #007bff;
+  transform: scale(1.2);
+}
+
+.app-container.dark .modal-close:hover {
+  color: #66b0ff;
+}
+
 .modal-close:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Responsive Design with Multiple Breakpoints */
@@ -1203,6 +1243,11 @@
     margin-right: 10%;
     margin-left: 5%;
   }
+
+  .modal-content {
+    max-width: 90%;
+    padding: 15px;
+  }
 }
 
 /* Small Mobile Devices (Below 480px) */
@@ -1300,11 +1345,6 @@
   .file-label {
     padding: 8px 16px;
     font-size: 12px;
-  }
-
-  .modal-content {
-    max-width: 90%;
-    padding: 15px;
   }
 
   .modal-content h2 {
@@ -1420,5 +1460,59 @@
   .file-label {
     padding: 6px 12px;
     font-size: 11px;
+  }
+}
+
+/* High Contrast Mode for Accessibility */
+@media (prefers-contrast: high) {
+  .app-container.light {
+    background-color: #fff;
+    color: #000;
+  }
+
+  .app-container.dark {
+    background-color: #000;
+    color: #fff;
+  }
+
+  .user-message,
+  .bot-message,
+  .action-button,
+  .send-button,
+  .file-label,
+  .language-button,
+  .lesson-card button,
+  .submit-challenge,
+  .sidebar-button {
+    border: 1px solid #fff !important;
+  }
+
+  .app-container.dark .user-message,
+  .app-container.dark .bot-message,
+  .app-container.dark .action-button,
+  .app-container.dark .send-button,
+  .app-container.dark .file-label,
+  .app-container.dark .language-button,
+  .app-container.dark .lesson-card button,
+  .app-container.dark .submit-challenge,
+  .app-container.dark .sidebar-button {
+    border: 1px solid #fff !important;
+  }
+}
+
+/* Reduced Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .progress-fill,
+  .language-button,
+  .lesson-card,
+  .action-button,
+  .send-button,
+  .file-label,
+  .sidebar-button,
+  .modal-close {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
