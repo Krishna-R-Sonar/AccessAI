@@ -1,4 +1,4 @@
-// Filename: src/App.js added
+// Filename: src/App.js
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
@@ -8,10 +8,10 @@ import { FixedSizeList } from 'react-window';
 import { useDebounce } from 'use-debounce';
 import './App.css';
 
-// Set the worker source to the copied pdf.worker.mjs in public/
+// Set the worker source for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-// Backend API URL from environment variable
+// Backend API URL
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
 
 // Mock leaderboard data
@@ -96,9 +96,9 @@ const Leaderboard = memo(() => (
   </div>
 ));
 
-// Memoized Message component
+// Memoized Message component with simplified structure
 const Message = memo(({ msg, index, theme, onCopy, onEdit, onShare, onViewFullCode, onDownload, onFeedback, onComment, comments }) => (
-  <div className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}>
+  <div className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}>
     <div className="message-content">
       {msg.role === 'assistant' ? (
         <>
@@ -139,91 +139,47 @@ const Message = memo(({ msg, index, theme, onCopy, onEdit, onShare, onViewFullCo
             </ReactMarkdown>
           </div>
           <div className="response-actions">
-            <button
-              onClick={() => onCopy(msg.content)}
-              className="action-button"
-              aria-label="Copy response"
-            >
+            <button onClick={() => onCopy(msg.content)} className="action-button" aria-label="Copy response">
               Copy
             </button>
-            <button
-              onClick={() => onEdit(index, msg.content)}
-              className="action-button"
-              aria-label="Edit response"
-            >
+            <button onClick={() => onEdit(index, msg.content)} className="action-button" aria-label="Edit response">
               Edit
             </button>
-            <button
-              onClick={() => onShare(index, msg.content)}
-              className="action-button"
-              aria-label="Share response"
-            >
+            <button onClick={() => onShare(index, msg.content)} className="action-button" aria-label="Share response">
               Share
             </button>
             {msg.language && !msg.isAudit && (
               <>
-                <button
-                  onClick={() => onViewFullCode({ content: msg.content, language: msg.language })}
-                  className="action-button"
-                  aria-label="View full code"
-                >
+                <button onClick={() => onViewFullCode({ content: msg.content, language: msg.language })} className="action-button" aria-label="View full code">
                   Full Code View
                 </button>
-                <button
-                  onClick={() => onDownload(msg.content, msg.language)}
-                  className="action-button"
-                  aria-label="Download code"
-                >
+                <button onClick={() => onDownload(msg.content, msg.language)} className="action-button" aria-label="Download code">
                   Download Code
                 </button>
               </>
             )}
-            <button
-              onClick={() => onFeedback(index, 'like')}
-              className={`action-button ${comments.feedback[index] === 'like' ? 'active' : ''}`}
-              aria-label="Like response"
-            >
+            <button onClick={() => onFeedback(index, 'like')} className={`action-button ${comments.feedback[index] === 'like' ? 'active' : ''}`} aria-label="Like response">
               👍
             </button>
-            <button
-              onClick={() => onFeedback(index, 'dislike')}
-              className={`action-button ${comments.feedback[index] === 'dislike' ? 'active' : ''}`}
-              aria-label="Dislike response"
-            >
+            <button onClick={() => onFeedback(index, 'dislike')} className={`action-button ${comments.feedback[index] === 'dislike' ? 'active' : ''}`} aria-label="Dislike response">
               👎
             </button>
             {msg.language && !msg.isAudit && (
               <>
-                <button
-                  onClick={() => onFeedback(index, 'works')}
-                  className={`action-button ${comments.feedback[index] === 'works' ? 'active' : ''}`}
-                  aria-label="Code works"
-                >
+                <button onClick={() => onFeedback(index, 'works')} className={`action-button ${comments.feedback[index] === 'works' ? 'active' : ''}`} aria-label="Code works">
                   Works
                 </button>
-                <button
-                  onClick={() => onFeedback(index, 'errors')}
-                  className={`action-button ${comments.feedback[index] === 'errors' ? 'active' : ''}`}
-                  aria-label="Code has errors"
-                >
+                <button onClick={() => onFeedback(index, 'errors')} className={`action-button ${comments.feedback[index] === 'errors' ? 'active' : ''}`} aria-label="Code has errors">
                   Errors
                 </button>
               </>
             )}
             {msg.isAudit && (
               <>
-                <button
-                  onClick={() => onFeedback(index, 'helpful')}
-                  className={`action-button ${comments.feedback[index] === 'helpful' ? 'active' : ''}`}
-                  aria-label="Audit helpful"
-                >
+                <button onClick={() => onFeedback(index, 'helpful')} className={`action-button ${comments.feedback[index] === 'helpful' ? 'active' : ''}`} aria-label="Audit helpful">
                   Helpful
                 </button>
-                <button
-                  onClick={() => onFeedback(index, 'not-helpful')}
-                  className={`action-button ${comments.feedback[index] === 'not-helpful' ? 'active' : ''}`}
-                  aria-label="Audit not helpful"
-                >
+                <button onClick={() => onFeedback(index, 'not-helpful')} className={`action-button ${comments.feedback[index] === 'not-helpful' ? 'active' : ''}`} aria-label="Audit not helpful">
                   Not Helpful
                 </button>
               </>
@@ -271,7 +227,7 @@ function App() {
   });
   const [currentProject, setCurrentProject] = useState('');
   const [input, setInput] = useState('');
-  const [debouncedInput] = useDebounce(input, 300); // Debounce chat input
+  const [debouncedInput] = useDebounce(input, 300);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState('');
   const [theme, setTheme] = useState('light');
@@ -304,7 +260,7 @@ function App() {
   });
   const [currentLesson, setCurrentLesson] = useState(null);
   const [challengeInput, setChallengeInput] = useState('');
-  const [debouncedChallengeInput] = useDebounce(challengeInput, 300); // Debounce code editor input
+  const [debouncedChallengeInput] = useDebounce(challengeInput, 300);
   const [challengeResult, setChallengeResult] = useState(null);
 
   useEffect(() => {
@@ -930,14 +886,12 @@ Would you like to learn more about a specific AI topic?
 
         {/* Main Content */}
         <main className="main-content">
-          {/* Gamification Bar */}
           <GamificationBar
             selectedLanguage={selectedLanguage}
             userProgress={userProgress}
             getProgressPercentage={getProgressPercentage}
           />
 
-          {/* Language Selection and Learning Path */}
           {!selectedLanguage ? (
             <div className="language-selection">
               <h2>Select a Programming Language to Start Your Journey!</h2>
@@ -982,7 +936,6 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
-          {/* Coding Challenge Section */}
           {currentLesson && (
             <div className="challenge-section">
               <h2>{`Challenge: ${currentLesson.title}`}</h2>
@@ -1006,14 +959,13 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
-          {/* Chat Interface */}
           <div className="chat-container">
             <div className="messages">
               <FixedSizeList
                 height={400}
                 width="100%"
                 itemCount={displayMessages.length}
-                itemSize={150} // Adjust based on average message height
+                itemSize={200} // Increased to prevent overlap
                 itemData={{
                   messages: displayMessages,
                   theme,
@@ -1028,7 +980,7 @@ Would you like to learn more about a specific AI topic?
                 }}
               >
                 {({ index, style, data }) => (
-                  <div style={style}>
+                  <div style={{ ...style, padding: '10px' }}>
                     <Message
                       msg={data.messages[index]}
                       index={index}
@@ -1046,14 +998,14 @@ Would you like to learn more about a specific AI topic?
                 )}
               </FixedSizeList>
               {loading && (
-                <div className="message bot-message fade-in">
+                <div className="message bot-message">
                   <div className="message-content">
                     <div className="spinner" role="status" aria-label="Loading"></div>
                   </div>
                 </div>
               )}
               {fileName && !loading && (
-                <div className="message user-message fade-in">
+                <div className="message user-message">
                   <div className="message-content">
                     <p>Uploaded: {fileName}</p>
                   </div>

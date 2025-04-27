@@ -63,7 +63,6 @@
 .hamburger:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .app-title {
@@ -102,7 +101,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .theme-toggle {
@@ -112,7 +111,6 @@
 
 .theme-toggle:hover {
   background-color: #5a6268;
-  transform: scale(1.05);
 }
 
 .app-container.dark .theme-toggle:hover {
@@ -122,7 +120,6 @@
 .theme-toggle:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Main Layout */
@@ -206,7 +203,6 @@
 .settings-bar button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .code-mode-active,
@@ -255,7 +251,6 @@
 .project-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .project-list {
@@ -271,7 +266,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .project-list button {
@@ -289,7 +284,6 @@
 
 .project-list button:hover {
   background-color: #5a6268;
-  transform: scale(1.02);
 }
 
 .app-container.dark .project-list button:hover {
@@ -299,7 +293,6 @@
 .project-list button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .sidebar-button {
@@ -311,7 +304,7 @@
   background-color: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .sidebar-button {
@@ -320,7 +313,6 @@
 
 .sidebar-button:hover {
   background-color: #0056b3;
-  transform: scale(1.02);
 }
 
 .app-container.dark .sidebar-button:hover {
@@ -330,7 +322,6 @@
 .sidebar-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Main Content Styles */
@@ -373,7 +364,6 @@
   height: 100%;
   border-radius: 5px;
   transition: width 0.3s ease-in-out;
-  will-change: width; /* Optimize for animation */
 }
 
 .app-container.dark .progress-fill {
@@ -468,7 +458,6 @@
 .language-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Learning Path Styles */
@@ -492,7 +481,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .back-button {
@@ -502,7 +491,6 @@
 
 .back-button:hover {
   background-color: #5a6268;
-  transform: scale(1.02);
 }
 
 .app-container.dark .back-button:hover {
@@ -512,7 +500,6 @@
 .back-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .lessons-list {
@@ -574,7 +561,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .lesson-card button {
@@ -583,7 +570,6 @@
 
 .lesson-card button:hover {
   background-color: #218838;
-  transform: scale(1.02);
 }
 
 .app-container.dark .lesson-card button:hover {
@@ -602,7 +588,6 @@
 .lesson-card button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 /* Challenge Section Styles */
@@ -654,7 +639,6 @@
 .code-editor:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .submit-challenge {
@@ -666,7 +650,7 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .submit-challenge {
@@ -675,7 +659,6 @@
 
 .submit-challenge:hover {
   background-color: #0056b3;
-  transform: scale(1.02);
 }
 
 .app-container.dark .submit-challenge:hover {
@@ -685,7 +668,6 @@
 .submit-challenge:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .challenge-result {
@@ -715,16 +697,16 @@
 }
 
 .messages {
-  height: 400px; /* Fixed height for virtualization */
+  height: 400px;
+  overflow-y: auto;
   margin-bottom: 20px;
-  position: relative;
 }
 
 .message {
   margin-bottom: 15px;
   padding: 10px;
   border-radius: 5px;
-  animation: fadeIn 0.3s ease-in;
+  min-height: 50px; /* Ensure minimum height to prevent overlap */
 }
 
 .user-message {
@@ -783,7 +765,7 @@
   background-color: #6c757d;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .action-button {
@@ -793,7 +775,6 @@
 
 .action-button:hover {
   background-color: #5a6268;
-  transform: scale(1.02);
 }
 
 .app-container.dark .action-button:hover {
@@ -811,7 +792,6 @@
 .action-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .comment-section {
@@ -843,7 +823,6 @@
 .comment-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .comment {
@@ -903,7 +882,6 @@
 .chat-input:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .send-button {
@@ -913,7 +891,7 @@
   background-color: #007bff;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .send-button {
@@ -922,7 +900,6 @@
 
 .send-button:hover {
   background-color: #0056b3;
-  transform: scale(1.02);
 }
 
 .app-container.dark .send-button:hover {
@@ -941,7 +918,6 @@
 .send-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .file-input {
@@ -955,7 +931,7 @@
   background-color: #28a745;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s;
 }
 
 .app-container.dark .file-label {
@@ -964,7 +940,6 @@
 
 .file-label:hover {
   background-color: #218838;
-  transform: scale(1.02);
 }
 
 .app-container.dark .file-label:hover {
@@ -974,7 +949,6 @@
 .file-label:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .spinner {
@@ -997,16 +971,6 @@
   100% { transform: rotate(360deg); }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-  will-change: opacity; /* Optimize for animation */
-}
-
 .modal {
   position: fixed;
   top: 0;
@@ -1023,17 +987,15 @@
 .modal-content {
   background-color: white;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 5px;
   max-width: 80%;
   max-height: 80%;
   overflow: auto;
   position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .app-container.dark .modal-content {
   background-color: #2c2c2c;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .modal-content h2 {
@@ -1050,130 +1012,18 @@
   font-size: 18px;
   cursor: pointer;
   color: #333;
-  transition: color 0.3s, transform 0.2s;
 }
 
 .app-container.dark .modal-close {
   color: #ddd;
 }
 
-.modal-close:hover {
-  color: #007bff;
-  transform: scale(1.2);
-}
-
-.app-container.dark .modal-close:hover {
-  color: #66b0ff;
-}
-
 .modal-close:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
-/* Responsive Design with Multiple Breakpoints */
-
-/* Large Screens (Above 1200px) */
-@media (min-width: 1200px) {
-  .app-title {
-    font-size: 24px;
-  }
-
-  .user-stats {
-    gap: 15px;
-    font-size: 14px;
-  }
-
-  .gamification-bar {
-    flex-direction: row;
-    gap: 20px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 24px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .input-container {
-    flex-direction: row;
-  }
-
-  .chat-input,
-  .send-button,
-  .file-label {
-    width: auto;
-  }
-}
-
-/* Medium Screens (1024px - 1200px) */
-@media (max-width: 1200px) {
-  .app-title {
-    font-size: 22px;
-  }
-
-  .user-stats {
-    gap: 10px;
-    font-size: 13px;
-  }
-
-  .gamification-bar {
-    flex-direction: row;
-    gap: 15px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 22px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
-}
-
-/* Tablets (768px - 1024px) */
-@media (max-width: 1024px) {
-  .app-title {
-    font-size: 20px;
-  }
-
-  .user-stats {
-    gap: 8px;
-    font-size: 12px;
-  }
-
-  .gamification-bar {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 20px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-
-  .lesson-card h3 {
-    font-size: 16px;
-  }
-
-  .lesson-card p {
-    font-size: 12px;
-  }
-}
-
-/* Mobile Devices (Below 768px) */
+/* Responsive Design */
 @media (max-width: 768px) {
   .hamburger {
     display: block;
@@ -1242,277 +1092,5 @@
   .bot-message {
     margin-right: 10%;
     margin-left: 5%;
-  }
-
-  .modal-content {
-    max-width: 90%;
-    padding: 15px;
-  }
-}
-
-/* Small Mobile Devices (Below 480px) */
-@media (max-width: 480px) {
-  .app-title {
-    font-size: 18px;
-  }
-
-  .user-stats {
-    flex-direction: column;
-    gap: 5px;
-    font-size: 11px;
-  }
-
-  .header-right {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .theme-toggle {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 18px;
-  }
-
-  .lesson-card {
-    padding: 10px;
-  }
-
-  .lesson-card h3 {
-    font-size: 14px;
-  }
-
-  .lesson-card p {
-    font-size: 11px;
-  }
-
-  .lesson-card button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .code-editor {
-    font-size: 12px;
-  }
-
-  .submit-challenge {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-
-  .chat-container {
-    padding: 10px;
-  }
-
-  .messages {
-    height: 300px; /* Adjusted height for smaller screens */
-  }
-
-  .message {
-    padding: 8px;
-    margin-bottom: 10px;
-  }
-
-  .response-meta span {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .response-actions {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .action-button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .comment-input {
-    font-size: 12px;
-  }
-
-  .chat-input {
-    padding: 8px;
-    font-size: 12px;
-  }
-
-  .send-button,
-  .file-label {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-
-  .modal-content h2 {
-    font-size: 16px;
-  }
-
-  .modal-close {
-    font-size: 16px;
-  }
-}
-
-/* Extra Small Devices (Below 360px) */
-@media (max-width: 360px) {
-  .app-title {
-    font-size: 16px;
-  }
-
-  .hamburger {
-    font-size: 20px;
-  }
-
-  .user-stats {
-    font-size: 10px;
-  }
-
-  .theme-toggle {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-
-  .sidebar {
-    width: 200px;
-  }
-
-  .settings-bar select,
-  .settings-bar label,
-  .settings-bar button {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .project-input {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .project-list button {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .sidebar-button {
-    font-size: 12px;
-    padding: 6px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 16px;
-  }
-
-  .language-button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-
-  .lesson-card {
-    padding: 8px;
-  }
-
-  .lesson-card h3 {
-    font-size: 13px;
-  }
-
-  .lesson-card p {
-    font-size: 10px;
-  }
-
-  .lesson-card button {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-
-  .code-editor {
-    font-size: 11px;
-  }
-
-  .submit-challenge {
-    padding: 6px 12px;
-    font-size: 11px;
-  }
-
-  .messages {
-    height: 250px; /* Further adjusted height for very small screens */
-  }
-
-  .message {
-    padding: 6px;
-  }
-
-  .action-button {
-    font-size: 11px;
-    padding: 5px 10px;
-  }
-
-  .chat-input {
-    font-size: 11px;
-    padding: 6px;
-  }
-
-  .send-button,
-  .file-label {
-    padding: 6px 12px;
-    font-size: 11px;
-  }
-}
-
-/* High Contrast Mode for Accessibility */
-@media (prefers-contrast: high) {
-  .app-container.light {
-    background-color: #fff;
-    color: #000;
-  }
-
-  .app-container.dark {
-    background-color: #000;
-    color: #fff;
-  }
-
-  .user-message,
-  .bot-message,
-  .action-button,
-  .send-button,
-  .file-label,
-  .language-button,
-  .lesson-card button,
-  .submit-challenge,
-  .sidebar-button {
-    border: 1px solid #fff !important;
-  }
-
-  .app-container.dark .user-message,
-  .app-container.dark .bot-message,
-  .app-container.dark .action-button,
-  .app-container.dark .send-button,
-  .app-container.dark .file-label,
-  .app-container.dark .language-button,
-  .app-container.dark .lesson-card button,
-  .app-container.dark .submit-challenge,
-  .app-container.dark .sidebar-button {
-    border: 1px solid #fff !important;
-  }
-}
-
-/* Reduced Motion for Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .fade-in,
-  .progress-fill,
-  .language-button,
-  .lesson-card,
-  .action-button,
-  .send-button,
-  .file-label,
-  .sidebar-button,
-  .modal-close {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
   }
 }
