@@ -1,4 +1,4 @@
-// Filename: src/App.js
+// Filename: src/App.js added
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
