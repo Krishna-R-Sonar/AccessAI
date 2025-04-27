@@ -96,7 +96,7 @@ const Leaderboard = memo(() => (
   </div>
 ));
 
-// Memoized Message component with simplified structure
+// Memoized Message component with improved spacing
 const Message = memo(({ msg, index, theme, onCopy, onEdit, onShare, onViewFullCode, onDownload, onFeedback, onComment, comments }) => (
   <div className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}>
     <div className="message-content">
