@@ -1,9 +1,11 @@
 // Filename: src/App.js
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { FixedSizeList } from 'react-window';
+import { useDebounce } from 'use-debounce';
 import './App.css';
 
 // Set the worker source to the copied pdf.worker.mjs in public/
@@ -66,6 +68,198 @@ const badges = [
   { name: 'Master Coder', points: 500, description: 'Earned 500 points!' },
 ];
 
+// Memoized GamificationBar component
+const GamificationBar = memo(({ selectedLanguage, userProgress, getProgressPercentage }) => (
+  <div className="gamification-bar">
+    {selectedLanguage && (
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${getProgressPercentage()}%` }}
+        ></div>
+        <span>{`Progress: ${Math.round(getProgressPercentage())}%`}</span>
+      </div>
+    )}
+    <Leaderboard />
+  </div>
+));
+
+// Memoized Leaderboard component
+const Leaderboard = memo(() => (
+  <div className="leaderboard">
+    <h2>Leaderboard</h2>
+    <ul>
+      {leaderboardData.map((entry, index) => (
+        <li key={index}>{`${entry.username}: ${entry.points} points`}</li>
+      ))}
+    </ul>
+  </div>
+));
+
+// Memoized Message component
+const Message = memo(({ msg, index, theme, onCopy, onEdit, onShare, onViewFullCode, onDownload, onFeedback, onComment, comments }) => (
+  <div className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}>
+    <div className="message-content">
+      {msg.role === 'assistant' ? (
+        <>
+          <div className="response-meta">
+            <span>Tone: {msg.tone || 'N/A'}</span>
+            <span>Length: {msg.responseLength || 'N/A'}</span>
+            {msg.language && <span>Language: {msg.language}</span>}
+            {msg.isAudit && <span>Type: Audit Report</span>}
+            {msg.isSimulation && <span>Type: Simulation</span>}
+            {msg.isCollaboration && <span>Type: Collaboration</span>}
+          </div>
+          <div className="response-body">
+            <ReactMarkdown
+              components={{
+                code({ node, inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const language = match ? match[1] : msg.language || 'text';
+                  return !inline && language ? (
+                    <SyntaxHighlighter
+                      style={theme === 'dark' ? vscDarkPlus : vscDarkPlus}
+                      language={language}
+                      PreTag="div"
+                      showLineNumbers
+                      wrapLines
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            >
+              {msg.content}
+            </ReactMarkdown>
+          </div>
+          <div className="response-actions">
+            <button
+              onClick={() => onCopy(msg.content)}
+              className="action-button"
+              aria-label="Copy response"
+            >
+              Copy
+            </button>
+            <button
+              onClick={() => onEdit(index, msg.content)}
+              className="action-button"
+              aria-label="Edit response"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => onShare(index, msg.content)}
+              className="action-button"
+              aria-label="Share response"
+            >
+              Share
+            </button>
+            {msg.language && !msg.isAudit && (
+              <>
+                <button
+                  onClick={() => onViewFullCode({ content: msg.content, language: msg.language })}
+                  className="action-button"
+                  aria-label="View full code"
+                >
+                  Full Code View
+                </button>
+                <button
+                  onClick={() => onDownload(msg.content, msg.language)}
+                  className="action-button"
+                  aria-label="Download code"
+                >
+                  Download Code
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => onFeedback(index, 'like')}
+              className={`action-button ${comments.feedback[index] === 'like' ? 'active' : ''}`}
+              aria-label="Like response"
+            >
+              👍
+            </button>
+            <button
+              onClick={() => onFeedback(index, 'dislike')}
+              className={`action-button ${comments.feedback[index] === 'dislike' ? 'active' : ''}`}
+              aria-label="Dislike response"
+            >
+              👎
+            </button>
+            {msg.language && !msg.isAudit && (
+              <>
+                <button
+                  onClick={() => onFeedback(index, 'works')}
+                  className={`action-button ${comments.feedback[index] === 'works' ? 'active' : ''}`}
+                  aria-label="Code works"
+                >
+                  Works
+                </button>
+                <button
+                  onClick={() => onFeedback(index, 'errors')}
+                  className={`action-button ${comments.feedback[index] === 'errors' ? 'active' : ''}`}
+                  aria-label="Code has errors"
+                >
+                  Errors
+                </button>
+              </>
+            )}
+            {msg.isAudit && (
+              <>
+                <button
+                  onClick={() => onFeedback(index, 'helpful')}
+                  className={`action-button ${comments.feedback[index] === 'helpful' ? 'active' : ''}`}
+                  aria-label="Audit helpful"
+                >
+                  Helpful
+                </button>
+                <button
+                  onClick={() => onFeedback(index, 'not-helpful')}
+                  className={`action-button ${comments.feedback[index] === 'not-helpful' ? 'active' : ''}`}
+                  aria-label="Audit not helpful"
+                >
+                  Not Helpful
+                </button>
+              </>
+            )}
+          </div>
+          <div className="comment-section">
+            <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
+            <input
+              id={`comment-input-${index}`}
+              type="text"
+              placeholder="Add a comment..."
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && e.target.value) {
+                  onComment(index, e.target.value);
+                  e.target.value = '';
+                }
+              }}
+              className="comment-input"
+              aria-label="Add comment"
+            />
+            {(comments[index] || []).map((comment, i) => (
+              <div key={i} className="comment">
+                <p>{comment.text}</p>
+                <span className="timestamp">{comment.timestamp}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p>{msg.content}</p>
+      )}
+      <span className="timestamp">{msg.timestamp}</span>
+    </div>
+  </div>
+));
+
 function App() {
   const [messages, setMessages] = useState(() => {
     const savedMessages = localStorage.getItem('chatMessages');
@@ -77,6 +271,7 @@ function App() {
   });
   const [currentProject, setCurrentProject] = useState('');
   const [input, setInput] = useState('');
+  const [debouncedInput] = useDebounce(input, 300); // Debounce chat input
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState('');
   const [theme, setTheme] = useState('light');
@@ -109,6 +304,7 @@ function App() {
   });
   const [currentLesson, setCurrentLesson] = useState(null);
   const [challengeInput, setChallengeInput] = useState('');
+  const [debouncedChallengeInput] = useDebounce(challengeInput, 300); // Debounce code editor input
   const [challengeResult, setChallengeResult] = useState(null);
 
   useEffect(() => {
@@ -498,11 +694,11 @@ Would you like to learn more about a specific AI topic?
   };
 
   const submitChallenge = async () => {
-    if (!challengeInput || !currentLesson) return;
+    if (!debouncedChallengeInput || !currentLesson) return;
 
     const prompt = `Evaluate the following ${selectedLanguage} code for the challenge in the lesson "${currentLesson.title}":
     \`\`\`${selectedLanguage}
-    ${challengeInput}
+    ${debouncedChallengeInput}
     \`\`\`
     Provide feedback in Markdown format, including:
     - Whether the solution is correct
@@ -548,12 +744,16 @@ Would you like to learn more about a specific AI topic?
     }
   };
 
-  const getProgressPercentage = () => {
+  const getProgressPercentage = useCallback(() => {
     if (!selectedLanguage) return 0;
     const totalLessons = learningPaths[selectedLanguage].length;
     const completed = userProgress.completedLessons[selectedLanguage]?.length || 0;
     return (completed / totalLessons) * 100;
-  };
+  }, [selectedLanguage, userProgress]);
+
+  const displayMessages = currentProject
+    ? projects.find(p => p.name === currentProject)?.messages || messages
+    : messages;
 
   return (
     <div className={`app-container ${theme}`}>
@@ -731,25 +931,11 @@ Would you like to learn more about a specific AI topic?
         {/* Main Content */}
         <main className="main-content">
           {/* Gamification Bar */}
-          <div className="gamification-bar">
-            {selectedLanguage && (
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${getProgressPercentage()}%` }}
-                ></div>
-                <span>{`Progress: ${Math.round(getProgressPercentage())}%`}</span>
-              </div>
-            )}
-            <div className="leaderboard">
-              <h2>Leaderboard</h2>
-              <ul>
-                {leaderboardData.map((entry, index) => (
-                  <li key={index}>{`${entry.username}: ${entry.points} points`}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <GamificationBar
+            selectedLanguage={selectedLanguage}
+            userProgress={userProgress}
+            getProgressPercentage={getProgressPercentage}
+          />
 
           {/* Language Selection and Learning Path */}
           {!selectedLanguage ? (
@@ -823,171 +1009,42 @@ Would you like to learn more about a specific AI topic?
           {/* Chat Interface */}
           <div className="chat-container">
             <div className="messages">
-              {(currentProject ? projects.find(p => p.name === currentProject)?.messages || messages : messages).map((msg, index) => (
-                <div
-                  key={index}
-                  className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}
-                >
-                  <div className="message-content">
-                    {msg.role === 'assistant' ? (
-                      <>
-                        <div className="response-meta">
-                          <span>Tone: {msg.tone || 'N/A'}</span>
-                          <span>Length: {msg.responseLength || 'N/A'}</span>
-                          {msg.language && <span>Language: {msg.language}</span>}
-                          {msg.isAudit && <span>Type: Audit Report</span>}
-                          {msg.isSimulation && <span>Type: Simulation</span>}
-                          {msg.isCollaboration && <span>Type: Collaboration</span>}
-                        </div>
-                        <div className="response-body">
-                          <ReactMarkdown
-                            components={{
-                              code({ node, inline, className, children, ...props }) {
-                                const match = /language-(\w+)/.exec(className || '');
-                                const language = match ? match[1] : msg.language || 'text';
-                                return !inline && language ? (
-                                  <SyntaxHighlighter
-                                    style={theme === 'dark' ? vscDarkPlus : vscDarkPlus}
-                                    language={language}
-                                    PreTag="div"
-                                    showLineNumbers
-                                    wrapLines
-                                    {...props}
-                                  >
-                                    {String(children).replace(/\n$/, '')}
-                                  </SyntaxHighlighter>
-                                ) : (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
-                        <div className="response-actions">
-                          <button
-                            onClick={() => copyToClipboard(msg.content)}
-                            className="action-button"
-                            aria-label="Copy response"
-                          >
-                            Copy
-                          </button>
-                          <button
-                            onClick={() => editResponse(index, msg.content)}
-                            className="action-button"
-                            aria-label="Edit response"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => shareResponse(index, msg.content)}
-                            className="action-button"
-                            aria-label="Share response"
-                          >
-                            Share
-                          </button>
-                          {msg.language && !msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() => setFullCodeView({ content: msg.content, language: msg.language })}
-                                className="action-button"
-                                aria-label="View full code"
-                              >
-                                Full Code View
-                              </button>
-                              <button
-                                onClick={() => downloadCode(msg.content, msg.language)}
-                                className="action-button"
-                                aria-label="Download code"
-                              >
-                                Download Code
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleFeedback(index, 'like')}
-                            className={`action-button ${feedback[index] === 'like' ? 'active' : ''}`}
-                            aria-label="Like response"
-                          >
-                            👍
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(index, 'dislike')}
-                            className={`action-button ${feedback[index] === 'dislike' ? 'active' : ''}`}
-                            aria-label="Dislike response"
-                          >
-                            👎
-                          </button>
-                          {msg.language && !msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() => handleFeedback(index, 'works')}
-                                className={`action-button ${feedback[index] === 'works' ? 'active' : ''}`}
-                                aria-label="Code works"
-                              >
-                                Works
-                              </button>
-                              <button
-                                onClick={() => handleFeedback(index, 'errors')}
-                                className={`action-button ${feedback[index] === 'errors' ? 'active' : ''}`}
-                                aria-label="Code has errors"
-                              >
-                                Errors
-                              </button>
-                            </>
-                          )}
-                          {msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() => handleFeedback(index, 'helpful')}
-                                className={`action-button ${feedback[index] === 'helpful' ? 'active' : ''}`}
-                                aria-label="Audit helpful"
-                              >
-                                Helpful
-                              </button>
-                              <button
-                                onClick={() => handleFeedback(index, 'not-helpful')}
-                                className={`action-button ${feedback[index] === 'not-helpful' ? 'active' : ''}`}
-                                aria-label="Audit not helpful"
-                              >
-                                Not Helpful
-                              </button>
-                            </>
-                          )}
-                        </div>
-                        <div className="comment-section">
-                          <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
-                          <input
-                            id={`comment-input-${index}`}
-                            type="text"
-                            placeholder="Add a comment..."
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && e.target.value) {
-                                addComment(index, e.target.value);
-                                e.target.value = '';
-                              }
-                            }}
-                            className="comment-input"
-                            aria-label="Add comment"
-                          />
-                          {(comments[index] || []).map((comment, i) => (
-                            <div key={i} className="comment">
-                              <p>{comment.text}</p>
-                              <span className="timestamp">{comment.timestamp}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p>{msg.content}</p>
-                    )}
-                    <span className="timestamp">{msg.timestamp}</span>
+              <FixedSizeList
+                height={400}
+                width="100%"
+                itemCount={displayMessages.length}
+                itemSize={150} // Adjust based on average message height
+                itemData={{
+                  messages: displayMessages,
+                  theme,
+                  onCopy: copyToClipboard,
+                  onEdit: editResponse,
+                  onShare: shareResponse,
+                  onViewFullCode: setFullCodeView,
+                  onDownload: downloadCode,
+                  onFeedback: handleFeedback,
+                  onComment: addComment,
+                  comments: { feedback, comments },
+                }}
+              >
+                {({ index, style, data }) => (
+                  <div style={style}>
+                    <Message
+                      msg={data.messages[index]}
+                      index={index}
+                      theme={data.theme}
+                      onCopy={data.onCopy}
+                      onEdit={data.onEdit}
+                      onShare={data.onShare}
+                      onViewFullCode={data.onViewFullCode}
+                      onDownload={data.onDownload}
+                      onFeedback={data.onFeedback}
+                      onComment={data.onComment}
+                      comments={data.comments}
+                    />
                   </div>
-                </div>
-              ))}
+                )}
+              </FixedSizeList>
               {loading && (
                 <div className="message bot-message fade-in">
                   <div className="message-content">
@@ -1011,14 +1068,14 @@ Would you like to learn more about a specific AI topic?
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
+                onKeyPress={e => e.key === 'Enter' && handleSubmit(debouncedInput)}
                 className="chat-input"
                 placeholder="Type your message or paste code..."
                 disabled={loading}
                 aria-label="Chat input"
               />
               <button
-                onClick={() => handleSubmit(input)}
+                onClick={() => handleSubmit(debouncedInput)}
                 className="send-button"
                 disabled={loading}
                 aria-label="Send message"
