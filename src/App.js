@@ -10,7 +10,7 @@ import './App.css';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 // Backend API URL from environment variable
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 // Mock leaderboard data
 const leaderboardData = [
@@ -98,8 +98,12 @@ function App() {
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const messagesEndRef = useRef(null);
-  const sidebarRef = useRef(null);
+  // New states for TTS
+  const [ttsCreditsUsed, setTtsCreditsUsed] = useState(() => {
+    const savedCredits = localStorage.getItem('ttsCreditsUsed');
+    return savedCredits ? parseInt(savedCredits, 10) : 0;
+  });
+  const [isPlaying, setIsPlaying] = useState({});
 
   // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -111,12 +115,20 @@ function App() {
   const [challengeInput, setChallengeInput] = useState('');
   const [challengeResult, setChallengeResult] = useState(null);
 
+  const messagesEndRef = useRef(null);
+  const sidebarRef = useRef(null);
+
+  // Constants for TTS limits
+  const TTS_CREDIT_LIMIT = 10000; // Eleven Labs free plan limit
+  const TTS_WARNING_THRESHOLD = 9000; // Warn at 90% usage
+
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
     localStorage.setItem('userProgress', JSON.stringify(userProgress));
+    localStorage.setItem('ttsCreditsUsed', ttsCreditsUsed.toString());
     scrollToBottom();
-  }, [messages, projects, userProgress]);
+  }, [messages, projects, userProgress, ttsCreditsUsed]);
 
   useEffect(() => {
     scrollToBottom();
@@ -158,6 +170,74 @@ function App() {
       return 'positive';
     }
     return 'neutral';
+  };
+
+  // Function to strip Markdown for TTS (remove formatting, code blocks, etc.)
+  const stripMarkdown = (markdownText) => {
+    let text = markdownText
+      .replace(/[#*`]+/g, '') // Remove Markdown symbols
+      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+      .replace(/\[.*?\]\(.*?\)/g, (match) => match.replace(/\[|\]/g, '')) // Remove links but keep text
+      .trim();
+    return text;
+  };
+
+  // Function to handle TTS audio playback
+  const handleTTS = async (index, content) => {
+    if (isPlaying[index]) {
+      setIsPlaying(prev => ({ ...prev, [index]: false }));
+      return;
+    }
+
+    const textToSpeak = stripMarkdown(content);
+    const creditsForRequest = textToSpeak.length; // 1 credit per character
+
+    if (ttsCreditsUsed + creditsForRequest > TTS_CREDIT_LIMIT) {
+      alert('TTS credit limit reached for this month. Please check your Eleven Labs usage or upgrade your plan.');
+      return;
+    }
+
+    try {
+      setIsPlaying(prev => ({ ...prev, [index]: true }));
+      const response = await fetch(`${API_URL}/tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: textToSpeak }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch audio from server');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+
+      audio.onended = () => {
+        setIsPlaying(prev => ({ ...prev, [index]: false }));
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = () => {
+        setIsPlaying(prev => ({ ...prev, [index]: false }));
+        URL.revokeObjectURL(audioUrl);
+        alert('Failed to play audio. Please try again.');
+      };
+
+      audio.play();
+
+      setTtsCreditsUsed(prev => prev + creditsForRequest);
+      if (ttsCreditsUsed + creditsForRequest >= TTS_WARNING_THRESHOLD) {
+        alert(`Warning: You are approaching your TTS credit limit (${TTS_CREDIT_LIMIT} credits/month). Current usage: ${ttsCreditsUsed + creditsForRequest} credits.`);
+      }
+    } catch (error) {
+      console.error('Error playing TTS:', error);
+      setIsPlaying(prev => ({ ...prev, [index]: false }));
+      alert('Failed to generate audio. Please try again later.');
+    }
   };
 
   const handleSubmit = useCallback(async (textToProcess, isStudyGuide = false) => {
@@ -247,7 +327,7 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,6 +360,7 @@ function App() {
         isSimulation: simulationMode,
         isCollaboration: collaborationMode,
       };
+
       setMessages(prev => [...prev, assistantMessage]);
 
       if (currentProject) {
@@ -310,6 +391,7 @@ function App() {
 
     setFileName(file.name);
     setLoading(true);
+
     try {
       let text;
       if (file.type === 'text/plain') {
@@ -411,14 +493,19 @@ function App() {
 ## Learn About AI
 
 ### What is AI?
+
 AI, or artificial intelligence, is when computers are designed to think and act like humans. I’m an AI chatbot, which means I can understand your questions and provide answers by processing lots of data.
 
 ### How Do I Work?
+
 I use a large language model to understand and generate responses. When you ask a question, I break it down into parts, search my knowledge base, and create an answer that fits your request. I’m trained on a huge amount of text data, but I don’t have access to everything, and I can make mistakes.
 
 ### Ethical Tips for Using AI
+
 - **Verify My Answers**: I might have biases or outdated information, so always double-check important facts.
+
 - **Protect Your Privacy**: Don’t share sensitive personal information with me.
+
 - **Use Me as a Tool**: I’m here to help you learn and grow, not to replace your own thinking.
 
 Would you like to learn more about a specific AI topic?
@@ -486,7 +573,6 @@ Would you like to learn more about a specific AI topic?
     setCurrentLesson(lesson);
     setChallengeInput('');
     setChallengeResult(null);
-
     const prompt = `Provide a detailed lesson on "${lesson.title}" for ${selectedLanguage} in Markdown format. Include:
     - A brief introduction to the topic
     - Key concepts with examples
@@ -510,7 +596,7 @@ Would you like to learn more about a specific AI topic?
     - If correct, award the user ${currentLesson.points} points and congratulate them
     If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
 
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_URL}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -535,14 +621,12 @@ Would you like to learn more about a specific AI topic?
         newProgress.points += currentLesson.points;
         newProgress.completedLessons[selectedLanguage] = newProgress.completedLessons[selectedLanguage] || [];
         newProgress.completedLessons[selectedLanguage].push(currentLesson.id);
-
         badges.forEach(badge => {
           if (newProgress.points >= badge.points && !newProgress.badges.includes(badge.name)) {
             newProgress.badges.push(badge.name);
             alert(`🎉 Congratulations! You've earned the "${badge.name}" badge: ${badge.description}`);
           }
         });
-
         return newProgress;
       });
     }
@@ -595,6 +679,7 @@ Would you like to learn more about a specific AI topic?
           <div className="user-stats">
             <span>Points: {userProgress.points}</span>
             <span>Badges: {userProgress.badges.length}</span>
+            <span>TTS Credits Used: {ttsCreditsUsed}/{TTS_CREDIT_LIMIT}</span>
           </div>
           <button onClick={toggleTheme} className="theme-toggle" aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
@@ -889,6 +974,13 @@ Would you like to learn more about a specific AI topic?
                           >
                             Share
                           </button>
+                          <button
+                            onClick={() => handleTTS(index, msg.content)}
+                            className={`action-button ${isPlaying[index] ? 'playing' : ''}`}
+                            aria-label={isPlaying[index] ? "Stop audio" : "Listen to response"}
+                          >
+                            {isPlaying[index] ? 'Stop' : 'Listen'}
+                          </button>
                           {msg.language && !msg.isAudit && (
                             <>
                               <button
@@ -1038,6 +1130,9 @@ Would you like to learn more about a specific AI topic?
                 Upload File
               </label>
             </div>
+            <p className="tts-note">
+              Text-to-Speech is provided by Eleven Labs. Usage is subject to their free plan limits (10,000 credits/month, ~10 minutes of audio).
+            </p>
           </div>
         </main>
       </div>
