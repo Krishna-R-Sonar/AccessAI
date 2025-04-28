@@ -22,7 +22,6 @@
   color: #ddd;
 }
 
-/* Header Styles */
 .header {
   display: flex;
   justify-content: space-between;
@@ -122,14 +121,12 @@
   outline-offset: 2px;
 }
 
-/* Main Layout */
 .main-layout {
   display: flex;
   flex: 1;
   min-height: calc(100vh - 70px);
 }
 
-/* Sidebar Styles */
 .sidebar {
   width: 250px;
   background-color: #ffffff;
@@ -324,14 +321,12 @@
   outline-offset: 2px;
 }
 
-/* Main Content Styles */
 .main-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
 }
 
-/* Gamification Bar */
 .gamification-bar {
   display: flex;
   justify-content: space-between;
@@ -412,7 +407,6 @@
   margin-bottom: 5px;
 }
 
-/* Language Selection Styles */
 .language-selection {
   text-align: center;
   margin-bottom: 30px;
@@ -460,7 +454,6 @@
   outline-offset: 2px;
 }
 
-/* Learning Path Styles */
 .learning-path {
   margin-bottom: 30px;
 }
@@ -590,7 +583,6 @@
   outline-offset: 2px;
 }
 
-/* Challenge Section Styles */
 .challenge-section {
   margin-bottom: 30px;
   padding: 20px;
@@ -683,7 +675,6 @@
   border: 1px solid #444;
 }
 
-/* Chat Interface Styles */
 .chat-container {
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -812,6 +803,7 @@
   padding: 5px;
   border: 1px solid #ddd;
   border-radius: 5px;
+  margin-bottom: 10px;
   background-color: #f9f9f9;
   color: #333;
 }
@@ -839,14 +831,23 @@
 }
 
 .comment p {
-  margin: 0;
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.comment .timestamp {
   font-size: 12px;
+  color: #6c757d;
+}
+
+.app-container.dark .comment .timestamp {
+  color: #adb5bd;
 }
 
 .timestamp {
-  font-size: 10px;
-  color: #6c757d;
   display: block;
+  font-size: 12px;
+  color: #6c757d;
   margin-top: 5px;
 }
 

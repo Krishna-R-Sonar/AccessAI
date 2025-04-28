@@ -10,6 +10,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
+// Centralize API endpoints to avoid hardcoding mistakes
+const API_ENDPOINTS = {
+  CHAT: `${API_URL}/chat`,
+  TTS: `${API_URL}/tts`,
+};
+
 const leaderboardData = [
   { username: 'CodeMaster', points: 1500 },
   { username: 'SolidityStar', points: 1200 },
@@ -190,7 +196,7 @@ function App() {
 
     try {
       setIsPlaying(prev => ({ ...prev, [index]: true }));
-      const response = await fetch(`${API_URL}/tts`, {
+      const response = await fetch(API_ENDPOINTS.TTS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -317,7 +323,7 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
-      const response = await fetch(`${API_URL}/chat`, {
+      const response = await fetch(API_ENDPOINTS.CHAT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -585,7 +591,7 @@ Would you like to learn more about a specific AI topic?
     - If correct, award the user ${currentLesson.points} points and congratulate them
     If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
 
-    const response = await fetch(`${API_URL}/chat`, { // Fixed: Removed extra "/chat"
+    const response = await fetch(API_ENDPOINTS.CHAT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
