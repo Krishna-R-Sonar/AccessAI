@@ -10,7 +10,7 @@ import './App.css';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 // Backend API URL from environment variable
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
 
 // Mock leaderboard data
 const leaderboardData = [
