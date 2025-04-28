@@ -2,11 +2,10 @@
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
-const fetch = require('node-fetch'); // Added for Eleven Labs API requests
+const fetch = require('node-fetch');
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Enable CORS for your frontend domain
 app.use(cors({
   origin: 'https://access-ai-iota.vercel.app',
   methods: ['GET', 'POST'],
@@ -15,10 +14,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Initialize Google Generative AI with the API key from environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Root route serving a simple HTML page
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -61,16 +58,13 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Basic health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-// Chat endpoint for AI responses
 app.post('/chat', async (req, res) => {
   const { messages, input } = req.body;
 
-  // Validate request body
   if (!messages || !input) {
     console.error('Invalid request: Missing messages or input');
     return res.status(400).json({ error: 'Messages and input are required' });
@@ -95,7 +89,6 @@ app.post('/chat', async (req, res) => {
   }
 });
 
-// New TTS endpoint for Eleven Labs API
 app.post('/tts', async (req, res) => {
   const { text } = req.body;
 
@@ -141,13 +134,11 @@ app.post('/tts', async (req, res) => {
   }
 });
 
-// Handle 404 errors
 app.use((req, res) => {
   console.warn(`404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.message, err.stack);
   res.status(500).json({ error: 'Internal server error' });

@@ -6,20 +6,16 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './App.css';
 
-// Set the worker source to the copied pdf.worker.mjs in public/
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-// Backend API URL from environment variable
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-// Mock leaderboard data
 const leaderboardData = [
   { username: 'CodeMaster', points: 1500 },
   { username: 'SolidityStar', points: 1200 },
   { username: 'PythonPro', points: 1000 },
 ];
 
-// Learning paths for each language
 const learningPaths = {
   javascript: [
     { id: 1, title: 'Variables and Data Types', difficulty: 'Beginner', points: 50 },
@@ -58,7 +54,6 @@ const learningPaths = {
   ],
 };
 
-// Badges for milestones
 const badges = [
   { name: 'Beginner Coder', points: 100, description: 'Completed your first lesson!' },
   { name: 'Challenge Champion', points: 300, description: 'Solved 3 coding challenges!' },
@@ -98,14 +93,12 @@ function App() {
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // New states for TTS
   const [ttsCreditsUsed, setTtsCreditsUsed] = useState(() => {
     const savedCredits = localStorage.getItem('ttsCreditsUsed');
     return savedCredits ? parseInt(savedCredits, 10) : 0;
   });
   const [isPlaying, setIsPlaying] = useState({});
 
-  // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [userProgress, setUserProgress] = useState(() => {
     const savedProgress = localStorage.getItem('userProgress');
@@ -118,9 +111,8 @@ function App() {
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
 
-  // Constants for TTS limits
-  const TTS_CREDIT_LIMIT = 10000; // Eleven Labs free plan limit
-  const TTS_WARNING_THRESHOLD = 9000; // Warn at 90% usage
+  const TTS_CREDIT_LIMIT = 10000;
+  const TTS_WARNING_THRESHOLD = 9000;
 
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
@@ -172,18 +164,16 @@ function App() {
     return 'neutral';
   };
 
-  // Function to strip Markdown for TTS (remove formatting, code blocks, etc.)
   const stripMarkdown = (markdownText) => {
     let text = markdownText
-      .replace(/[#*`]+/g, '') // Remove Markdown symbols
-      .replace(/\n+/g, ' ') // Replace newlines with spaces
-      .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
-      .replace(/\[.*?\]\(.*?\)/g, (match) => match.replace(/\[|\]/g, '')) // Remove links but keep text
+      .replace(/[#*`]+/g, '')
+      .replace(/\n+/g, ' ')
+      .replace(/!\[.*?\]\(.*?\)/g, '')
+      .replace(/\[.*?\]\(.*?\)/g, (match) => match.replace(/\[|\]/g, ''))
       .trim();
     return text;
   };
 
-  // Function to handle TTS audio playback
   const handleTTS = async (index, content) => {
     if (isPlaying[index]) {
       setIsPlaying(prev => ({ ...prev, [index]: false }));
@@ -191,7 +181,7 @@ function App() {
     }
 
     const textToSpeak = stripMarkdown(content);
-    const creditsForRequest = textToSpeak.length; // 1 credit per character
+    const creditsForRequest = textToSpeak.length;
 
     if (ttsCreditsUsed + creditsForRequest > TTS_CREDIT_LIMIT) {
       alert('TTS credit limit reached for this month. Please check your Eleven Labs usage or upgrade your plan.');
@@ -559,7 +549,6 @@ Would you like to learn more about a specific AI topic?
     }));
   };
 
-  // Gamification and Learning Path Functions
   const startLearningPath = (language) => {
     setSelectedLanguage(language);
     setCurrentLesson(null);
@@ -596,7 +585,7 @@ Would you like to learn more about a specific AI topic?
     - If correct, award the user ${currentLesson.points} points and congratulate them
     If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
 
-    const response = await fetch(`${API_URL}/chat`, {
+    const response = await fetch(`${API_URL}/chat`, { // Fixed: Removed extra "/chat"
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -667,7 +656,6 @@ Would you like to learn more about a specific AI topic?
         </div>
       )}
 
-      {/* Header */}
       <header className="header">
         <div className="header-left">
           <button className="hamburger" onClick={toggleSidebar} aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen}>
@@ -688,7 +676,6 @@ Would you like to learn more about a specific AI topic?
       </header>
 
       <div className="main-layout">
-        {/* Sidebar */}
         <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
           <div className="sidebar-section">
             <h2>Settings</h2>
@@ -813,9 +800,7 @@ Would you like to learn more about a specific AI topic?
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="main-content">
-          {/* Gamification Bar */}
           <div className="gamification-bar">
             {selectedLanguage && (
               <div className="progress-bar">
@@ -836,7 +821,6 @@ Would you like to learn more about a specific AI topic?
             </div>
           </div>
 
-          {/* Language Selection and Learning Path */}
           {!selectedLanguage ? (
             <div className="language-selection">
               <h2>Select a Programming Language to Start Your Journey!</h2>
@@ -881,7 +865,6 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
-          {/* Coding Challenge Section */}
           {currentLesson && (
             <div className="challenge-section">
               <h2>{`Challenge: ${currentLesson.title}`}</h2>
@@ -905,7 +888,6 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
-          {/* Chat Interface */}
           <div className="chat-container">
             <div className="messages">
               {(currentProject ? projects.find(p => p.name === currentProject)?.messages || messages : messages).map((msg, index) => (
