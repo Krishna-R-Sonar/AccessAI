@@ -2,10 +2,10 @@
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
-const fetch = require('node-fetch');
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Enable CORS for your frontend domain
 app.use(cors({
   origin: 'https://access-ai-iota.vercel.app',
   methods: ['GET', 'POST'],
@@ -14,8 +14,10 @@ app.use(cors({
 
 app.use(express.json());
 
+// Initialize Google Generative AI with the API key from environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Root route serving a simple HTML page
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -51,13 +53,13 @@ app.get('/', (req, res) => {
       <ul style="list-style: none;">
         <li><strong>/health</strong> - Check server status</li>
         <li><strong>/chat</strong> - POST endpoint for chat requests (used by the frontend)</li>
-        <li><strong>/tts</strong> - POST endpoint for text-to-speech conversion using Eleven Labs API</li>
       </ul>
     </body>
     </html>
   `);
 });
 
+// Basic health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
@@ -65,6 +67,7 @@ app.get('/health', (req, res) => {
 app.post('/chat', async (req, res) => {
   const { messages, input } = req.body;
 
+  // Validate request body
   if (!messages || !input) {
     console.error('Invalid request: Missing messages or input');
     return res.status(400).json({ error: 'Messages and input are required' });
@@ -78,7 +81,6 @@ app.post('/chat', async (req, res) => {
         parts: [{ text: msg.content }],
       })),
     });
-
     const result = await chat.sendMessage(input);
     const responseText = result.response.text();
     console.log('Request processed successfully:', { input, response: responseText });
@@ -89,61 +91,15 @@ app.post('/chat', async (req, res) => {
   }
 });
 
-app.post('/tts', async (req, res) => {
-  const { text } = req.body;
-
-  if (!text) {
-    console.error('Invalid TTS request: Missing text');
-    return res.status(400).json({ error: 'Text is required for TTS conversion' });
-  }
-
-  try {
-    const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-    if (!ELEVENLABS_API_KEY) {
-      throw new Error('Eleven Labs API key is not configured');
-    }
-
-    const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb', {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg',
-      },
-      body: JSON.stringify({
-        text: text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Eleven Labs API request failed with status ${response.status}: ${errorText}`);
-    }
-
-    const audioBuffer = await response.arrayBuffer();
-    res.set('Content-Type', 'audio/mpeg');
-    res.send(Buffer.from(audioBuffer));
-  } catch (error) {
-    console.error('Error in /tts endpoint:', error.message, error.stack);
-    res.status(500).json({ error: 'Failed to generate audio', details: error.message });
-  }
-});
-
-// 404 Handler with CORS headers
+// Handle 404 errors
 app.use((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://access-ai-iota.vercel.app');
+  console.warn(`404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ error: 'Route not found' });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.message, err.stack);
-  res.setHeader('Access-Control-Allow-Origin', 'https://access-ai-iota.vercel.app');
   res.status(500).json({ error: 'Internal server error' });
 });
 

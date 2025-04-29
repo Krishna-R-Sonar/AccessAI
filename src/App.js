@@ -6,21 +6,20 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './App.css';
 
+// Set the worker source to the copied pdf.worker.mjs in public/
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Backend API URL from environment variable
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
 
-const API_ENDPOINTS = {
-  CHAT: `${API_URL}/chat`,
-  TTS: `${API_URL}/tts`,
-};
-
+// Mock leaderboard data
 const leaderboardData = [
   { username: 'CodeMaster', points: 1500 },
   { username: 'SolidityStar', points: 1200 },
   { username: 'PythonPro', points: 1000 },
 ];
 
+// Learning paths for each language
 const learningPaths = {
   javascript: [
     { id: 1, title: 'Variables and Data Types', difficulty: 'Beginner', points: 50 },
@@ -59,6 +58,7 @@ const learningPaths = {
   ],
 };
 
+// Badges for milestones
 const badges = [
   { name: 'Beginner Coder', points: 100, description: 'Completed your first lesson!' },
   { name: 'Challenge Champion', points: 300, description: 'Solved 3 coding challenges!' },
@@ -98,12 +98,10 @@ function App() {
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [ttsCreditsUsed, setTtsCreditsUsed] = useState(() => {
-    const savedCredits = localStorage.getItem('ttsCreditsUsed');
-    return savedCredits ? parseInt(savedCredits, 10) : 0;
-  });
-  const [isPlaying, setIsPlaying] = useState({});
+  const messagesEndRef = useRef(null);
+  const sidebarRef = useRef(null);
 
+  // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [userProgress, setUserProgress] = useState(() => {
     const savedProgress = localStorage.getItem('userProgress');
@@ -113,19 +111,12 @@ function App() {
   const [challengeInput, setChallengeInput] = useState('');
   const [challengeResult, setChallengeResult] = useState(null);
 
-  const messagesEndRef = useRef(null);
-  const sidebarRef = useRef(null);
-
-  const TTS_CREDIT_LIMIT = 10000;
-  const TTS_WARNING_THRESHOLD = 9000;
-
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
     localStorage.setItem('userProgress', JSON.stringify(userProgress));
-    localStorage.setItem('ttsCreditsUsed', ttsCreditsUsed.toString());
     scrollToBottom();
-  }, [messages, projects, userProgress, ttsCreditsUsed]);
+  }, [messages, projects, userProgress]);
 
   useEffect(() => {
     scrollToBottom();
@@ -156,10 +147,6 @@ function App() {
   };
 
   const toggleSidebar = () => {
-    if (sidebarOpen) {
-      // When closing, move focus to the hamburger button
-      document.querySelector('.hamburger').focus();
-    }
     setSidebarOpen(prev => !prev);
   };
 
@@ -173,76 +160,8 @@ function App() {
     return 'neutral';
   };
 
-  const stripMarkdown = (markdownText) => {
-    let text = markdownText
-      .replace(/[#*`]+/g, '')
-      .replace(/\n+/g, ' ')
-      .replace(/!\[.*?\]\(.*?\)/g, '')
-      .replace(/\[.*?\]\(.*?\)/g, (match) => match.replace(/\[|\]/g, ''))
-      .trim();
-    return text;
-  };
-
-  const handleTTS = async (index, content) => {
-    if (isPlaying[index]) {
-      setIsPlaying(prev => ({ ...prev, [index]: false }));
-      return;
-    }
-
-    const textToSpeak = stripMarkdown(content);
-    const creditsForRequest = textToSpeak.length;
-
-    if (ttsCreditsUsed + creditsForRequest > TTS_CREDIT_LIMIT) {
-      alert('TTS credit limit reached for this month. Please check your Eleven Labs usage or upgrade your plan.');
-      return;
-    }
-
-    try {
-      setIsPlaying(prev => ({ ...prev, [index]: true }));
-      const response = await fetch(API_ENDPOINTS.TTS, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: textToSpeak }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch audio from server');
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-
-      audio.onended = () => {
-        setIsPlaying(prev => ({ ...prev, [index]: false }));
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      audio.onerror = () => {
-        setIsPlaying(prev => ({ ...prev, [index]: false }));
-        URL.revokeObjectURL(audioUrl);
-        alert('Failed to play audio. Please try again.');
-      };
-
-      audio.play();
-
-      setTtsCreditsUsed(prev => prev + creditsForRequest);
-      if (ttsCreditsUsed + creditsForRequest >= TTS_WARNING_THRESHOLD) {
-        alert(`Warning: You are approaching your TTS credit limit (${TTS_CREDIT_LIMIT} credits/month). Current usage: ${ttsCreditsUsed + creditsForRequest} credits.`);
-      }
-    } catch (error) {
-      console.error('Error playing TTS:', error);
-      setIsPlaying(prev => ({ ...prev, [index]: false }));
-      alert('Failed to generate audio. Please try again later.');
-    }
-  };
-
   const handleSubmit = useCallback(async (textToProcess, isStudyGuide = false) => {
     if (!textToProcess || textToProcess.trim() === '') return;
-
-    console.log('Fetching from:', API_ENDPOINTS.CHAT);  // Debug log
 
     const timestamp = new Date().toLocaleTimeString();
     const userMessage = { role: 'user', content: textToProcess, timestamp };
@@ -328,7 +247,7 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
-      const response = await fetch(API_ENDPOINTS.CHAT, {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -361,7 +280,6 @@ function App() {
         isSimulation: simulationMode,
         isCollaboration: collaborationMode,
       };
-
       setMessages(prev => [...prev, assistantMessage]);
 
       if (currentProject) {
@@ -392,7 +310,6 @@ function App() {
 
     setFileName(file.name);
     setLoading(true);
-
     try {
       let text;
       if (file.type === 'text/plain') {
@@ -494,19 +411,14 @@ function App() {
 ## Learn About AI
 
 ### What is AI?
-
 AI, or artificial intelligence, is when computers are designed to think and act like humans. I’m an AI chatbot, which means I can understand your questions and provide answers by processing lots of data.
 
 ### How Do I Work?
-
 I use a large language model to understand and generate responses. When you ask a question, I break it down into parts, search my knowledge base, and create an answer that fits your request. I’m trained on a huge amount of text data, but I don’t have access to everything, and I can make mistakes.
 
 ### Ethical Tips for Using AI
-
 - **Verify My Answers**: I might have biases or outdated information, so always double-check important facts.
-
 - **Protect Your Privacy**: Don’t share sensitive personal information with me.
-
 - **Use Me as a Tool**: I’m here to help you learn and grow, not to replace your own thinking.
 
 Would you like to learn more about a specific AI topic?
@@ -560,6 +472,7 @@ Would you like to learn more about a specific AI topic?
     }));
   };
 
+  // Gamification and Learning Path Functions
   const startLearningPath = (language) => {
     setSelectedLanguage(language);
     setCurrentLesson(null);
@@ -573,6 +486,7 @@ Would you like to learn more about a specific AI topic?
     setCurrentLesson(lesson);
     setChallengeInput('');
     setChallengeResult(null);
+
     const prompt = `Provide a detailed lesson on "${lesson.title}" for ${selectedLanguage} in Markdown format. Include:
     - A brief introduction to the topic
     - Key concepts with examples
@@ -586,8 +500,6 @@ Would you like to learn more about a specific AI topic?
   const submitChallenge = async () => {
     if (!challengeInput || !currentLesson) return;
 
-    console.log('Fetching from:', API_ENDPOINTS.CHAT);  // Debug log
-
     const prompt = `Evaluate the following ${selectedLanguage} code for the challenge in the lesson "${currentLesson.title}":
     \`\`\`${selectedLanguage}
     ${challengeInput}
@@ -598,7 +510,7 @@ Would you like to learn more about a specific AI topic?
     - If correct, award the user ${currentLesson.points} points and congratulate them
     If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
 
-    const response = await fetch(API_ENDPOINTS.CHAT, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -623,12 +535,14 @@ Would you like to learn more about a specific AI topic?
         newProgress.points += currentLesson.points;
         newProgress.completedLessons[selectedLanguage] = newProgress.completedLessons[selectedLanguage] || [];
         newProgress.completedLessons[selectedLanguage].push(currentLesson.id);
+
         badges.forEach(badge => {
           if (newProgress.points >= badge.points && !newProgress.badges.includes(badge.name)) {
             newProgress.badges.push(badge.name);
             alert(`🎉 Congratulations! You've earned the "${badge.name}" badge: ${badge.description}`);
           }
         });
+
         return newProgress;
       });
     }
@@ -669,6 +583,7 @@ Would you like to learn more about a specific AI topic?
         </div>
       )}
 
+      {/* Header */}
       <header className="header">
         <div className="header-left">
           <button className="hamburger" onClick={toggleSidebar} aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen}>
@@ -680,7 +595,6 @@ Would you like to learn more about a specific AI topic?
           <div className="user-stats">
             <span>Points: {userProgress.points}</span>
             <span>Badges: {userProgress.badges.length}</span>
-            <span>TTS Credits Used: {ttsCreditsUsed}/{TTS_CREDIT_LIMIT}</span>
           </div>
           <button onClick={toggleTheme} className="theme-toggle" aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
@@ -689,6 +603,7 @@ Would you like to learn more about a specific AI topic?
       </header>
 
       <div className="main-layout">
+        {/* Sidebar */}
         <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
           <div className="sidebar-section">
             <h2>Settings</h2>
@@ -813,7 +728,9 @@ Would you like to learn more about a specific AI topic?
           </div>
         </aside>
 
+        {/* Main Content */}
         <main className="main-content">
+          {/* Gamification Bar */}
           <div className="gamification-bar">
             {selectedLanguage && (
               <div className="progress-bar">
@@ -834,6 +751,7 @@ Would you like to learn more about a specific AI topic?
             </div>
           </div>
 
+          {/* Language Selection and Learning Path */}
           {!selectedLanguage ? (
             <div className="language-selection">
               <h2>Select a Programming Language to Start Your Journey!</h2>
@@ -878,6 +796,7 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
+          {/* Coding Challenge Section */}
           {currentLesson && (
             <div className="challenge-section">
               <h2>{`Challenge: ${currentLesson.title}`}</h2>
@@ -901,6 +820,7 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
+          {/* Chat Interface */}
           <div className="chat-container">
             <div className="messages">
               {(currentProject ? projects.find(p => p.name === currentProject)?.messages || messages : messages).map((msg, index) => (
@@ -968,13 +888,6 @@ Would you like to learn more about a specific AI topic?
                             aria-label="Share response"
                           >
                             Share
-                          </button>
-                          <button
-                            onClick={() => handleTTS(index, msg.content)}
-                            className={`action-button ${isPlaying[index] ? 'playing' : ''}`}
-                            aria-label={isPlaying[index] ? "Stop audio" : "Listen to response"}
-                          >
-                            {isPlaying[index] ? 'Stop' : 'Listen'}
                           </button>
                           {msg.language && !msg.isAudit && (
                             <>
@@ -1125,9 +1038,6 @@ Would you like to learn more about a specific AI topic?
                 Upload File
               </label>
             </div>
-            <p className="tts-note">
-              Text-to-Speech is provided by Eleven Labs. Usage is subject to their free plan limits (10,000 credits/month, ~10 minutes of audio).
-            </p>
           </div>
         </main>
       </div>
