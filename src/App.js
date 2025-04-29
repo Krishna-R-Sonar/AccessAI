@@ -10,7 +10,7 @@ import './App.css';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 // Backend API URL from environment variable
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/chat';
+const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
 
 // Mock leaderboard data
 const leaderboardData = [
@@ -136,6 +136,13 @@ function App() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
+  }, [sidebarOpen]);
+
+  // Focus management for accessibility
+  useEffect(() => {
+    if (!sidebarOpen) {
+      document.querySelector('.hamburger')?.focus();
+    }
   }, [sidebarOpen]);
 
   const scrollToBottom = () => {
@@ -296,7 +303,11 @@ function App() {
       console.error('Error:', error);
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: 'Failed to process your request. Please try again later.', timestamp: new Date().toLocaleTimeString() },
+        {
+          role: 'assistant',
+          content: `Sorry, I couldn't reach the backend server (Error: ${error.message}). Please check your connection or try again later.`,
+          timestamp: new Date().toLocaleTimeString(),
+        },
       ]);
     } finally {
       setLoading(false);
