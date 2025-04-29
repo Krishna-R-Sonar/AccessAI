@@ -134,13 +134,16 @@ app.post('/tts', async (req, res) => {
   }
 });
 
+// 404 Handler with CORS headers
 app.use((req, res) => {
-  console.warn(`404 - Route not found: ${req.method} ${req.url}`);
+  res.setHeader('Access-Control-Allow-Origin', 'https://access-ai-iota.vercel.app');
   res.status(404).json({ error: 'Route not found' });
 });
 
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.message, err.stack);
+  res.setHeader('Access-Control-Allow-Origin', 'https://access-ai-iota.vercel.app');
   res.status(500).json({ error: 'Internal server error' });
 });
 

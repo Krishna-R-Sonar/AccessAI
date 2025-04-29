@@ -10,7 +10,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-// Centralize API endpoints to avoid hardcoding mistakes
 const API_ENDPOINTS = {
   CHAT: `${API_URL}/chat`,
   TTS: `${API_URL}/tts`,
@@ -157,6 +156,10 @@ function App() {
   };
 
   const toggleSidebar = () => {
+    if (sidebarOpen) {
+      // When closing, move focus to the hamburger button
+      document.querySelector('.hamburger').focus();
+    }
     setSidebarOpen(prev => !prev);
   };
 
@@ -238,6 +241,8 @@ function App() {
 
   const handleSubmit = useCallback(async (textToProcess, isStudyGuide = false) => {
     if (!textToProcess || textToProcess.trim() === '') return;
+
+    console.log('Fetching from:', API_ENDPOINTS.CHAT);  // Debug log
 
     const timestamp = new Date().toLocaleTimeString();
     const userMessage = { role: 'user', content: textToProcess, timestamp };
@@ -580,6 +585,8 @@ Would you like to learn more about a specific AI topic?
 
   const submitChallenge = async () => {
     if (!challengeInput || !currentLesson) return;
+
+    console.log('Fetching from:', API_ENDPOINTS.CHAT);  // Debug log
 
     const prompt = `Evaluate the following ${selectedLanguage} code for the challenge in the lesson "${currentLesson.title}":
     \`\`\`${selectedLanguage}
