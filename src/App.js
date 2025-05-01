@@ -4,7 +4,6 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Button, Card, Input, Dialog, DialogContent, DialogHeader, DialogTitle, Progress } from 'aceternity-ui';
 import './App.css';
 
 // Set the worker source to the copied pdf.worker.mjs in public/
@@ -568,178 +567,139 @@ Would you like to learn more about a specific AI topic?
   };
 
   return (
-    <div className={`app-container ${theme} min-h-screen bg-gray-100 dark:bg-gray-900`}>
-      {/* Full Code View Modal */}
+    <div className={`app-container ${theme}`}>
       {fullCodeView && (
-        <Dialog open={!!fullCodeView} onOpenChange={() => setFullCodeView(null)}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Full Code View</DialogTitle>
-            </DialogHeader>
+        <div className="modal" role="dialog" aria-labelledby="full-code-view">
+          <div className="modal-content">
+            <button onClick={() => setFullCodeView(null)} className="modal-close" aria-label="Close full code view modal">
+              ✕
+            </button>
+            <h2 id="full-code-view">Full Code View</h2>
             <SyntaxHighlighter
               style={theme === 'dark' ? vscDarkPlus : vscDarkPlus}
               language={fullCodeView.language}
               showLineNumbers
               wrapLines
-              className="rounded-md"
             >
               {fullCodeView.content}
             </SyntaxHighlighter>
-            <Button
+            <button
               onClick={() => downloadCode(fullCodeView.content, fullCodeView.language)}
-              variant="default"
-              className="mt-4"
+              className="action-button"
+              aria-label="Download code"
             >
               Download Code
-            </Button>
-          </DialogContent>
-        </Dialog>
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Header */}
-      <header className="header p-4 bg-white dark:bg-gray-800 shadow-md flex justify-between items-center">
-        <div className="header-left flex items-center">
-          <Button
-            variant="ghost"
-            className="hamburger text-2xl"
-            onClick={toggleSidebar}
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-            aria-expanded={sidebarOpen}
-          >
+      <header className="header">
+        <div className="header-left">
+          <button className="hamburger" onClick={toggleSidebar} aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"} aria-expanded={sidebarOpen}>
             {sidebarOpen ? '✕' : '☰'}
-          </Button>
-          <h1 className="app-title ml-4 text-xl font-bold text-gray-900 dark:text-white">
-            AccessAI - CodeQuest
-          </h1>
+          </button>
+          <h1 className="app-title">AccessAI - CodeQuest</h1>
         </div>
-        <div className="header-right flex items-center space-x-4">
-          <div className="user-stats text-gray-700 dark:text-gray-300">
+        <div className="header-right">
+          <div className="user-stats">
             <span>Points: {userProgress.points}</span>
-            <span className="ml-4">Badges: {userProgress.badges.length}</span>
+            <span>Badges: {userProgress.badges.length}</span>
           </div>
-          <Button
-            onClick={toggleTheme}
-            variant="outline"
-            className="theme-toggle"
-            aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}
-          >
+          <button onClick={toggleTheme} className="theme-toggle" aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-          </Button>
+          </button>
         </div>
       </header>
 
-      <div className="main-layout flex">
+      <div className="main-layout">
         {/* Sidebar */}
-        <aside
-          ref={sidebarRef}
-          className={`sidebar p-4 bg-gray-50 dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } w-64 fixed h-full z-10`}
-          aria-hidden={!sidebarOpen}
-        >
-          <div className="sidebar-section mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Settings</h2>
-            <div className="settings-bar space-y-4">
-              <div>
-                <label htmlFor="tone-select" className="block text-sm text-gray-700 dark:text-gray-300">Tone:</label>
-                <select
-                  id="tone-select"
-                  value={tone}
-                  onChange={e => setTone(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="neutral">Neutral</option>
-                  <option value="formal">Formal</option>
-                  <option value="casual">Casual</option>
-                  <option value="humorous">Humorous</option>
-                  <option value="encouraging">Encouraging</option>
-                  <option value="celebratory">Celebratory</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="response-length-select" className="block text-sm text-gray-700 dark:text-gray-300">Response Length:</label>
-                <select
-                  id="response-length-select"
-                  value={responseLength}
-                  onChange={e => setResponseLength(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="short">Short</option>
-                  <option value="medium">Medium</option>
-                  <option value="long">Long</option>
-                </select>
-              </div>
-              <label className="flex items-center">
-                <input type="checkbox" checked={factCheck} onChange={e => setFactCheck(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Fact-Check</span>
+        <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
+          <div className="sidebar-section">
+            <h2>Settings</h2>
+            <div className="settings-bar">
+              <label htmlFor="tone-select">Tone:</label>
+              <select id="tone-select" value={tone} onChange={e => setTone(e.target.value)}>
+                <option value="neutral">Neutral</option>
+                <option value="formal">Formal</option>
+                <option value="casual">Casual</option>
+                <option value="humorous">Humorous</option>
+                <option value="encouraging">Encouraging</option>
+                <option value="celebratory">Celebratory</option>
+              </select>
+              <label htmlFor="response-length-select">Response Length:</label>
+              <select id="response-length-select" value={responseLength} onChange={e => setResponseLength(e.target.value)}>
+                <option value="short">Short</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
+              </select>
+              <label>
+                <input type="checkbox" checked={factCheck} onChange={e => setFactCheck(e.target.checked)} />
+                Fact-Check
               </label>
-              <label className="flex items-center">
-                <input type="checkbox" checked={showReasoning} onChange={e => setShowReasoning(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Show Reasoning</span>
+              <label>
+                <input type="checkbox" checked={showReasoning} onChange={e => setShowReasoning(e.target.checked)} />
+                Show Reasoning
               </label>
-              <label className="flex items-center">
-                <input type="checkbox" checked={detailedMode} onChange={e => setDetailedMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Detailed Mode</span>
+              <label>
+                <input type="checkbox" checked={detailedMode} onChange={e => setDetailedMode(e.target.checked)} />
+                Detailed Mode
               </label>
-              <label className={`flex items-center ${codeMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={codeMode} onChange={e => setCodeMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Code Mode</span>
+              <label className={codeMode ? 'code-mode-active' : ''}>
+                <input type="checkbox" checked={codeMode} onChange={e => setCodeMode(e.target.checked)} />
+                Code Mode
               </label>
-              <label className={`flex items-center ${auditMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={auditMode} onChange={e => setAuditMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Audit Mode</span>
+              <label className={auditMode ? 'audit-mode-active' : ''}>
+                <input type="checkbox" checked={auditMode} onChange={e => setAuditMode(e.target.checked)} />
+                Audit Mode
               </label>
-              <label className={`flex items-center ${emotionDetection ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={emotionDetection} onChange={e => setEmotionDetection(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Emotion Detection</span>
+              <label className={emotionDetection ? 'emotion-detection-active' : ''}>
+                <input type="checkbox" checked={emotionDetection} onChange={e => setEmotionDetection(e.target.checked)} />
+                Emotion Detection
               </label>
-              <label className={`flex items-center ${criticalThinkingMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={criticalThinkingMode} onChange={e => setCriticalThinkingMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Critical Thinking</span>
+              <label className={criticalThinkingMode ? 'critical-thinking-active' : ''}>
+                <input type="checkbox" checked={criticalThinkingMode} onChange={e => setCriticalThinkingMode(e.target.checked)} />
+                Critical Thinking
               </label>
-              <label className={`flex items-center ${offlineMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={offlineMode} onChange={e => setOfflineMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Offline Mode</span>
+              <label className={offlineMode ? 'offline-mode-active' : ''}>
+                <input type="checkbox" checked={offlineMode} onChange={e => setOfflineMode(e.target.checked)} />
+                Offline Mode
               </label>
-              <label className={`flex items-center ${simulationMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={simulationMode} onChange={e => setSimulationMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Simulation Mode</span>
+              <label className={simulationMode ? 'simulation-mode-active' : ''}>
+                <input type="checkbox" checked={simulationMode} onChange={e => setSimulationMode(e.target.checked)} />
+                Simulation Mode
               </label>
-              <label className={`flex items-center ${aiLiteracyMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={aiLiteracyMode} onChange={e => setAiLiteracyMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">AI Literacy Mode</span>
+              <label className={aiLiteracyMode ? 'ai-literacy-active' : ''}>
+                <input type="checkbox" checked={aiLiteracyMode} onChange={e => setAiLiteracyMode(e.target.checked)} />
+                AI Literacy Mode
               </label>
-              <label className={`flex items-center ${collaborationMode ? 'text-blue-600 dark:text-blue-400' : ''}`}>
-                <input type="checkbox" checked={collaborationMode} onChange={e => setCollaborationMode(e.target.checked)} className="mr-2" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Collaboration Mode</span>
+              <label className={collaborationMode ? 'collaboration-mode-active' : ''}>
+                <input type="checkbox" checked={collaborationMode} onChange={e => setCollaborationMode(e.target.checked)} />
+                Collaboration Mode
               </label>
               {(codeMode || auditMode) && (
-                <div>
-                  <label htmlFor="code-language-select" className="block text-sm text-gray-700 dark:text-gray-300">Code Language:</label>
-                  <select
-                    id="code-language-select"
-                    value={codeLanguage}
-                    onChange={e => setCodeLanguage(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
+                <>
+                  <label htmlFor="code-language-select">Code Language:</label>
+                  <select id="code-language-select" value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)}>
                     <option value="javascript">JavaScript</option>
                     <option value="python">Python</option>
                     <option value="java">Java</option>
                     <option value="cpp">C++</option>
                     <option value="solidity">Solidity</option>
                   </select>
-                </div>
+                </>
               )}
-              <Button onClick={generateStudyGuide} variant="default" className="w-full">
+              <button onClick={generateStudyGuide} className="study-guide-button">
                 Generate Study Guide
-              </Button>
+              </button>
             </div>
           </div>
-          <div className="sidebar-section mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Projects</h2>
-            <div className="projects-bar space-y-4">
-              <label htmlFor="project-input" className="block text-sm text-gray-700 dark:text-gray-300">Project Name:</label>
-              <Input
+          <div className="sidebar-section">
+            <h2>Projects</h2>
+            <div className="projects-bar">
+              <label htmlFor="project-input">Project Name:</label>
+              <input
                 id="project-input"
                 type="text"
                 placeholder="Project Name"
@@ -747,152 +707,142 @@ Would you like to learn more about a specific AI topic?
                 onChange={e => setCurrentProject(e.target.value)}
                 className="project-input"
               />
-              <div className="project-list space-y-2">
+              <div className="project-list">
                 {projects.map(project => (
-                  <Button
+                  <button
                     key={project.name}
                     onClick={() => {
                       setCurrentProject(project.name);
                       setMessages(project.messages);
                     }}
-                    variant={currentProject === project.name ? 'default' : 'outline'}
-                    className="w-full"
+                    className={currentProject === project.name ? 'active' : ''}
                   >
                     {project.name}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="sidebar-section space-y-2">
-            <Button onClick={clearChat} variant="outline" className="w-full" aria-label="Clear chat">
+          <div className="sidebar-section">
+            <button onClick={clearChat} className="sidebar-button" aria-label="Clear chat">
               Clear Chat
-            </Button>
-            <Button onClick={resetContext} variant="outline" className="w-full" aria-label="Reset context">
+            </button>
+            <button onClick={resetContext} className="sidebar-button" aria-label="Reset context">
               Reset Context
-            </Button>
-            <Button onClick={exportChat} variant="outline" className="w-full" aria-label="Export chat">
+            </button>
+            <button onClick={exportChat} className="sidebar-button" aria-label="Export chat">
               Export Chat
-            </Button>
-            <Button onClick={learnAboutAI} variant="outline" className="w-full" aria-label="Learn about AI">
+            </button>
+            <button onClick={learnAboutAI} className="sidebar-button" aria-label="Learn about AI">
               Learn About AI
-            </Button>
+            </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className={`main-content flex-1 p-6 ${sidebarOpen ? 'ml-64' : 'ml-0'} transition-all duration-300`}>
+        <main className="main-content">
           {/* Gamification Bar */}
-          <div className="gamification-bar mb-6">
+          <div className="gamification-bar">
             {selectedLanguage && (
-              <div className="progress-bar mb-4">
-                <Progress value={getProgressPercentage()} className="w-full" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{`Progress: ${Math.round(getProgressPercentage())}%`}</span>
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${getProgressPercentage()}%` }}
+                ></div>
+                <span>{`Progress: ${Math.round(getProgressPercentage())}%`}</span>
               </div>
             )}
-            <Card className="leaderboard p-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Leaderboard</h2>
-              <ul className="space-y-1">
+            <div className="leaderboard">
+              <h2>Leaderboard</h2>
+              <ul>
                 {leaderboardData.map((entry, index) => (
-                  <li key={index} className="text-sm text-gray-700 dark:text-gray-300">{`${entry.username}: ${entry.points} points`}</li>
+                  <li key={index}>{`${entry.username}: ${entry.points} points`}</li>
                 ))}
               </ul>
-            </Card>
+            </div>
           </div>
 
           {/* Language Selection and Learning Path */}
           {!selectedLanguage ? (
-            <Card className="language-selection p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Select a Programming Language to Start Your Journey!
-              </h2>
-              <div className="language-options grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="language-selection">
+              <h2>Select a Programming Language to Start Your Journey!</h2>
+              <div className="language-options">
                 {Object.keys(learningPaths).map(lang => (
-                  <Button
+                  <button
                     key={lang}
                     onClick={() => startLearningPath(lang)}
-                    variant="default"
                     className="language-button"
                   >
                     {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                  </Button>
+                  </button>
                 ))}
               </div>
-            </Card>
+            </div>
           ) : (
-            <Card className="learning-path p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}
-                </h2>
-                <Button onClick={() => setSelectedLanguage('')} variant="outline" className="back-button">
-                  Back to Language Selection
-                </Button>
-              </div>
-              <div className="lessons-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="learning-path">
+              <h2>{`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}</h2>
+              <button onClick={() => setSelectedLanguage('')} className="back-button">
+                Back to Language Selection
+              </button>
+              <div className="lessons-list">
                 {learningPaths[selectedLanguage].map(lesson => (
-                  <Card
+                  <div
                     key={lesson.id}
-                    className={`lesson-card p-4 ${
-                      userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'bg-green-50 dark:bg-green-900' : ''
+                    className={`lesson-card ${
+                      userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'completed' : ''
                     }`}
                   >
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{lesson.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Difficulty: {lesson.difficulty}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Points: {lesson.points}</p>
-                    <Button
+                    <h3>{lesson.title}</h3>
+                    <p>Difficulty: {lesson.difficulty}</p>
+                    <p>Points: {lesson.points}</p>
+                    <button
                       onClick={() => startLesson(lesson)}
                       disabled={currentLesson?.id === lesson.id}
-                      variant="default"
-                      className="mt-2 w-full"
                     >
                       {currentLesson?.id === lesson.id ? 'In Progress' : 'Start Lesson'}
-                    </Button>
-                  </Card>
+                    </button>
+                  </div>
                 ))}
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Coding Challenge Section */}
           {currentLesson && (
-            <Card className="challenge-section p-6 mt-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{`Challenge: ${currentLesson.title}`}</h2>
-              <label htmlFor="code-editor" className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                Write your code below:
-              </label>
+            <div className="challenge-section">
+              <h2>{`Challenge: ${currentLesson.title}`}</h2>
+              <label htmlFor="code-editor">Write your code below:</label>
               <textarea
                 id="code-editor"
                 value={challengeInput}
                 onChange={e => setChallengeInput(e.target.value)}
                 placeholder="Write your code here..."
-                className="code-editor w-full h-40 p-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="code-editor"
+                rows={10}
               />
-              <Button onClick={submitChallenge} variant="default" className="submit-challenge mt-4">
+              <button onClick={submitChallenge} className="submit-challenge">
                 Submit Solution
-              </Button>
+              </button>
               {challengeResult && (
-                <div className="challenge-result mt-4">
+                <div className="challenge-result">
                   <ReactMarkdown>{challengeResult}</ReactMarkdown>
                 </div>
               )}
-            </Card>
+            </div>
           )}
 
           {/* Chat Interface */}
-          <Card className="chat-container p-6 mt-6">
-            <div className="messages h-96 overflow-y-auto mb-4">
+          <div className="chat-container">
+            <div className="messages">
               {(currentProject ? projects.find(p => p.name === currentProject)?.messages || messages : messages).map((msg, index) => (
-                <Card
+                <div
                   key={index}
-                  className={`message mb-4 p-4 ${
-                    msg.role === 'user' ? 'bg-blue-50 dark:bg-blue-900 ml-auto' : 'bg-gray-50 dark:bg-gray-800'
-                  } max-w-lg ${msg.role === 'user' ? 'ml-auto' : 'mr-auto'} animate-fade-in`}
+                  className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}
                 >
                   <div className="message-content">
                     {msg.role === 'assistant' ? (
                       <>
-                        <div className="response-meta flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <div className="response-meta">
                           <span>Tone: {msg.tone || 'N/A'}</span>
                           <span>Length: {msg.responseLength || 'N/A'}</span>
                           {msg.language && <span>Language: {msg.language}</span>}
@@ -928,119 +878,100 @@ Would you like to learn more about a specific AI topic?
                             {msg.content}
                           </ReactMarkdown>
                         </div>
-                        <div className="response-actions flex flex-wrap gap-2 mt-2">
-                          <Button
+                        <div className="response-actions">
+                          <button
                             onClick={() => copyToClipboard(msg.content)}
-                            variant="outline"
-                            size="sm"
+                            className="action-button"
                             aria-label="Copy response"
                           >
                             Copy
-                          </Button>
-                          <Button
+                          </button>
+                          <button
                             onClick={() => editResponse(index, msg.content)}
-                            variant="outline"
-                            size="sm"
+                            className="action-button"
                             aria-label="Edit response"
                           >
                             Edit
-                          </Button>
-                          <Button
+                          </button>
+                          <button
                             onClick={() => shareResponse(index, msg.content)}
-                            variant="outline"
-                            size="sm"
+                            className="action-button"
                             aria-label="Share response"
                           >
                             Share
-                          </Button>
+                          </button>
                           {msg.language && !msg.isAudit && (
                             <>
-                              <Button
+                              <button
                                 onClick={() => setFullCodeView({ content: msg.content, language: msg.language })}
-                                variant="outline"
-                                size="sm"
+                                className="action-button"
                                 aria-label="View full code"
                               >
                                 Full Code View
-                              </Button>
-                              <Button
+                              </button>
+                              <button
                                 onClick={() => downloadCode(msg.content, msg.language)}
-                                variant="outline"
-                                size="sm"
+                                className="action-button"
                                 aria-label="Download code"
                               >
                                 Download Code
-                              </Button>
+                              </button>
                             </>
                           )}
-                          <Button
+                          <button
                             onClick={() => handleFeedback(index, 'like')}
-                            variant="outline"
-                            size="sm"
-                            className={feedback[index] === 'like' ? 'text-blue-600 dark:text-blue-400' : ''}
+                            className={`action-button ${feedback[index] === 'like' ? 'active' : ''}`}
                             aria-label="Like response"
                           >
                             👍
-                          </Button>
-                          <Button
+                          </button>
+                          <button
                             onClick={() => handleFeedback(index, 'dislike')}
-                            variant="outline"
-                            size="sm"
-                            className={feedback[index] === 'dislike' ? 'text-red-600 dark:text-red-400' : ''}
+                            className={`action-button ${feedback[index] === 'dislike' ? 'active' : ''}`}
                             aria-label="Dislike response"
                           >
                             👎
-                          </Button>
+                          </button>
                           {msg.language && !msg.isAudit && (
                             <>
-                              <Button
+                              <button
                                 onClick={() => handleFeedback(index, 'works')}
-                                variant="outline"
-                                size="sm"
-                                className={feedback[index] === 'works' ? 'text-green-600 dark:text-green-400' : ''}
+                                className={`action-button ${feedback[index] === 'works' ? 'active' : ''}`}
                                 aria-label="Code works"
                               >
                                 Works
-                              </Button>
-                              <Button
+                              </button>
+                              <button
                                 onClick={() => handleFeedback(index, 'errors')}
-                                variant="outline"
-                                size="sm"
-                                className={feedback[index] === 'errors' ? 'text-red-600 dark:text-red-400' : ''}
+                                className={`action-button ${feedback[index] === 'errors' ? 'active' : ''}`}
                                 aria-label="Code has errors"
                               >
                                 Errors
-                              </Button>
+                              </button>
                             </>
                           )}
                           {msg.isAudit && (
                             <>
-                              <Button
+                              <button
                                 onClick={() => handleFeedback(index, 'helpful')}
-                                variant="outline"
-                                size="sm"
-                                className={feedback[index] === 'helpful' ? 'text-green-600 dark:text-green-400' : ''}
+                                className={`action-button ${feedback[index] === 'helpful' ? 'active' : ''}`}
                                 aria-label="Audit helpful"
                               >
                                 Helpful
-                              </Button>
-                              <Button
+                              </button>
+                              <button
                                 onClick={() => handleFeedback(index, 'not-helpful')}
-                                variant="outline"
-                                size="sm"
-                                className={feedback[index] === 'not-helpful' ? 'text-red-600 dark:text-red-400' : ''}
+                                className={`action-button ${feedback[index] === 'not-helpful' ? 'active' : ''}`}
                                 aria-label="Audit not helpful"
                               >
                                 Not Helpful
-                              </Button>
+                              </button>
                             </>
                           )}
                         </div>
-                        <div className="comment-section mt-4">
-                          <label htmlFor={`comment-input-${index}`} className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
-                            Add a comment:
-                          </label>
-                          <Input
+                        <div className="comment-section">
+                          <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
+                          <input
                             id={`comment-input-${index}`}
                             type="text"
                             placeholder="Add a comment..."
@@ -1054,7 +985,7 @@ Would you like to learn more about a specific AI topic?
                             aria-label="Add comment"
                           />
                           {(comments[index] || []).map((comment, i) => (
-                            <div key={i} className="comment mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div key={i} className="comment">
                               <p>{comment.text}</p>
                               <span className="timestamp">{comment.timestamp}</span>
                             </div>
@@ -1062,67 +993,63 @@ Would you like to learn more about a specific AI topic?
                         </div>
                       </>
                     ) : (
-                      <p className="text-gray-900 dark:text-white">{msg.content}</p>
+                      <p>{msg.content}</p>
                     )}
-                    <span className="timestamp block text-xs text-gray-500 dark:text-gray-400 mt-2">{msg.timestamp}</span>
+                    <span className="timestamp">{msg.timestamp}</span>
                   </div>
-                </Card>
+                </div>
               ))}
               {loading && (
-                <Card className="message bot-message p-4 mb-4 animate-fade-in">
-                  <div className="message-content flex justify-center">
-                    <div className="spinner h-6 w-6 border-4 border-t-blue-600 border-gray-200 rounded-full animate-spin" role="status" aria-label="Loading"></div>
+                <div className="message bot-message fade-in">
+                  <div className="message-content">
+                    <div className="spinner" role="status" aria-label="Loading"></div>
                   </div>
-                </Card>
+                </div>
               )}
               {fileName && !loading && (
-                <Card className="message user-message p-4 mb-4 ml-auto max-w-lg animate-fade-in">
+                <div className="message user-message fade-in">
                   <div className="message-content">
-                    <p className="text-gray-900 dark:text-white">Uploaded: {fileName}</p>
+                    <p>Uploaded: {fileName}</p>
                   </div>
-                </Card>
+                </div>
               )}
               <div ref={messagesEndRef} />
             </div>
-            <div className="input-container flex items-center space-x-4">
-              <Input
+            <div className="input-container">
+              <label htmlFor="chat-input">Type your message:</label>
+              <input
                 id="chat-input"
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
+                className="chat-input"
                 placeholder="Type your message or paste code..."
                 disabled={loading}
                 aria-label="Chat input"
-                className="flex-1"
               />
-              <Button
+              <button
                 onClick={() => handleSubmit(input)}
-                variant="default"
+                className="send-button"
                 disabled={loading}
                 aria-label="Send message"
               >
                 Send
-              </Button>
+              </button>
               <input
                 type="file"
                 accept=".txt,.pdf,image/*"
                 onChange={handleFileUpload}
-                className="hidden"
+                className="file-input"
                 disabled={loading}
                 aria-label="Upload files"
                 id="file-upload"
               />
-              <Button
-                variant="outline"
-                as="label"
-                htmlFor="file-upload"
-                disabled={loading}
-              >
+              <label htmlFor="file-upload" className="file-label">
                 Upload File
-              </Button>
+              </label>
             </div>
-          </Card>
+          </div>
         </main>
       </div>
     </div>

@@ -1,42 +1,957 @@
 /* Filename: src/App.css */
-
-/* Custom animation for fade-in effect */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-    filter: blur(2px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+.app-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Ensure the sidebar transition is smooth */
+.app-container.light {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container.dark {
+  background-color: #1e1e1e;
+  color: #ddd;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.app-container.dark .header {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.3s;
+}
+
+.app-container.dark .hamburger {
+  color: #ddd;
+}
+
+.hamburger:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.app-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.user-stats span {
+  background-color: #e9ecef;
+  padding: 5px 10px;
+  border-radius: 12px;
+}
+
+.app-container.dark .user-stats span {
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+.theme-toggle {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #6c757d;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .theme-toggle {
+  background-color: #adb5bd;
+  color: #1e1e1e;
+}
+
+.theme-toggle:hover {
+  background-color: #5a6268;
+}
+
+.app-container.dark .theme-toggle:hover {
+  background-color: #8a9095;
+}
+
+.theme-toggle:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Main Layout */
+.main-layout {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 70px);
+}
+
+/* Sidebar Styles */
 .sidebar {
+  width: 250px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-right: 1px solid #ddd;
   transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+  z-index: 1000;
 }
 
-/* Style for the code editor textarea */
+.app-container.dark .sidebar {
+  background-color: #2c2c2c;
+  border-right: 1px solid #444;
+}
+
+.sidebar-section {
+  margin-bottom: 20px;
+}
+
+.sidebar-section h2 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.settings-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-bar label {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.settings-bar select,
+.settings-bar label,
+.settings-bar button {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container.dark .settings-bar select,
+.app-container.dark .settings-bar label,
+.app-container.dark .settings-bar button {
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+.settings-bar label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.app-container.dark .settings-bar label {
+  border: 1px solid #444;
+}
+
+.settings-bar select:focus,
+.settings-bar input:focus,
+.settings-bar button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.code-mode-active,
+.audit-mode-active,
+.emotion-detection-active,
+.critical-thinking-active,
+.offline-mode-active,
+.simulation-mode-active,
+.ai-literacy-active,
+.collaboration-mode-active {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.app-container.dark .code-mode-active,
+.app-container.dark .audit-mode-active,
+.app-container.dark .emotion-detection-active,
+.app-container.dark .critical-thinking-active,
+.app-container.dark .offline-mode-active,
+.app-container.dark .simulation-mode-active,
+.app-container.dark .ai-literacy-active,
+.app-container.dark .collaboration-mode-active {
+  color: #66b0ff;
+}
+
+.projects-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container.dark .project-input {
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+.project-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.project-list button {
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  background-color: #6c757d;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .project-list button {
+  background-color: #adb5bd;
+  color: #1e1e1e;
+}
+
+.project-list button.active {
+  background-color: #007bff;
+}
+
+.app-container.dark .project-list button.active {
+  background-color: #66b0ff;
+}
+
+.project-list button:hover {
+  background-color: #5a6268;
+}
+
+.app-container.dark .project-list button:hover {
+  background-color: #8a9095;
+}
+
+.project-list button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.sidebar-button {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .sidebar-button {
+  background-color: #66b0ff;
+}
+
+.sidebar-button:hover {
+  background-color: #0056b3;
+}
+
+.app-container.dark .sidebar-button:hover {
+  background-color: #4a8fe6;
+}
+
+.sidebar-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Main Content Styles */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Gamification Bar */
+.gamification-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.app-container.dark .gamification-bar {
+  background-color: #3a3a3a;
+}
+
+.progress-bar {
+  flex: 1;
+  margin: 0 20px;
+  background-color: #ddd;
+  border-radius: 5px;
+  height: 20px;
+  position: relative;
+}
+
+.app-container.dark .progress-bar {
+  background-color: #444;
+}
+
+.progress-fill {
+  background-color: #28a745;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease-in-out;
+}
+
+.app-container.dark .progress-fill {
+  background-color: #38c172;
+}
+
+.progress-bar span {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #333;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.app-container.dark .progress-bar span {
+  color: #ddd;
+}
+
+.leaderboard {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-container.dark .leaderboard {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.leaderboard h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.leaderboard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard li {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+/* Language Selection Styles */
+.language-selection {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.language-selection h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.language-options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.language-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.app-container.dark .language-button {
+  background-color: #66b0ff;
+}
+
+.language-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.app-container.dark .language-button:hover {
+  background-color: #4a8fe6;
+}
+
+.language-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Learning Path Styles */
+.learning-path {
+  margin-bottom: 30px;
+}
+
+.learning-path h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.back-button {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .back-button {
+  background-color: #adb5bd;
+  color: #1e1e1e;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+.app-container.dark .back-button:hover {
+  background-color: #8a9095;
+}
+
+.back-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.lessons-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.lesson-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.app-container.dark .lesson-card {
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lesson-card.completed {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.app-container.dark .lesson-card.completed {
+  background-color: #2e6b3e;
+  border-color: #1f4b2b;
+}
+
+.lesson-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.app-container.dark .lesson-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.lesson-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.lesson-card p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.lesson-card button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .lesson-card button {
+  background-color: #38c172;
+}
+
+.lesson-card button:hover {
+  background-color: #218838;
+}
+
+.app-container.dark .lesson-card button:hover {
+  background-color: #2a9d5c;
+}
+
+.lesson-card button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.app-container.dark .lesson-card button:disabled {
+  background-color: #adb5bd;
+}
+
+.lesson-card button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Challenge Section Styles */
+.challenge-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-container.dark .challenge-section {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.challenge-section h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.challenge-section label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
 .code-editor {
+  width: 100%;
+  padding: 10px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   resize: vertical;
+  margin-bottom: 15px;
+  background-color: #fff;
+  color: #333;
 }
 
-/* Optional: Add hover effects for cards */
-.card:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease-in-out;
+.app-container.dark .code-editor {
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #ddd;
 }
 
-/* Spinner animation */
+.code-editor:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.submit-challenge {
+  display: block;
+  margin: 0 auto;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .submit-challenge {
+  background-color: #66b0ff;
+}
+
+.submit-challenge:hover {
+  background-color: #0056b3;
+}
+
+.app-container.dark .submit-challenge:hover {
+  background-color: #4a8fe6;
+}
+
+.submit-challenge:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.challenge-result {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.app-container.dark .challenge-result {
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+}
+
+/* Chat Interface Styles */
+.chat-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.app-container.dark .chat-container {
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+}
+
+.messages {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 10px;
+}
+
+.message {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.user-message {
+  background-color: #007bff;
+  color: white;
+  margin-left: 20%;
+  margin-right: 5%;
+}
+
+.app-container.dark .user-message {
+  background-color: #66b0ff;
+}
+
+.bot-message {
+  background-color: #e9ecef;
+  margin-right: 20%;
+  margin-left: 5%;
+}
+
+.app-container.dark .bot-message {
+  background-color: #3a3a3a;
+}
+
+.message-content {
+  position: relative;
+}
+
+.response-meta {
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+
+.app-container.dark .response-meta {
+  color: #adb5bd;
+}
+
+.response-meta span {
+  margin-right: 10px;
+}
+
+.response-body {
+  margin-bottom: 10px;
+}
+
+.response-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #6c757d;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .action-button {
+  background-color: #adb5bd;
+  color: #1e1e1e;
+}
+
+.action-button:hover {
+  background-color: #5a6268;
+}
+
+.app-container.dark .action-button:hover {
+  background-color: #8a9095;
+}
+
+.action-button.active {
+  background-color: #007bff;
+}
+
+.app-container.dark .action-button.active {
+  background-color: #66b0ff;
+}
+
+.action-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.comment-section {
+  margin-top: 10px;
+}
+
+.comment-section label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container.dark .comment-input {
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+.comment-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.comment {
+  background-color: #f8f9fa;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.app-container.dark .comment {
+  background-color: #3a3a3a;
+}
+
+.comment p {
+  margin: 0;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #6c757d;
+  display: block;
+  margin-top: 5px;
+}
+
+.app-container.dark .timestamp {
+  color: #adb5bd;
+}
+
+.input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.input-container label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.app-container.dark .chat-input {
+  border: 1px solid #444;
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+.chat-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.send-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .send-button {
+  background-color: #66b0ff;
+}
+
+.send-button:hover {
+  background-color: #0056b3;
+}
+
+.app-container.dark .send-button:hover {
+  background-color: #4a8fe6;
+}
+
+.send-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.app-container.dark .send-button:disabled {
+  background-color: #adb5bd;
+}
+
+.send-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .file-label {
+  background-color: #38c172;
+}
+
+.file-label:hover {
+  background-color: #218838;
+}
+
+.app-container.dark .file-label:hover {
+  background-color: #2a9d5c;
+}
+
+.file-label:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #007bff;
@@ -44,6 +959,7 @@
   width: 24px;
   height: 24px;
   animation: spin 1s linear infinite;
+  margin: 0 auto;
 }
 
 .app-container.dark .spinner {
@@ -56,8 +972,174 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive adjustments for the sidebar on mobile */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  max-width: 80%;
+  max-height: 80%;
+  overflow: auto;
+  position: relative;
+}
+
+.app-container.dark .modal-content {
+  background-color: #2c2c2c;
+}
+
+.modal-content h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #333;
+}
+
+.app-container.dark .modal-close {
+  color: #ddd;
+}
+
+.modal-close:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Responsive Design with Multiple Breakpoints */
+
+/* Large Screens (Above 1200px) */
+@media (min-width: 1200px) {
+  .app-title {
+    font-size: 24px;
+  }
+
+  .user-stats {
+    gap: 15px;
+    font-size: 14px;
+  }
+
+  .gamification-bar {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 24px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .input-container {
+    flex-direction: row;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    width: auto;
+  }
+}
+
+/* Medium Screens (1024px - 1200px) */
+@media (max-width: 1200px) {
+  .app-title {
+    font-size: 22px;
+  }
+
+  .user-stats {
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .gamification-bar {
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 22px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+  .app-title {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .gamification-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 20px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .lesson-card h3 {
+    font-size: 16px;
+  }
+
+  .lesson-card p {
+    font-size: 12px;
+  }
+}
+
+/* Mobile Devices (Below 768px) */
 @media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
   .sidebar {
     position: fixed;
     top: 0;
@@ -70,5 +1152,175 @@
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .gamification-bar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .progress-bar {
+    margin: 0;
+  }
+
+  .language-options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .language-button {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .lessons-list {
+    grid-template-columns: 1fr;
+  }
+
+  .input-container {
+    flex-direction: column;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    width: 100%;
+  }
+
+  .user-message {
+    margin-left: 10%;
+    margin-right: 5%;
+  }
+
+  .bot-message {
+    margin-right: 10%;
+    margin-left: 5%;
+  }
+}
+
+/* Small Mobile Devices (Below 480px) */
+@media (max-width: 480px) {
+  .app-title {
+    font-size: 18px;
+  }
+
+  .user-stats {
+    flex-direction: column;
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .header-right {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 18px;
+  }
+
+  .lesson-card {
+    padding: 10px;
+  }
+
+  .lesson-card h3 {
+    font-size: 14px;
+  }
+
+  .lesson-card p {
+    font-size: 11px;
+  }
+
+  .lesson-card button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .code-editor {
+    font-size: 12px;
+  }
+
+  .submit-challenge {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .response-meta {
+    font-size: 10px;
+  }
+
+  .action-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
+/* Very Small Devices (Below 360px) */
+@media (max-width: 360px) {
+  .app-title {
+    font-size: 16px;
+  }
+
+  .hamburger {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    font-size: 10px;
+  }
+
+  .language-selection h2,
+  .learning-path h2,
+  .challenge-section h2 {
+    font-size: 16px;
+  }
+
+  .language-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .lesson-card h3 {
+    font-size: 12px;
+  }
+
+  .lesson-card p {
+    font-size: 10px;
+  }
+
+  .code-editor {
+    font-size: 11px;
+  }
+
+  .submit-challenge {
+    font-size: 11px;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label {
+    font-size: 11px;
   }
 }
