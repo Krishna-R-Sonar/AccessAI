@@ -2,22 +2,59 @@
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const session = require('express-session');
+require('dotenv').config();
+
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Enable CORS for your frontend domain
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI).then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Middleware
 app.use(cors({
   origin: 'https://access-ai-iota.vercel.app',
   methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+app.use(express.json());
+app.use(session({
+  secret: process.env.JWT_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' },
 }));
 
-app.use(express.json());
-
-// Initialize Google Generative AI with the API key from environment variables
+// Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Root route serving a simple HTML page
+// User Schema
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  points: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+const User = mongoose.model('User', userSchema);
+
+// Middleware to verify JWT token
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return next();
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+};
+
+// Root route
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -27,22 +64,10 @@ app.get('/', (req, res) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>AccessAI Backend</title>
       <style>
-        body {
-          font-family: Arial, sans-serif;
-          text-align: center;
-          padding: 50px;
-          background-color: #f4f4f4;
-        }
-        h1 {
-          color: #333;
-        }
-        a {
-          color: #007bff;
-          text-decoration: none;
-        }
-        a:hover {
-          text-decoration: underline;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+        h1 { color: #333; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
       </style>
     </head>
     <body>
@@ -52,25 +77,119 @@ app.get('/', (req, res) => {
       <p>Available endpoints:</p>
       <ul style="list-style: none;">
         <li><strong>/health</strong> - Check server status</li>
-        <li><strong>/chat</strong> - POST endpoint for chat requests (used by the frontend)</li>
+        <li><strong>/chat</strong> - POST endpoint for chat requests</li>
+        <li><strong>/signup</strong> - POST endpoint for user signup</li>
+        <li><strong>/login</strong> - POST endpoint for user login</li>
+        <li><strong>/leaderboard</strong> - GET endpoint for leaderboard data</li>
       </ul>
     </body>
     </html>
   `);
 });
 
-// Basic health check endpoint
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-app.post('/chat', async (req, res) => {
-  const { messages, input } = req.body;
+// Signup endpoint
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
 
-  // Validate request body
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ email, password: hashedPassword });
+    await user.save();
+
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(201).json({ token, user: { email: user.email, points: user.points } });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Failed to sign up' });
+  }
+});
+
+// Login endpoint
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid email or password' });
+    }
+
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token, user: { email: user.email, points: user.points } });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+// Update user points (called after completing a lesson)
+app.post('/update-points', authenticateToken, async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { points } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    user.points += points;
+    await user.save();
+    res.status(200).json({ points: user.points });
+  } catch (error) {
+    console.error('Error updating points:', error);
+    res.status(500).json({ error: 'Failed to update points' });
+  }
+});
+
+// Dynamic leaderboard endpoint
+app.get('/leaderboard', async (req, res) => {
+  try {
+    const users = await User.find().sort({ points: -1 }).limit(5);
+    const leaderboard = users.map(user => ({
+      username: user.email.split('@')[0],
+      points: user.points,
+    }));
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+// Chat endpoint with credit system for non-logged-in users
+app.post('/chat', authenticateToken, async (req, res) => {
+  const { messages, input, credits } = req.body;
+
   if (!messages || !input) {
     console.error('Invalid request: Missing messages or input');
     return res.status(400).json({ error: 'Messages and input are required' });
+  }
+
+  // If user is not logged in, check credits
+  if (!req.user) {
+    if (credits <= 0) {
+      return res.status(403).json({ error: 'No credits left. Please sign up or log in to continue.' });
+    }
   }
 
   try {
@@ -84,7 +203,10 @@ app.post('/chat', async (req, res) => {
     const result = await chat.sendMessage(input);
     const responseText = result.response.text();
     console.log('Request processed successfully:', { input, response: responseText });
-    res.json({ response: responseText });
+
+    // Decrement credits for non-logged-in users
+    const updatedCredits = req.user ? credits : credits - 1;
+    res.json({ response: responseText, credits: updatedCredits });
   } catch (error) {
     console.error('Error processing request:', error.message, error.stack);
     res.status(500).json({ error: 'Something went wrong', details: error.message });

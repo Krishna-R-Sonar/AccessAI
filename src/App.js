@@ -4,6 +4,8 @@ import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 
 // Set the worker source to the copied pdf.worker.mjs in public/
@@ -11,13 +13,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
 // Backend API URL from environment variable
 const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
-
-// Mock leaderboard data
-const leaderboardData = [
-  { username: 'CodeMaster', points: 1500 },
-  { username: 'SolidityStar', points: 1200 },
-  { username: 'PythonPro', points: 1000 },
-];
 
 // Learning paths for each language
 const learningPaths = {
@@ -98,8 +93,18 @@ function App() {
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [credits, setCredits] = useState(() => {
+    const savedCredits = localStorage.getItem('credits');
+    return savedCredits ? parseInt(savedCredits) : 5;
+  });
+  const [leaderboardData, setLeaderboardData] = useState([]);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
+  const navigate = useNavigate();
 
   // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -110,13 +115,15 @@ function App() {
   const [currentLesson, setCurrentLesson] = useState(null);
   const [challengeInput, setChallengeInput] = useState('');
   const [challengeResult, setChallengeResult] = useState(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
     localStorage.setItem('userProgress', JSON.stringify(userProgress));
+    localStorage.setItem('credits', credits.toString());
     scrollToBottom();
-  }, [messages, projects, userProgress]);
+  }, [messages, projects, userProgress, credits]);
 
   useEffect(() => {
     scrollToBottom();
@@ -145,6 +152,19 @@ function App() {
     }
   }, [sidebarOpen]);
 
+  // Fetch dynamic leaderboard
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await axios.get('https://accessai-onh4.onrender.com/leaderboard');
+        setLeaderboardData(response.data);
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+      }
+    };
+    fetchLeaderboard();
+  }, [userProgress]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -155,6 +175,12 @@ function App() {
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    navigate('/');
   };
 
   const detectEmotion = (text) => {
@@ -169,6 +195,19 @@ function App() {
 
   const handleSubmit = useCallback(async (textToProcess, isStudyGuide = false) => {
     if (!textToProcess || textToProcess.trim() === '') return;
+
+    // Check credits for non-logged-in users
+    if (!user && credits <= 0) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'You have used all your credits. Please sign up or log in to get unlimited chat responses.',
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
+      return;
+    }
 
     const timestamp = new Date().toLocaleTimeString();
     const userMessage = { role: 'user', content: textToProcess, timestamp };
@@ -254,19 +293,23 @@ function App() {
         prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
       }
 
+      const headers = user ? { Authorization: `Bearer ${user.token}` } : {};
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...headers,
         },
         body: JSON.stringify({
           messages,
           input: prompt,
+          credits,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Backend request failed with status ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Backend request failed with status ${response.status}`);
       }
 
       const data = await response.json();
@@ -299,13 +342,18 @@ function App() {
           return updated;
         });
       }
+
+      // Update credits for non-logged-in users
+      if (!user) {
+        setCredits(data.credits);
+      }
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          content: `Sorry, I couldn't reach the backend server (Error: ${error.message}). Please check your connection or try again later.`,
+          content: `Sorry, I couldn't process your request (Error: ${error.message}). Please try again later.`,
           timestamp: new Date().toLocaleTimeString(),
         },
       ]);
@@ -313,7 +361,7 @@ function App() {
       setLoading(false);
       setFileName('');
     }
-  }, [messages, currentProject, tone, responseLength, factCheck, showReasoning, detailedMode, codeMode, auditMode, emotionDetection, criticalThinkingMode, offlineMode, simulationMode, aiLiteracyMode, collaborationMode, codeLanguage]);
+  }, [messages, currentProject, tone, responseLength, factCheck, showReasoning, detailedMode, codeMode, auditMode, emotionDetection, criticalThinkingMode, offlineMode, simulationMode, aiLiteracyMode, collaborationMode, codeLanguage, user, credits]);
 
   const handleFileUpload = useCallback(async (event) => {
     const file = event.target.files[0];
@@ -375,7 +423,7 @@ function App() {
         return updated;
       });
     }
-    localStorage.removeItem('chatMessages');
+    localStorage.setItem('chatMessages', JSON.stringify([]));
   };
 
   const resetContext = () => {
@@ -485,6 +533,10 @@ Would you like to learn more about a specific AI topic?
 
   // Gamification and Learning Path Functions
   const startLearningPath = (language) => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
     setSelectedLanguage(language);
     setCurrentLesson(null);
     setChallengeInput('');
@@ -494,6 +546,10 @@ Would you like to learn more about a specific AI topic?
   };
 
   const startLesson = async (lesson) => {
+    if (!user) {
+      setShowLoginPrompt(true);
+      return;
+    }
     setCurrentLesson(lesson);
     setChallengeInput('');
     setChallengeResult(null);
@@ -525,6 +581,7 @@ Would you like to learn more about a specific AI topic?
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: user ? `Bearer ${user.token}` : '',
       },
       body: JSON.stringify({
         messages,
@@ -556,6 +613,19 @@ Would you like to learn more about a specific AI topic?
 
         return newProgress;
       });
+
+      // Update user's points in the backend
+      if (user) {
+        try {
+          await axios.post('https://accessai-onh4.onrender.com/update-points', {
+            points: currentLesson.points,
+          }, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
+        } catch (error) {
+          console.error('Error updating points:', error);
+        }
+      }
     }
   };
 
@@ -604,9 +674,27 @@ Would you like to learn more about a specific AI topic?
         </div>
         <div className="header-right">
           <div className="user-stats">
-            <span>Points: {userProgress.points}</span>
+            <span>Points: {user ? user.points : userProgress.points}</span>
             <span>Badges: {userProgress.badges.length}</span>
+            {!user && <span>Credits: {credits}</span>}
           </div>
+          {user ? (
+            <>
+              <span className="text-gray-700 dark:text-gray-300 mr-4">{user.email}</span>
+              <button onClick={handleLogout} className="theme-toggle" aria-label="Logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => navigate('/login')} className="theme-toggle mr-2" aria-label="Login">
+                Login
+              </button>
+              <button onClick={() => navigate('/signup')} className="theme-toggle" aria-label="Sign Up">
+                Sign Up
+              </button>
+            </>
+          )}
           <button onClick={toggleTheme} className="theme-toggle" aria-label={theme === 'light' ? "Switch to dark theme" : "Switch to light theme"}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
           </button>
@@ -780,10 +868,12 @@ Would you like to learn more about a specific AI topic?
             </div>
           ) : (
             <div className="learning-path">
-              <h2>{`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}</h2>
-              <button onClick={() => setSelectedLanguage('')} className="back-button">
-                Back to Language Selection
-              </button>
+              <div className="flex justify-between items-center">
+                <h2>{`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}</h2>
+                <button onClick={() => setSelectedLanguage('')} className="back-button">
+                  Back to Language Selection
+                </button>
+              </div>
               <div className="lessons-list">
                 {learningPaths[selectedLanguage].map(lesson => (
                   <div
@@ -803,6 +893,32 @@ Would you like to learn more about a specific AI topic?
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Login Prompt for Lessons */}
+          {showLoginPrompt && (
+            <div className="login-prompt p-6 bg-yellow-50 dark:bg-yellow-900 rounded-lg shadow-md text-center">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Please Sign Up or Log In
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                You need to be logged in to start lessons and earn points.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700"
+                >
+                  Sign Up
+                </button>
               </div>
             </div>
           )}
