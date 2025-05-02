@@ -696,6 +696,44 @@
   background-color: #2c2c2c;
 }
 
+.chat-error {
+  background-color: #ffe6e6;
+  color: #d32f2f;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.app-container.dark .chat-error {
+  background-color: #d32f2f;
+  color: #fff;
+}
+
+.chat-error button {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.app-container.dark .chat-error button {
+  color: #fff;
+}
+
+.chat-error button:hover {
+  color: #a12828;
+}
+
+.app-container.dark .chat-error button:hover {
+  color: #ddd;
+}
+
 .messages {
   max-height: 400px;
   overflow-y: auto;
@@ -723,30 +761,45 @@
 
 .bot-message {
   background-color: #e9ecef;
+  color: #333;
   margin-right: 20%;
   margin-left: 5%;
 }
 
 .app-container.dark .bot-message {
   background-color: #3a3a3a;
+  color: #ddd;
 }
 
 .message-content {
   position: relative;
 }
 
+.message-content p {
+  margin: 0;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+  display: block;
+}
+
+.app-container.dark .timestamp {
+  color: #adb5bd;
+}
+
 .response-meta {
   font-size: 12px;
   color: #6c757d;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 15px;
 }
 
 .app-container.dark .response-meta {
   color: #adb5bd;
-}
-
-.response-meta span {
-  margin-right: 10px;
 }
 
 .response-body {
@@ -755,14 +808,50 @@
 
 .response-actions {
   display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.play-button {
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .play-button {
+  background-color: #38c172;
+}
+
+.play-button:hover {
+  background-color: #218838;
+}
+
+.app-container.dark .play-button:hover {
+  background-color: #2a9d5c;
+}
+
+.play-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.app-container.dark .play-button:disabled {
+  background-color: #adb5bd;
+}
+
+.play-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
 }
 
 .action-button {
-  padding: 5px 10px;
+  padding: 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   background-color: #6c757d;
   color: white;
   cursor: pointer;
@@ -796,21 +885,15 @@
 }
 
 .comment-section {
-  margin-top: 10px;
-}
-
-.comment-section label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 5px;
+  margin-top: 15px;
 }
 
 .comment-input {
   width: 100%;
-  padding: 5px;
+  padding: 8px;
+  margin-top: 5px;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 5px;
+  border-radius: 5px;
   background-color: #f9f9f9;
   color: #333;
 }
@@ -827,42 +910,26 @@
 }
 
 .comment {
-  background-color: #f8f9fa;
-  padding: 5px 10px;
-  border-radius: 4px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #f1f3f5;
+  border-radius: 5px;
 }
 
 .app-container.dark .comment {
-  background-color: #3a3a3a;
+  background-color: #444;
 }
 
 .comment p {
   margin: 0;
-}
-
-.timestamp {
-  font-size: 12px;
-  color: #6c757d;
-  display: block;
-  margin-top: 5px;
-}
-
-.app-container.dark .timestamp {
-  color: #adb5bd;
+  font-size: 14px;
 }
 
 .input-container {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
-}
-
-.input-container label {
-  font-size: 14px;
-  margin-bottom: 5px;
-  width: 100%;
 }
 
 .chat-input {
@@ -881,6 +948,50 @@
 }
 
 .chat-input:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.mic-button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #17a2b8;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-container.dark .mic-button {
+  background-color: #2bc4e2;
+}
+
+.mic-button.recording {
+  background-color: #dc3545;
+}
+
+.app-container.dark .mic-button.recording {
+  background-color: #e4606d;
+}
+
+.mic-button:hover {
+  background-color: #138496;
+}
+
+.app-container.dark .mic-button:hover {
+  background-color: #1b9bb3;
+}
+
+.mic-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.app-container.dark .mic-button:disabled {
+  background-color: #adb5bd;
+}
+
+.mic-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
@@ -947,6 +1058,15 @@
   background-color: #2a9d5c;
 }
 
+.file-label:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.app-container.dark .file-label:disabled {
+  background-color: #adb5bd;
+}
+
 .file-label:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
@@ -979,14 +1099,12 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
 }
 
 .modal {
@@ -1003,22 +1121,18 @@
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #fff;
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   max-width: 80%;
   max-height: 80%;
-  overflow: auto;
+  overflow-y: auto;
   position: relative;
 }
 
 .app-container.dark .modal-content {
   background-color: #2c2c2c;
-}
-
-.modal-content h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
+  color: #ddd;
 }
 
 .modal-close {
@@ -1027,7 +1141,7 @@
   right: 10px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   color: #333;
 }
@@ -1036,116 +1150,23 @@
   color: #ddd;
 }
 
+.modal-close:hover {
+  color: #007bff;
+}
+
+.app-container.dark .modal-close:hover {
+  color: #66b0ff;
+}
+
 .modal-close:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
 
-/* Responsive Design with Multiple Breakpoints */
-
-/* Large Screens (Above 1200px) */
-@media (min-width: 1200px) {
-  .app-title {
-    font-size: 24px;
-  }
-
-  .user-stats {
-    gap: 15px;
-    font-size: 14px;
-  }
-
-  .gamification-bar {
-    flex-direction: row;
-    gap: 20px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 24px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .input-container {
-    flex-direction: row;
-  }
-
-  .chat-input,
-  .send-button,
-  .file-label {
-    width: auto;
-  }
-}
-
-/* Medium Screens (1024px - 1200px) */
-@media (max-width: 1200px) {
-  .app-title {
-    font-size: 22px;
-  }
-
-  .user-stats {
-    gap: 10px;
-    font-size: 13px;
-  }
-
-  .gamification-bar {
-    flex-direction: row;
-    gap: 15px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 22px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
-}
-
-/* Tablets (768px - 1024px) */
-@media (max-width: 1024px) {
-  .app-title {
-    font-size: 20px;
-  }
-
-  .user-stats {
-    gap: 8px;
-    font-size: 12px;
-  }
-
-  .gamification-bar {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 20px;
-  }
-
-  .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-
-  .lesson-card h3 {
-    font-size: 16px;
-  }
-
-  .lesson-card p {
-    font-size: 12px;
-  }
-}
-
-/* Mobile Devices (Below 768px) */
+/* Responsive Design */
 @media (max-width: 768px) {
-  .hamburger {
-    display: block;
+  .main-layout {
+    flex-direction: column;
   }
 
   .sidebar {
@@ -1153,30 +1174,55 @@
     top: 0;
     left: 0;
     height: 100%;
-    width: 250px;
     transform: translateX(-100%);
-    z-index: 1000;
   }
 
   .sidebar.open {
     transform: translateX(0);
   }
 
+  .hamburger {
+    display: block;
+  }
+
   .main-content {
     padding: 15px;
   }
 
-  .main-layout {
-    flex-direction: column;
+  .user-message {
+    margin-left: 10%;
   }
 
-  .gamification-bar {
-    flex-direction: column;
-    gap: 15px;
+  .bot-message {
+    margin-right: 10%;
   }
 
-  .progress-bar {
-    margin: 0;
+  .input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chat-input,
+  .send-button,
+  .file-label,
+  .mic-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .app-title {
+    font-size: 20px;
   }
 
   .language-options {
@@ -1184,177 +1230,7 @@
     align-items: center;
   }
 
-  .language-button {
-    width: 100%;
-    max-width: 300px;
-  }
-
   .lessons-list {
     grid-template-columns: 1fr;
-  }
-
-  .input-container {
-    flex-direction: column;
-  }
-
-  .chat-input,
-  .send-button,
-  .file-label {
-    width: 100%;
-  }
-
-  .user-message {
-    margin-left: 10%;
-    margin-right: 5%;
-  }
-
-  .bot-message {
-    margin-right: 10%;
-    margin-left: 5%;
-  }
-}
-
-/* Small Mobile Devices (Below 480px) */
-@media (max-width: 480px) {
-  .app-title {
-    font-size: 18px;
-  }
-
-  .user-stats {
-    flex-direction: column;
-    gap: 5px;
-    font-size: 11px;
-  }
-
-  .header-right {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .theme-toggle {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 18px;
-  }
-
-  .lesson-card {
-    padding: 10px;
-  }
-
-  .lesson-card h3 {
-    font-size: 14px;
-  }
-
-  .lesson-card p {
-    font-size: 11px;
-  }
-
-  .lesson-card button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .code-editor {
-    font-size: 12px;
-  }
-
-  .submit-challenge {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-
-  .response-meta {
-    font-size: 10px;
-  }
-
-  .action-button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-
-  .chat-input,
-  .send-button,
-  .file-label {
-    padding: 8px;
-    font-size: 12px;
-  }
-}
-
-/* Very Small Devices (Below 360px) */
-@media (max-width: 360px) {
-  .app-title {
-    font-size: 16px;
-  }
-
-  .hamburger {
-    font-size: 20px;
-  }
-
-  .user-stats {
-    font-size: 10px;
-  }
-
-  .language-selection h2,
-  .learning-path h2,
-  .challenge-section h2 {
-    font-size: 16px;
-  }
-
-  .language-button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-
-  .lesson-card h3 {
-    font-size: 12px;
-  }
-
-  .lesson-card p {
-    font-size: 10px;
-  }
-
-  .code-editor {
-    font-size: 11px;
-  }
-
-  .submit-challenge {
-    font-size: 11px;
-  }
-
-  .chat-input,
-  .send-button,
-  .file-label {
-    font-size: 11px;
-  }
-}
-
-/* Login Prompt Styles */
-.login-prompt {
-  margin: 20px 0;
-  animation: fadeIn 0.3s ease-in;
-}
-
-/* Auth Container Styles */
-.auth-container {
-  margin: 50px auto;
-}
-
-/* Adjust header-right to accommodate more buttons */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 480px) {
-  .header-right {
-    flex-direction: column;
-    gap: 5px;
   }
 }
