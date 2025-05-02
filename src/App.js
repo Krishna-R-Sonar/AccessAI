@@ -1,4 +1,5 @@
-// Filename: src/App.js
+// src/App.js - Main application component with STT and TTS for AccessAI chatbot
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
@@ -7,6 +8,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
+import './styles.css';
 
 // Set PDF.js worker source for PDF processing
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
@@ -61,7 +63,7 @@ const badges = [
   { name: 'Master Coder', points: 500, description: 'Earned 500 points!' },
 ];
 
-function App({ user, setUser }) { // Receive user and setUser as props from index.js
+function App({ user, setUser }) {
   // State for chat messages, persisted in localStorage
   const [messages, setMessages] = useState(() => {
     const savedMessages = localStorage.getItem('chatMessages');
@@ -101,12 +103,15 @@ function App({ user, setUser }) { // Receive user and setUser as props from inde
     return savedCredits ? parseInt(savedCredits) : 5;
   });
   const [leaderboardData, setLeaderboardData] = useState([]);
+  // STT/TTS states
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const recognitionRef = useRef(null);
 
   // Refs for DOM manipulation
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
-
-  const navigate = useNavigate();
 
   // Gamification and Learning Path States
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -119,6 +124,42 @@ function App({ user, setUser }) { // Receive user and setUser as props from inde
   const [challengeResult, setChallengeResult] = useState(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      setSpeechSupported(true);
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        setInput(transcript);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: 'Sorry, there was an error with speech recognition. Please try again.',
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        ]);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+      };
+    }
+  }, []);
+
   // Persist state changes to localStorage
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
@@ -128,10 +169,15 @@ function App({ user, setUser }) { // Receive user and setUser as props from inde
     scrollToBottom();
   }, [messages, projects, userProgress, credits]);
 
-  // Scroll to bottom when loading changes
+  // Scroll to bottom when loading or messages change
   useEffect(() => {
     scrollToBottom();
-  }, [loading]);
+    // Auto-play TTS for new assistant messages if enabled
+    if (ttsEnabled && messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      const latestMessage = messages[messages.length - 1].content;
+      speakText(latestMessage);
+    }
+  }, [messages, loading, ttsEnabled]);
 
   // Handle clicks outside sidebar to close it
   useEffect(() => {
@@ -188,6 +234,51 @@ function App({ user, setUser }) { // Receive user and setUser as props from inde
     setUser(null);
     localStorage.removeItem('user');
     navigate('/');
+  };
+
+  // Toggle speech recognition
+  const toggleRecording = () => {
+    if (!speechSupported) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Speech recognition is not supported in your browser. Please use a supported browser like Chrome.',
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      setInput('');
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  };
+
+  // Speak text using TTS
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.volume = 1;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Text-to-speech is not supported in your browser.',
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
+    }
   };
 
   // Simple emotion detection from text
@@ -750,15 +841,15 @@ Would you like to learn more about a specific AI topic?
                 <option value="medium">Medium</option>
                 <option value="long">Long</option>
               </select>
-              <label>
+              <label className="toggle-label">
                 <input type="checkbox" checked={factCheck} onChange={e => setFactCheck(e.target.checked)} />
                 Fact-Check
               </label>
-              <label>
+              <label className="toggle-label">
                 <input type="checkbox" checked={showReasoning} onChange={e => setShowReasoning(e.target.checked)} />
                 Show Reasoning
               </label>
-              <label>
+              <label className="toggle-label">
                 <input type="checkbox" checked={detailedMode} onChange={e => setDetailedMode(e.target.checked)} />
                 Detailed Mode
               </label>
@@ -793,6 +884,10 @@ Would you like to learn more about a specific AI topic?
               <label className={collaborationMode ? 'collaboration-mode-active' : ''}>
                 <input type="checkbox" checked={collaborationMode} onChange={e => setCollaborationMode(e.target.checked)} />
                 Collaboration Mode
+              </label>
+              <label className="toggle-label">
+                <input type="checkbox" checked={ttsEnabled} onChange={e => setTtsEnabled(e.target.checked)} />
+                Auto Text-to-Speech
               </label>
               {(codeMode || auditMode) && (
                 <>
@@ -1019,6 +1114,14 @@ Would you like to learn more about a specific AI topic?
                           >
                             {msg.content}
                           </ReactMarkdown>
+                          <button
+                            className="play-button"
+                            onClick={() => speakText(msg.content)}
+                            aria-label="Play response aloud"
+                            title="Play response"
+                          >
+                            ▶
+                          </button>
                         </div>
                         <div className="response-actions">
                           <button
@@ -1158,7 +1261,7 @@ Would you like to learn more about a specific AI topic?
               <div ref={messagesEndRef} />
             </div>
             <div className="input-container">
-              <label htmlFor="chat-input">Type your message:</label>
+              <label htmlFor="chat-input" className="sr-only">Type or speak your message</label>
               <input
                 id="chat-input"
                 type="text"
@@ -1166,10 +1269,19 @@ Would you like to learn more about a specific AI topic?
                 onChange={e => setInput(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
                 className="chat-input"
-                placeholder="Type your message or paste code..."
+                placeholder="Type or speak your message..."
                 disabled={loading}
                 aria-label="Chat input"
               />
+              <button
+                onClick={toggleRecording}
+                className={`mic-button ${isRecording ? 'recording' : ''}`}
+                disabled={loading}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+                title={isRecording ? 'Stop recording' : 'Start recording'}
+              >
+                🎤
+              </button>
               <button
                 onClick={() => handleSubmit(input)}
                 className="send-button"
@@ -1197,5 +1309,17 @@ Would you like to learn more about a specific AI topic?
     </div>
   );
 }
+
+// Screen reader only class for accessibility
+const srOnlyStyle = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: '0',
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  border: '0',
+};
 
 export default App;
