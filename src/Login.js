@@ -1,7 +1,9 @@
 // Filename: src/Login.js
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './styles.css';
 
 function Login({ setUser }) {
   const [email, setEmail] = useState('');
@@ -26,75 +28,55 @@ function Login({ setUser }) {
       localStorage.setItem('user', JSON.stringify(userData));
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to login. Please try again.');
+      setError(err.response?.data?.error || 'Failed to log in. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      {/* Login card with enhanced styling */}
-      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform transition-all duration-300 hover:shadow-xl">
-        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">Login</h2>
-        {/* Display error message if present */}
-        {error && (
-          <p className="text-red-500 text-sm text-center mb-4 bg-red-100 dark:bg-red-900 p-2 rounded">{error}</p>
-        )}
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-              required
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-              required
-              disabled={loading}
-            />
-          </div>
-          {/* Submit button with loading state */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:bg-blue-400"
+    <div className="auth-card" role="region" aria-labelledby="login-title">
+      <h2 id="login-title">Log In to Your Account</h2>
+      {/* Display error message if present */}
+      {error && <div className="error-message">{error}</div>}
+      <form className="auth-form" onSubmit={handleLogin}>
+        <div className="form-group">
+          <label htmlFor="login-email">Email</label>
+          <input
+            id="login-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
             disabled={loading}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z" />
-                </svg>
-                Logging In...
-              </span>
-            ) : (
-              'Login'
-            )}
-          </button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          Don’t have an account?{' '}
-          <a href="/signup" className="text-blue-600 hover:underline font-medium">
-            Sign Up
-          </a>
-        </p>
+            aria-describedby={error ? 'login-error' : undefined}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="login-password">Password</label>
+          <input
+            id="login-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            aria-describedby={error ? 'login-error' : undefined}
+          />
+        </div>
+        <button type="submit" className="submit-button" disabled={loading} aria-busy={loading}>
+          {loading ? (
+            <span className="loading-spinner">
+              <span className="spinner-icon" aria-hidden="true"></span>
+              Logging In...
+            </span>
+          ) : (
+            'Log In'
+          )}
+        </button>
+      </form>
+      <div className="footer-link">
+        Don’t have an account? <a href="/signup">Sign Up</a>
       </div>
     </div>
   );
