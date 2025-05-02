@@ -7,61 +7,95 @@ function Login({ setUser }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle login form submission
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
       const response = await axios.post('https://accessai-onh4.onrender.com/login', {
         email,
         password,
       });
-      setUser({ token: response.data.token, ...response.data.user });
-      localStorage.setItem('user', JSON.stringify({ token: response.data.token, ...response.data.user }));
+      const userData = { token: response.data.token, ...response.data.user };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to login');
+      setError(err.response?.data?.error || 'Failed to login. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container p-6 max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Login</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleLogin}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm text-gray-700 dark:text-gray-300">Email:</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm text-gray-700 dark:text-gray-300">Password:</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-2"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
-        >
-          Login
-        </button>
-      </form>
-      <p className="mt-4 text-center">
-        Don't have an account?{' '}
-        <a href="/signup" className="text-blue-600 hover:underline">Sign Up</a>
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      {/* Login card with enhanced styling */}
+      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transform transition-all duration-300 hover:shadow-xl">
+        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">Login</h2>
+        {/* Display error message if present */}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-4 bg-red-100 dark:bg-red-900 p-2 rounded">{error}</p>
+        )}
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              required
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+              required
+              disabled={loading}
+            />
+          </div>
+          {/* Submit button with loading state */}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:bg-blue-400"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z" />
+                </svg>
+                Logging In...
+              </span>
+            ) : (
+              'Login'
+            )}
+          </button>
+        </form>
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          Don’t have an account?{' '}
+          <a href="/signup" className="text-blue-600 hover:underline font-medium">
+            Sign Up
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

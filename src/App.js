@@ -8,13 +8,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 
-// Set the worker source to the copied pdf.worker.mjs in public/
+// Set PDF.js worker source for PDF processing
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
-// Backend API URL from environment variable
+// Backend API URL from environment variable or default
 const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
 
-// Learning paths for each language
+// Learning paths for each programming language
 const learningPaths = {
   javascript: [
     { id: 1, title: 'Variables and Data Types', difficulty: 'Beginner', points: 50 },
@@ -53,7 +53,7 @@ const learningPaths = {
   ],
 };
 
-// Badges for milestones
+// Badges for gamification milestones
 const badges = [
   { name: 'Beginner Coder', points: 100, description: 'Completed your first lesson!' },
   { name: 'Challenge Champion', points: 300, description: 'Solved 3 coding challenges!' },
@@ -61,11 +61,13 @@ const badges = [
   { name: 'Master Coder', points: 500, description: 'Earned 500 points!' },
 ];
 
-function App() {
+function App({ user, setUser }) { // Receive user and setUser as props from index.js
+  // State for chat messages, persisted in localStorage
   const [messages, setMessages] = useState(() => {
     const savedMessages = localStorage.getItem('chatMessages');
     return savedMessages ? JSON.parse(savedMessages) : [];
   });
+  // State for projects, persisted in localStorage
   const [projects, setProjects] = useState(() => {
     const savedProjects = localStorage.getItem('chatProjects');
     return savedProjects ? JSON.parse(savedProjects) : [];
@@ -93,17 +95,17 @@ function App() {
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  // Credits for non-logged-in users, persisted in localStorage
   const [credits, setCredits] = useState(() => {
     const savedCredits = localStorage.getItem('credits');
     return savedCredits ? parseInt(savedCredits) : 5;
   });
   const [leaderboardData, setLeaderboardData] = useState([]);
+
+  // Refs for DOM manipulation
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
+
   const navigate = useNavigate();
 
   // Gamification and Learning Path States
@@ -117,6 +119,7 @@ function App() {
   const [challengeResult, setChallengeResult] = useState(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
+  // Persist state changes to localStorage
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
@@ -125,20 +128,20 @@ function App() {
     scrollToBottom();
   }, [messages, projects, userProgress, credits]);
 
+  // Scroll to bottom when loading changes
   useEffect(() => {
     scrollToBottom();
   }, [loading]);
 
+  // Handle clicks outside sidebar to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setSidebarOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('touchstart', handleClickOutside);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
@@ -152,7 +155,7 @@ function App() {
     }
   }, [sidebarOpen]);
 
-  // Fetch dynamic leaderboard
+  // Fetch leaderboard data
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
@@ -165,24 +168,29 @@ function App() {
     fetchLeaderboard();
   }, [userProgress]);
 
+  // Scroll to the bottom of the chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Toggle between light and dark theme
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
   };
 
+  // Handle user logout
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
     navigate('/');
   };
 
+  // Simple emotion detection from text
   const detectEmotion = (text) => {
     const lowerText = text.toLowerCase();
     if (lowerText.includes('frustrated') || lowerText.includes('stuck') || lowerText.includes('hard') || lowerText.includes('difficult')) {
@@ -193,6 +201,7 @@ function App() {
     return 'neutral';
   };
 
+  // Handle message submission to backend
   const handleSubmit = useCallback(async (textToProcess, isStudyGuide = false) => {
     if (!textToProcess || textToProcess.trim() === '') return;
 
@@ -213,6 +222,7 @@ function App() {
     const userMessage = { role: 'user', content: textToProcess, timestamp };
     setMessages(prev => [...prev, userMessage]);
 
+    // Update project messages if a project is selected
     if (currentProject) {
       setProjects(prev => {
         const updated = [...prev];
@@ -330,8 +340,8 @@ function App() {
         isSimulation: simulationMode,
         isCollaboration: collaborationMode,
       };
-      setMessages(prev => [...prev, assistantMessage]);
 
+      setMessages(prev => [...prev, assistantMessage]);
       if (currentProject) {
         setProjects(prev => {
           const updated = [...prev];
@@ -363,12 +373,14 @@ function App() {
     }
   }, [messages, currentProject, tone, responseLength, factCheck, showReasoning, detailedMode, codeMode, auditMode, emotionDetection, criticalThinkingMode, offlineMode, simulationMode, aiLiteracyMode, collaborationMode, codeLanguage, user, credits]);
 
+  // Handle file upload (txt, pdf, images)
   const handleFileUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     setFileName(file.name);
     setLoading(true);
+
     try {
       let text;
       if (file.type === 'text/plain') {
@@ -399,6 +411,7 @@ function App() {
     }
   }, [handleSubmit]);
 
+  // Extract text from PDF files
   const extractTextFromPDF = async (file) => {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
@@ -411,6 +424,7 @@ function App() {
     return text;
   };
 
+  // Clear chat messages
   const clearChat = () => {
     setMessages([]);
     if (currentProject) {
@@ -426,6 +440,7 @@ function App() {
     localStorage.setItem('chatMessages', JSON.stringify([]));
   };
 
+  // Reset chat context
   const resetContext = () => {
     setMessages([]);
     if (currentProject) {
@@ -440,6 +455,7 @@ function App() {
     }
   };
 
+  // Generate a study guide from the last user message
   const generateStudyGuide = () => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === 'user') {
@@ -452,6 +468,7 @@ function App() {
     }
   };
 
+  // Export chat as JSON
   const exportChat = () => {
     const chatData = currentProject
       ? projects.find(p => p.name === currentProject)?.messages || messages
@@ -465,17 +482,21 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
+  // Provide AI literacy information
   const learnAboutAI = () => {
     const aiLiteracyMessage = `
 ## Learn About AI
 
 ### What is AI?
+
 AI, or artificial intelligence, is when computers are designed to think and act like humans. I’m an AI chatbot, which means I can understand your questions and provide answers by processing lots of data.
 
 ### How Do I Work?
+
 I use a large language model to understand and generate responses. When you ask a question, I break it down into parts, search my knowledge base, and create an answer that fits your request. I’m trained on a huge amount of text data, but I don’t have access to everything, and I can make mistakes.
 
 ### Ethical Tips for Using AI
+
 - **Verify My Answers**: I might have biases or outdated information, so always double-check important facts.
 - **Protect Your Privacy**: Don’t share sensitive personal information with me.
 - **Use Me as a Tool**: I’m here to help you learn and grow, not to replace your own thinking.
@@ -488,11 +509,13 @@ Would you like to learn more about a specific AI topic?
     ]);
   };
 
+  // Copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
   };
 
+  // Handle feedback on responses
   const handleFeedback = (index, value) => {
     setFeedback(prev => ({
       ...prev,
@@ -500,6 +523,7 @@ Would you like to learn more about a specific AI topic?
     }));
   };
 
+  // Edit a response
   const editResponse = (index, content) => {
     const newContent = prompt('Edit the response:', content);
     if (newContent) {
@@ -507,12 +531,14 @@ Would you like to learn more about a specific AI topic?
     }
   };
 
+  // Share a response via URL
   const shareResponse = (index, content) => {
     const shareUrl = `https://access-ai-iota.vercel.app/share/${index}`;
     copyToClipboard(shareUrl);
     alert('Shareable link copied to clipboard!');
   };
 
+  // Download code as a file
   const downloadCode = (content, language) => {
     const extension = language === 'javascript' ? 'js' : language === 'python' ? 'py' : language === 'solidity' ? 'sol' : 'txt';
     const blob = new Blob([content], { type: 'text/plain' });
@@ -524,6 +550,7 @@ Would you like to learn more about a specific AI topic?
     URL.revokeObjectURL(url);
   };
 
+  // Add a comment to a message
   const addComment = (index, comment) => {
     setComments(prev => ({
       ...prev,
@@ -531,7 +558,7 @@ Would you like to learn more about a specific AI topic?
     }));
   };
 
-  // Gamification and Learning Path Functions
+  // Start a learning path for a language
   const startLearningPath = (language) => {
     if (!user) {
       setShowLoginPrompt(true);
@@ -545,6 +572,7 @@ Would you like to learn more about a specific AI topic?
     setCodeMode(true);
   };
 
+  // Start a specific lesson
   const startLesson = async (lesson) => {
     if (!user) {
       setShowLoginPrompt(true);
@@ -553,17 +581,16 @@ Would you like to learn more about a specific AI topic?
     setCurrentLesson(lesson);
     setChallengeInput('');
     setChallengeResult(null);
-
     const prompt = `Provide a detailed lesson on "${lesson.title}" for ${selectedLanguage} in Markdown format. Include:
     - A brief introduction to the topic
     - Key concepts with examples
     - A coding challenge for the user to solve
     - An explanation of the solution
     If the language is Solidity, include blockchain-specific context (e.g., how this concept applies to smart contracts).`;
-    
     await handleSubmit(prompt);
   };
 
+  // Submit a challenge solution
   const submitChallenge = async () => {
     if (!challengeInput || !currentLesson) return;
 
@@ -603,18 +630,16 @@ Would you like to learn more about a specific AI topic?
         newProgress.points += currentLesson.points;
         newProgress.completedLessons[selectedLanguage] = newProgress.completedLessons[selectedLanguage] || [];
         newProgress.completedLessons[selectedLanguage].push(currentLesson.id);
-
         badges.forEach(badge => {
           if (newProgress.points >= badge.points && !newProgress.badges.includes(badge.name)) {
             newProgress.badges.push(badge.name);
             alert(`🎉 Congratulations! You've earned the "${badge.name}" badge: ${badge.description}`);
           }
         });
-
         return newProgress;
       });
 
-      // Update user's points in the backend
+      // Update points in backend if logged in
       if (user) {
         try {
           await axios.post('https://accessai-onh4.onrender.com/update-points', {
@@ -629,6 +654,7 @@ Would you like to learn more about a specific AI topic?
     }
   };
 
+  // Calculate progress percentage for selected language
   const getProgressPercentage = () => {
     if (!selectedLanguage) return 0;
     const totalLessons = learningPaths[selectedLanguage].length;
@@ -636,8 +662,10 @@ Would you like to learn more about a specific AI topic?
     return (completed / totalLessons) * 100;
   };
 
+  // Render the application UI
   return (
     <div className={`app-container ${theme}`}>
+      {/* Full code view modal */}
       {fullCodeView && (
         <div className="modal" role="dialog" aria-labelledby="full-code-view">
           <div className="modal-content">
@@ -878,9 +906,7 @@ Would you like to learn more about a specific AI topic?
                 {learningPaths[selectedLanguage].map(lesson => (
                   <div
                     key={lesson.id}
-                    className={`lesson-card ${
-                      userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'completed' : ''
-                    }`}
+                    className={`lesson-card ${userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'completed' : ''}`}
                   >
                     <h3>{lesson.title}</h3>
                     <p>Difficulty: {lesson.difficulty}</p>
