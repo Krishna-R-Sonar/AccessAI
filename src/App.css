@@ -491,6 +491,7 @@
   margin-bottom: 20px;
   padding: 0 5px;
   width: 100%;
+  display: block; /* Ensure it takes full width */
 }
 
 .learning-path h2 {
@@ -628,6 +629,10 @@
   background-color: #f8f9fa;
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  display: block;
+  width: 100%;
 }
 
 .app-container.dark .challenge-section {
@@ -682,7 +687,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .app-container.dark .submit-challenge {
@@ -705,86 +710,81 @@
 .challenge-result {
   margin-top: 15px;
   padding: 10px;
-  background-color: #fff;
-  border: 1px solid #ddd;
+  background-color: #e9ecef;
   border-radius: 4px;
 }
 
 .app-container.dark .challenge-result {
-  background-color: #2c2c2c;
-  border: 1px solid #444;
+  background-color: #3a3a3a;
 }
 
 /* Chat Interface Styles */
 .chat-container {
+  background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 15px;
-  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  display: block;
+  width: 100%;
 }
 
 .app-container.dark .chat-container {
-  border: 1px solid #444;
   background-color: #2c2c2c;
+  border: 1px solid #444;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .chat-error {
-  background-color: #ffe6e6;
-  color: #d32f2f;
-  padding: 0.8rem;
-  border-radius: 6px;
-  margin-bottom: 0.8rem;
-  font-size: 0.9rem;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 0.4rem;
+  align-items: center;
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
 }
 
 .app-container.dark .chat-error {
-  background-color: #d32f2f;
-  color: #fff;
+  background-color: #8e2c34;
+  color: #f5c6cb;
 }
 
 .chat-error button {
   background: none;
   border: none;
-  color: #d32f2f;
+  color: #721c24;
   cursor: pointer;
-  font-size: 0.9rem;
 }
 
 .app-container.dark .chat-error button {
-  color: #fff;
-}
-
-.chat-error button:hover {
-  color: #a12828;
-}
-
-.app-container.dark .chat-error button:hover {
-  color: #ddd;
+  color: #f5c6cb;
 }
 
 .messages {
-  max-height: 300px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 15px;
-  padding-right: 8px;
 }
 
 .message {
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 4px;
-  animation: fadeIn 0.3s ease-in;
+  padding: 10px;
+  border-radius: 6px;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .user-message {
   background-color: #007bff;
   color: white;
-  margin-left: 15%;
-  margin-right: 5%;
+  align-self: flex-end;
+  margin-left: auto;
+  max-width: 70%;
 }
 
 .app-container.dark .user-message {
@@ -794,8 +794,8 @@
 .bot-message {
   background-color: #e9ecef;
   color: #333;
-  margin-right: 15%;
-  margin-left: 5%;
+  align-self: flex-start;
+  max-width: 90%;
 }
 
 .app-container.dark .bot-message {
@@ -807,82 +807,43 @@
   position: relative;
 }
 
-.message-content p {
-  margin: 0;
-}
-
-.timestamp {
-  font-size: 10px;
-  color: #6c757d;
-  margin-top: 4px;
-  display: block;
-}
-
-.app-container.dark .timestamp {
-  color: #adb5bd;
-}
-
 .response-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: 10px;
   color: #6c757d;
   margin-bottom: 8px;
-  display: flex;
-  gap: 10px;
 }
 
 .app-container.dark .response-meta {
   color: #adb5bd;
 }
 
+.response-meta span {
+  background-color: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.app-container.dark .response-meta span {
+  background-color: #2c2c2c;
+}
+
 .response-body {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .response-actions {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-top: 8px;
 }
 
-.play-button {
-  padding: 6px;
-  border: none;
-  border-radius: 4px;
-  background-color: #28a745;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 12px;
-}
-
-.app-container.dark .play-button {
-  background-color: #38c172;
-}
-
-.play-button:hover {
-  background-color: #218838;
-}
-
-.app-container.dark .play-button:hover {
-  background-color: #2a9d5c;
-}
-
-.play-button:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.app-container.dark .play-button:disabled {
-  background-color: #adb5bd;
-}
-
-.play-button:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-}
-
+.play-button,
 .action-button {
-  padding: 6px;
+  padding: 4px 8px;
   border: none;
   border-radius: 4px;
   background-color: #6c757d;
@@ -892,27 +853,40 @@
   font-size: 12px;
 }
 
+.app-container.dark .play-button,
 .app-container.dark .action-button {
   background-color: #adb5bd;
   color: #1e1e1e;
 }
 
+.play-button:hover,
 .action-button:hover {
   background-color: #5a6268;
 }
 
+.app-container.dark .play-button:hover,
 .app-container.dark .action-button:hover {
   background-color: #8a9095;
 }
 
+.play-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.app-container.dark .play-button:disabled {
+  background-color: #6c757d;
+}
+
 .action-button.active {
-  background-color: #007bff;
+  background-color: #28a745;
 }
 
 .app-container.dark .action-button.active {
-  background-color: #66b0ff;
+  background-color: #38c172;
 }
 
+.play-button:focus,
 .action-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
@@ -922,15 +896,21 @@
   margin-top: 10px;
 }
 
+.comment-section label {
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: block;
+}
+
 .comment-input {
   width: 100%;
   padding: 6px;
-  margin-top: 4px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: #f9f9f9;
-  color: #333;
   font-size: 12px;
+  margin-bottom: 8px;
+  background-color: #fff;
+  color: #333;
 }
 
 .app-container.dark .comment-input {
@@ -945,26 +925,72 @@
 }
 
 .comment {
-  margin-top: 8px;
+  background-color: #f8f9fa;
   padding: 6px;
-  background-color: #f1f3f5;
   border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 12px;
 }
 
 .app-container.dark .comment {
-  background-color: #444;
+  background-color: #3a3a3a;
 }
 
 .comment p {
   margin: 0;
-  font-size: 12px;
+}
+
+.timestamp {
+  display: block;
+  font-size: 10px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.app-container.dark .timestamp {
+  color: #adb5bd;
+}
+
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.app-container.dark .spinner {
+  border: 2px solid #444;
+  border-top: 2px solid #66b0ff;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .input-container {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.input-container label {
+  font-size: 12px;
+  margin-bottom: 4px;
+  width: 100%;
 }
 
 .chat-input {
@@ -972,9 +998,10 @@
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: #f9f9f9;
+  font-size: 14px;
+  min-width: 200px;
+  background-color: #fff;
   color: #333;
-  font-size: 12px;
 }
 
 .app-container.dark .chat-input {
@@ -988,19 +1015,24 @@
   outline-offset: 2px;
 }
 
-.mic-button {
-  padding: 8px;
+.mic-button,
+.send-button {
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  background-color: #17a2b8;
-  color: white;
   cursor: pointer;
   transition: background-color 0.3s;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.mic-button {
+  background-color: #6c757d;
+  color: white;
 }
 
 .app-container.dark .mic-button {
-  background-color: #2bc4e2;
+  background-color: #adb5bd;
+  color: #1e1e1e;
 }
 
 .mic-button.recording {
@@ -1012,36 +1044,25 @@
 }
 
 .mic-button:hover {
-  background-color: #138496;
+  background-color: #5a6268;
 }
 
 .app-container.dark .mic-button:hover {
-  background-color: #1b9bb3;
+  background-color: #8a9095;
 }
 
 .mic-button:disabled {
-  background-color: #6c757d;
+  background-color: #adb5bd;
   cursor: not-allowed;
 }
 
 .app-container.dark .mic-button:disabled {
-  background-color: #adb5bd;
-}
-
-.mic-button:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
+  background-color: #6c757d;
 }
 
 .send-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
   background-color: #007bff;
   color: white;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 12px;
 }
 
 .app-container.dark .send-button {
@@ -1057,14 +1078,15 @@
 }
 
 .send-button:disabled {
-  background-color: #6c757d;
+  background-color: #adb5bd;
   cursor: not-allowed;
 }
 
 .app-container.dark .send-button:disabled {
-  background-color: #adb5bd;
+  background-color: #6c757d;
 }
 
+.mic-button:focus,
 .send-button:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
@@ -1076,76 +1098,28 @@
 
 .file-label {
   padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: #28a745;
+  background-color: #6c757d;
   color: white;
+  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .app-container.dark .file-label {
-  background-color: #38c172;
+  background-color: #adb5bd;
+  color: #1e1e1e;
 }
 
 .file-label:hover {
-  background-color: #218838;
+  background-color: #5a6268;
 }
 
 .app-container.dark .file-label:hover {
-  background-color: #2a9d5c;
+  background-color: #8a9095;
 }
 
-.file-label:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.app-container.dark .file-label:disabled {
-  background-color: #adb5bd;
-}
-
-.file-label:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-}
-
-.spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-}
-
-.app-container.dark .spinner {
-  border: 3px solid #444;
-  border-top: 3px solid #66b0ff;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Modal Styles */
 .modal {
   position: fixed;
   top: 0;
@@ -1156,31 +1130,31 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 1000;
 }
 
 .modal-content {
   background-color: #fff;
-  padding: 15px;
+  padding: 20px;
   border-radius: 6px;
   max-width: 90%;
-  max-height: 80%;
+  max-height: 80vh;
   overflow-y: auto;
   position: relative;
+  width: 100%;
 }
 
 .app-container.dark .modal-content {
   background-color: #2c2c2c;
-  color: #ddd;
 }
 
 .modal-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   color: #333;
 }
@@ -1189,21 +1163,24 @@
   color: #ddd;
 }
 
-.modal-close:hover {
-  color: #007bff;
-}
-
-.app-container.dark .modal-close:hover {
-  color: #66b0ff;
-}
-
-.modal-close:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
+.modal-content h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* Responsive Design */
-@media (max-width: 900px) {
+
+/* Large screens (1024px and below) */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 180px;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
   .language-options {
     gap: 8px;
   }
@@ -1211,12 +1188,13 @@
   .language-button {
     min-width: 90px;
     max-width: 40%;
-    padding: 8px 12px;
-    font-size: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
   }
 
   .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
   }
 
   .lesson-card {
@@ -1224,15 +1202,47 @@
   }
 
   .lesson-card h3 {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .lesson-card p {
     font-size: 11px;
   }
+
+  .challenge-section,
+  .chat-container {
+    max-height: 350px;
+  }
 }
 
+/* Tablets (768px and below) */
 @media (max-width: 768px) {
+  .header {
+    padding: 8px 10px;
+  }
+
+  .app-title {
+    font-size: 18px;
+  }
+
+  .header-right {
+    gap: 6px;
+  }
+
+  .user-stats {
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .theme-toggle {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
   .main-layout {
     flex-direction: column;
   }
@@ -1250,20 +1260,96 @@
     transform: translateX(0);
   }
 
-  .hamburger {
-    display: block;
-  }
-
   .main-content {
     padding: 10px;
   }
 
-  .user-message {
-    margin-left: 8%;
+  .gamification-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 
-  .bot-message {
-    margin-right: 8%;
+  .progress-bar {
+    width: 100%;
+    margin: 0;
+  }
+
+  .leaderboard {
+    width: 100%;
+  }
+
+  .language-options {
+    gap: 8px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .language-button {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: 90px;
+    max-width: 250px;
+    width: 100%;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .lesson-card {
+    padding: 10px;
+  }
+
+  .lesson-card h3 {
+    font-size: 14px;
+  }
+
+  .lesson-card p {
+    font-size: 10px;
+  }
+
+  .lesson-card button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .challenge-section {
+    padding: 10px;
+    max-height: 300px;
+  }
+
+  .challenge-section h2 {
+    font-size: 16px;
+  }
+
+  .code-editor {
+    font-size: 10px;
+    padding: 6px;
+  }
+
+  .submit-challenge {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .chat-container {
+    padding: 10px;
+    max-height: 300px;
+  }
+
+  .chat-input {
+    font-size: 12px;
+    min-width: 150px;
+  }
+
+  .mic-button,
+  .send-button,
+  .file-label {
+    padding: 6px 12px;
+    font-size: 12px;
+    width: 100%;
   }
 
   .input-container {
@@ -1271,44 +1357,126 @@
     align-items: stretch;
   }
 
-  .chat-input,
-  .send-button,
-  .file-label,
-  .mic-button {
-    width: 100%;
+  .message {
+    padding: 8px;
   }
 
-  .language-options {
+  .user-message,
+  .bot-message {
+    max-width: 85%;
+  }
+
+  .response-meta {
+    font-size: 8px;
+    gap: 6px;
+  }
+
+  .response-actions {
+    gap: 4px;
+  }
+
+  .play-button,
+  .action-button {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .comment-input {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .comment {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .timestamp {
+    font-size: 8px;
+  }
+}
+
+/* Large phones (600px and below) */
+@media (max-width: 600px) {
+  .header {
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .app-title {
+    font-size: 16px;
+  }
+
+  .user-stats {
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .theme-toggle {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .sidebar {
+    width: 160px;
+  }
+
+  .settings-bar select,
+  .settings-bar label,
+  .settings-bar button {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .project-input {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .project-list button {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .sidebar-button {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .language-selection h2 {
+    font-size: 16px;
   }
 
   .language-button {
-    width: 100%;
-    max-width: 250px;
-    padding: 10px;
-    font-size: 14px;
+    padding: 6px 12px;
+    font-size: 10px;
+    min-width: 80px;
+    max-width: 200px;
+  }
+
+  .learning-path h2 {
+    font-size: 16px;
+  }
+
+  .back-button {
+    padding: 4px 8px;
+    font-size: 12px;
   }
 
   .lessons-list {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .language-selection h2 {
-    font-size: 18px;
-  }
-
-  .language-button {
-    max-width: 200px;
-    padding: 8px;
-    font-size: 12px;
-  }
-
-  .learning-path h2 {
-    font-size: 18px;
   }
 
   .lesson-card {
@@ -1316,41 +1484,137 @@
   }
 
   .lesson-card h3 {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .lesson-card p {
-    font-size: 11px;
+    font-size: 9px;
   }
 
-  .gamification-bar {
-    flex-direction: column;
-    align-items: stretch;
+  .lesson-card button {
+    padding: 3px 6px;
+    font-size: 9px;
   }
 
-  .progress-bar {
-    margin: 8px 0;
+  .challenge-section {
+    padding: 8px;
+    max-height: 250px;
   }
 
-  .leaderboard {
-    width: 100%;
+  .challenge-section h2 {
+    font-size: 14px;
+  }
+
+  .code-editor {
+    font-size: 9px;
+    padding: 4px;
+  }
+
+  .submit-challenge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .chat-container {
+    padding: 8 8px;
+    max-height: 250px;
+  }
+
+  .chat-input {
+    font-size: 10px;
+    min-width: 120px;
+  }
+
+  .mic-button,
+  .send-button,
+  .file-label {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .message {
+    padding: 6px;
+  }
+
+  .response-meta {
+    font-size: 7px;
+    gap: 4px;
+  }
+
+  .response-actions {
+    gap: 3px;
+  }
+
+  .play-button,
+  .action-button {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+
+  .comment-input {
+    font-size: 9px;
+    padding: 3px;
+  }
+
+  .comment {
+    font-size: 9px;
+    padding: 3px;
+  }
+
+  .timestamp {
+    font-size: 7px;
   }
 }
 
+/* Small phones (480px and below) */
 @media (max-width: 480px) {
   .header {
-    flex-direction: column;
-    gap: 8px;
-    padding: 8px 10px;
-  }
-
-  .header-right {
-    flex-wrap: wrap;
-    justify-content: center;
+    padding: 6px 8px;
   }
 
   .app-title {
-    font-size: 18px;
+    font-size: 14px;
+  }
+
+  .user-stats {
+    font-size: 8px;
+    gap: 4px;
+  }
+
+  .theme-toggle {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .sidebar {
+    width: 160px;
+    padding: 10px;
+  }
+
+  .sidebar-section h2 {
+    font-size: 12px;
+  }
+
+  .settings-bar select,
+  .settings-bar label,
+  .settings-bar button {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .project-input {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .project-list button {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .sidebar-button {
+    font-size: 10px;
+    padding: 4px;
   }
 
   .language-selection {
@@ -1358,11 +1622,11 @@
   }
 
   .language-selection h2 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .language-options {
-    gap: 8px;
+    gap: 6px;
   }
 
   .language-button {
@@ -1376,7 +1640,7 @@
   }
 
   .learning-path h2 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .back-button {
@@ -1399,8 +1663,78 @@
   .lesson-card p {
     font-size: 10px;
   }
+
+  .challenge-section {
+    padding: 8px;
+    max-height: 200px;
+  }
+
+  .challenge-section h2 {
+    font-size: 14px;
+  }
+
+  .code-editor {
+    font-size: 9px;
+    padding: 4px;
+  }
+
+  .submit-challenge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .chat-container {
+    padding: 8px;
+    max-height: 200px;
+  }
+
+  .chat-input {
+    font-size: 10px;
+    min-width: 100px;
+  }
+
+  .mic-button,
+  .send-button,
+  .file-label {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .message {
+    padding: 6px;
+  }
+
+  .response-meta {
+    font-size: 7px;
+    gap: 4px;
+  }
+
+  .response-actions {
+    gap: 3px;
+  }
+
+  .play-button,
+  .action-button {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
+
+  .comment-input {
+    font-size: 9px;
+    padding: 3px;
+  }
+
+  .comment {
+    font-size: 9px;
+    padding: 3px;
+  }
+
+  .timestamp {
+    font-size: 7px;
+  }
 }
 
+/* Very small screens (320px and below) */
 @media (max-width: 320px) {
   .app-container {
     font-size: 12px;
@@ -1411,7 +1745,7 @@
   }
 
   .app-title {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .hamburger {
@@ -1419,8 +1753,8 @@
   }
 
   .user-stats {
-    font-size: 10px;
-    gap: 6px;
+    font-size: 8px;
+    gap: 4px;
   }
 
   .user-stats span {
@@ -1428,47 +1762,47 @@
   }
 
   .theme-toggle {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 3px 6px;
+    font-size: 10px;
   }
 
   .sidebar {
-    width: 160px;
-    padding: 10px;
+    width: 140px;
+    padding: 8px;
   }
 
   .sidebar-section h2 {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .settings-bar select,
   .settings-bar label,
   .settings-bar button {
-    padding: 5px;
-    font-size: 10px;
+    font-size: 9px;
+    padding: 3px;
   }
 
   .project-input {
-    padding: 5px;
-    font-size: 10px;
+    font-size: 9px;
+    padding: 3px;
   }
 
   .project-list button {
-    padding: 5px;
-    font-size: 10px;
+    font-size: 9px;
+    padding: 3px;
   }
 
   .sidebar-button {
-    padding: 5px;
-    font-size: 10px;
+    font-size: 9px;
+    padding: 3px;
   }
 
   .main-content {
-    padding: 8px;
+    padding: 6px;
   }
 
   .gamification-bar {
-    padding: 8px;
+    padding: 6px;
   }
 
   .progress-bar {
@@ -1477,7 +1811,7 @@
   }
 
   .progress-bar span {
-    font-size: 9px;
+    font-size: 8px;
     line-height: 14px;
   }
 
@@ -1498,7 +1832,7 @@
   }
 
   .language-selection h2 {
-    font-size: 14px;
+    font-size: 13px;
     margin-bottom: 10px;
   }
 
@@ -1518,7 +1852,7 @@
   }
 
   .learning-path h2 {
-    font-size: 14px;
+    font-size: 13px;
     margin-bottom: 10px;
   }
 
@@ -1550,83 +1884,85 @@
   }
 
   .challenge-section {
-    padding: 10px;
+    padding: 6px;
+    max-height: 180px;
   }
 
   .challenge-section h2 {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .code-editor {
-    padding: 6px;
-    font-size: 10px;
+    padding: 5px;
+    font-size: 8px;
   }
 
   .submit-challenge {
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 4px 8px;
+    font-size: 9px;
   }
 
   .chat-container {
-    padding: 10px;
+    padding: 6px;
+    max-height: 180px;
   }
 
   .messages {
-    max-height: 250px;
+    max-height: 150px;
   }
 
   .message {
-    padding: 6px;
-    font-size: 11px;
+    padding: 5px;
+    font-size: 10px;
   }
 
   .user-message {
-    margin-left: 10%;
+    margin-left: 8%;
   }
 
   .bot-message {
-    margin-right: 10%;
+    margin-right: 8%;
   }
 
   .timestamp {
-    font-size: 9px;
+    font-size: 8px;
   }
 
   .response-meta {
-    font-size: 9px;
-    gap: 8px;
+    font-size: 8px;
+    gap: 6px;
   }
 
   .play-button,
   .action-button {
-    padding: 4px;
-    font-size: 10px;
+    padding: 3px 6px;
+    font-size: 9px;
   }
 
   .comment-input {
-    padding: 5px;
-    font-size: 10px;
+    padding: 4px;
+    font-size: 9px;
   }
 
   .comment {
-    padding: 5px;
-    font-size: 10px;
+    padding: 4px;
+    font-size: 9px;
   }
 
   .chat-input {
-    padding: 6px;
-    font-size: 11px;
+    padding: 5px;
+    font-size: 10px;
   }
 
   .mic-button,
   .send-button,
   .file-label {
-    padding: 6px;
-    font-size: 11px;
+    padding: 5px;
+    font-size: 10px;
   }
 
   .modal-content {
-    padding: 10px;
+    padding: 8px;
     max-width: 95%;
   }
 
