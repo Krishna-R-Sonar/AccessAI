@@ -340,6 +340,8 @@
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .app-container.dark .gamification-bar {
@@ -353,6 +355,7 @@
   border-radius: 5px;
   height: 20px;
   position: relative;
+  min-width: 100px;
 }
 
 .app-container.dark .progress-bar {
@@ -389,6 +392,7 @@
   padding: 10px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
 }
 
 .app-container.dark .leaderboard {
@@ -416,6 +420,9 @@
 .language-selection {
   text-align: center;
   margin-bottom: 30px;
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .language-selection h2 {
@@ -429,6 +436,8 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 15px;
+  max-width: 100%;
+  padding: 0 10px;
 }
 
 .language-button {
@@ -440,6 +449,9 @@
   color: white;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
+  min-width: 120px;
+  flex: 1 1 auto;
+  max-width: 200px;
 }
 
 .app-container.dark .language-button {
@@ -463,6 +475,7 @@
 /* Learning Path Styles */
 .learning-path {
   margin-bottom: 30px;
+  padding: 0 10px;
 }
 
 .learning-path h2 {
@@ -506,6 +519,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
+  max-width: 100%;
 }
 
 .lesson-card {
@@ -1164,6 +1178,35 @@
 }
 
 /* Responsive Design */
+@media (max-width: 900px) {
+  .language-options {
+    gap: 10px;
+  }
+
+  .language-button {
+    min-width: 100px;
+    max-width: 150px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .lesson-card {
+    padding: 12px;
+  }
+
+  .lesson-card h3 {
+    font-size: 16px;
+  }
+
+  .lesson-card p {
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 768px) {
   .main-layout {
     flex-direction: column;
@@ -1208,6 +1251,64 @@
   .mic-button {
     width: 100%;
   }
+
+  .language-options {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .language-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .lessons-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .language-selection h2 {
+    font-size: 20px;
+  }
+
+  .language-button {
+    max-width: 250px;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .learning-path h2 {
+    font-size: 20px;
+  }
+
+  .lesson-card {
+    padding: 10px;
+  }
+
+  .lesson-card h3 {
+    font-size: 15px;
+  }
+
+  .lesson-card p {
+    font-size: 12px;
+  }
+
+  .gamification-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .progress-bar {
+    margin: 10px 0;
+  }
+
+  .leaderboard {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1225,12 +1326,34 @@
     font-size: 20px;
   }
 
-  .language-options {
-    flex-direction: column;
-    align-items: center;
+  .language-selection {
+    padding: 15px;
   }
 
-  .lessons-list {
-    grid-template-columns: 1fr;
+  .language-selection h2 {
+    font-size: 18px;
+  }
+
+  .language-options {
+    gap: 10px;
+  }
+
+  .language-button {
+    max-width: 200px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .learning-path {
+    padding: 0 5px;
+  }
+
+  .learning-path h2 {
+    font-size: 18px;
+  }
+
+  .back-button {
+    padding: 6px 12px;
+    font-size: 14px;
   }
 }
