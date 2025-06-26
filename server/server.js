@@ -185,7 +185,7 @@ app.post('/chat', authenticateToken, async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const chat = model.startChat({
       history: messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
