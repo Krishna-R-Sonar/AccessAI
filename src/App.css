@@ -1,4 +1,3 @@
-/* Filename: src/App.css */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,6 +22,51 @@
 .app-container.dark {
   background-color: #1e1e1e;
   color: #ddd;
+}
+
+/* Mobile-first container utility */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+@media (min-width: 475px) {
+  .container {
+    max-width: 475px;
+  }
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
 }
 
 /* Header Styles */
@@ -159,6 +203,10 @@
 .app-container.dark .sidebar {
   background-color: #2c2c2c;
   border-right: 1px solid #444;
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-section {
@@ -1191,821 +1239,236 @@
   font-weight: 600;
 }
 
-/* Responsive Design */
+/* Responsive Design - Mobile First */
 
-/* Large screens (1024px and below) */
-@media (max-width: 1024px) {
+/* Base (mobile <475px) - already defined */
+
+/* xs (475px+) */
+@media (min-width: 475px) {
+  .header {
+    padding: 10px 15px;
+  }
+
+  .app-title {
+    font-size: 20px;
+  }
+
+  .user-stats {
+    font-size: 12px;
+  }
+
+  .theme-toggle {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
   .sidebar {
     width: 180px;
+    transform: none; /* Always visible */
   }
 
   .main-content {
-    padding: 12px;
     margin-left: 180px;
   }
 
   .language-options {
-    gap: 8px;
+    gap: 10px;
   }
 
   .language-button {
-    min-width: 90px;
-    max-width: 40%;
-    padding: 8px 16px;
-    font-size: 13px;
+    min-width: 100px;
+    max-width: 45%;
+    padding: 10px 20px;
+    font-size: 14px;
   }
 
   .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
   }
 
   .lesson-card {
-    padding: 10px;
+    padding: 12px;
   }
 
   .lesson-card h3 {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .lesson-card p {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .challenge-section,
   .chat-container {
-    max-height: 350px;
+    max-height: 400px;
   }
 
   .messages {
-    max-height: 250px;
+    max-height: 300px;
   }
 }
 
-/* Tablets (768px and below) */
-@media (max-width: 768px) {
+/* sm (640px+) */
+@media (min-width: 640px) {
   .header {
-    padding: 8px 10px;
+    flex-wrap: nowrap;
   }
 
-  .app-title {
-    font-size: 18px;
-  }
-
-  .header-right {
-    gap: 6px;
-  }
-
-  .user-stats {
-    font-size: 10px;
-    gap: 6px;
-  }
-
-  .theme-toggle {
-    padding: 4px 8px;
-    font-size: 12px;
+  .header-left, .header-right {
+    flex-wrap: nowrap;
   }
 
   .hamburger {
-    display: block;
-  }
-
-  .main-layout {
-    flex-direction: column;
+    display: none;
   }
 
   .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
+    width: 200px;
   }
 
   .main-content {
-    padding: 10px;
-    margin-left: 0; /* Remove margin when sidebar is hidden */
+    margin-left: 200px;
   }
 
   .gamification-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: row;
   }
 
   .progress-bar {
-    width: 100%;
-    margin: 0;
-  }
-
-  .leaderboard {
-    width: 100%;
+    min-width: 80px;
   }
 
   .language-options {
-    gap: 8px;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
   }
 
   .language-button {
-    padding: 8px 16px;
-    font-size: 12px;
-    min-width: 90px;
-    max-width: 250px;
-    width: 100%;
+    max-width: none;
+    width: auto;
   }
 
   .lessons-list {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
-  }
-
-  .lesson-card {
-    padding: 10px;
-  }
-
-  .lesson-card h3 {
-    font-size: 14px;
-  }
-
-  .lesson-card p {
-    font-size: 10px;
-  }
-
-  .lesson-card button {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .challenge-section {
-    padding: 10px;
-    max-height: 300px;
-  }
-
-  .challenge-section h2 {
-    font-size: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
   .code-editor {
-    font-size: 10px;
-    padding: 6px;
-    max-height: 150px;
-  }
-
-  .submit-challenge {
-    padding: 6px 12px;
     font-size: 12px;
-  }
-
-  .chat-container {
-    padding: 10px;
-    max-height: 300px;
-  }
-
-  .messages {
     max-height: 200px;
   }
 
   .chat-input {
-    font-size: 12px;
-    min-width: 150px;
+    min-width: 200px;
+  }
+
+  .input-container {
+    flex-direction: row;
   }
 
   .mic-button,
   .send-button,
   .file-label {
-    padding: 6px 12px;
+    width: auto;
+  }
+}
+
+/* md (768px+) */
+@media (min-width: 768px) {
+  .user-stats {
     font-size: 12px;
-    width: 100%;
+    gap: 10px;
   }
 
-  .input-container {
-    flex-direction: column;
-    align-items: stretch;
+  .theme-toggle {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .sidebar {
+    transform: none;
+  }
+
+  .lessons-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .challenge-section {
+    max-height: 400px;
+  }
+
+  .chat-container {
+    max-height: 400px;
+  }
+
+  .messages {
+    max-height: 300px;
+  }
+
+  .chat-input {
+    font-size: 14px;
+  }
+
+  .mic-button,
+  .send-button,
+  .file-label {
+    padding: 8px 16px;
+    font-size: 14px;
   }
 
   .message {
-    padding: 8px;
+    padding: 10px;
   }
 
   .user-message,
   .bot-message {
-    max-width: 85%;
-  }
-
-  .response-meta {
-    font-size: 8px;
-    gap: 6px;
-  }
-
-  .response-actions {
-    gap: 4px;
-  }
-
-  .play-button,
-  .action-button {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
-  .comment-input {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .comment {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .timestamp {
-    font-size: 8px;
+    max-width: 70%;
   }
 }
 
-/* Large phones (600px and below) */
-@media (max-width: 600px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .header-left {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .header-right {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .app-title {
-    font-size: 16px;
-  }
-
-  .user-stats {
-    font-size: 9px;
-    gap: 4px;
-  }
-
-  .theme-toggle {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
+/* lg (1024px+) */
+@media (min-width: 1024px) {
   .sidebar {
-    width: 160px;
-  }
-
-  .settings-bar select,
-  .settings-bar label,
-  .settings-bar button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .project-input {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .project-list button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .sidebar-button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .language-selection h2 {
-    font-size: 16px;
-  }
-
-  .language-button {
-    padding: 6px 12px;
-    font-size: 10px;
-    min-width: 80px;
-    max-width: 200px;
-  }
-
-  .learning-path h2 {
-    font-size: 16px;
-  }
-
-  .back-button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-
-  .lessons-list {
-    grid-template-columns: 1fr;
-  }
-
-  .lesson-card {
-    padding: 8px;
-  }
-
-  .lesson-card h3 {
-    font-size: 12px;
-  }
-
-  .lesson-card p {
-    font-size: 9px;
-  }
-
-  .lesson-card button {
-    padding: 3px 6px;
-    font-size: 9px;
-  }
-
-  .challenge-section {
-    padding: 8px;
-    max-height: 250px;
-  }
-
-  .challenge-section h2 {
-    font-size: 14px;
-  }
-
-  .code-editor {
-    font-size: 9px;
-    padding: 4px;
-    max-height: 120px;
-  }
-
-  .submit-challenge {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .chat-container {
-    padding: 8px;
-    max-height: 250px;
-  }
-
-  .messages {
-    max-height: 150px;
-  }
-
-  .chat-input {
-    font-size: 10px;
-    min-width: 120px;
-  }
-
-  .mic-button,
-  .send-button,
-  .file-label {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .message {
-    padding: 6px;
-  }
-
-  .response-meta {
-    font-size: 7px;
-    gap: 4px;
-  }
-
-  .response-actions {
-    gap: 3px;
-  }
-
-  .play-button,
-  .action-button {
-    padding: 2px 4px;
-    font-size: 9px;
-  }
-
-  .comment-input {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .comment {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .timestamp {
-    font-size: 7px;
-  }
-}
-
-/* Small phones (480px and below) */
-@media (max-width: 480px) {
-  .header {
-    padding: 6px 8px;
-  }
-
-  .app-title {
-    font-size: 14px;
-  }
-
-  .user-stats {
-    font-size: 8px;
-    gap: 4px;
-  }
-
-  .theme-toggle {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
-  .sidebar {
-    width: 160px;
-    padding: 10px;
-  }
-
-  .sidebar-section h2 {
-    font-size: 12px;
-  }
-
-  .settings-bar select,
-  .settings-bar label,
-  .settings-bar button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .project-input {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .project-list button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .sidebar-button {
-    font-size: 10px;
-    padding: 4px;
-  }
-
-  .language-selection {
-    padding: 10px;
-  }
-
-  .language-selection h2 {
-    font-size: 14px;
-  }
-
-  .language-options {
-    gap: 6px;
-  }
-
-  .language-button {
-    max-width: 180px;
-    padding: 6px;
-    font-size: 12px;
-  }
-
-  .learning-path {
-    padding: 0 3px;
-  }
-
-  .learning-path h2 {
-    font-size: 14px;
-  }
-
-  .back-button {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-
-  .lessons-list {
-    gap: 10px;
-  }
-
-  .lesson-card {
-    padding: 6px;
-  }
-
-  .lesson-card h3 {
-    font-size: 12px;
-  }
-
-  .lesson-card p {
-    font-size: 10px;
-  }
-
-  .challenge-section {
-    padding: 8px;
-    max-height: 200px;
-  }
-
-  .challenge-section h2 {
-    font-size: 14px;
-  }
-
-  .code-editor {
-    font-size: 9px;
-    padding: 4px;
-    max-height: 100px;
-  }
-
-  .submit-challenge {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .chat-container {
-    padding: 8px;
-    max-height: 200px;
-  }
-
-  .messages {
-    max-height: 120px;
-  }
-
-  .chat-input {
-    font-size: 10px;
-    min-width: 100px;
-  }
-
-  .mic-button,
-  .send-button,
-  .file-label {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .message {
-    padding: 6px;
-  }
-
-  .response-meta {
-    font-size: 7px;
-    gap: 4px;
-  }
-
-  .response-actions {
-    gap: 3px;
-  }
-
-  .play-button,
-  .action-button {
-    padding: 2px 4px;
-    font-size: 9px;
-  }
-
-  .comment-input {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .comment {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .timestamp {
-    font-size: 7px;
-  }
-}
-
-/* Very small screens (320px and below) */
-@media (max-width: 320px) {
-  .app-container {
-    font-size: 12px;
-  }
-
-  .header {
-    padding: 6px 8px;
-  }
-
-  .app-title {
-    font-size: 14px;
-  }
-
-  .hamburger {
-    font-size: 18px;
-  }
-
-  .user-stats {
-    font-size: 8px;
-    gap: 4px;
-  }
-
-  .user-stats span {
-    padding: 3px 6px;
-  }
-
-  .theme-toggle {
-    padding: 3px 6px;
-    font-size: 10px;
-  }
-
-  .sidebar {
-    width: 140px;
-    padding: 8px;
-  }
-
-  .sidebar-section h2 {
-    font-size: 11px;
-  }
-
-  .settings-bar select,
-  .settings-bar label,
-  .settings-bar button {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .project-input {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .project-list button {
-    font-size: 9px;
-    padding: 3px;
-  }
-
-  .sidebar-button {
-    font-size: 9px;
-    padding: 3px;
+    width: 200px;
   }
 
   .main-content {
-    padding: 6px;
-  }
-
-  .gamification-bar {
-    padding: 6px;
-  }
-
-  .progress-bar {
-    height: 14px;
-    min-width: 60px;
-  }
-
-  .progress-bar span {
-    font-size: 8px;
-    line-height: 14px;
-  }
-
-  .leaderboard {
-    padding: 6px;
-  }
-
-  .leaderboard h2 {
-    font-size: 12px;
-  }
-
-  .leaderboard li {
-    font-size: 10px;
-  }
-
-  .language-selection {
-    padding: 8px;
-  }
-
-  .language-selection h2 {
-    font-size: 13px;
-    margin-bottom: 10px;
-  }
-
-  .language-options {
-    gap: 6px;
+    padding: 15px;
+    margin-left: 200px;
   }
 
   .language-button {
-    padding: 5px 10px;
-    font-size: 11px;
-    min-width: 80px;
-    max-width: 100%;
-  }
-
-  .learning-path {
-    padding: 0 2px;
-  }
-
-  .learning-path h2 {
-    font-size: 13px;
-    margin-bottom: 10px;
-  }
-
-  .back-button {
-    padding: 4px 8px;
-    font-size: 11px;
+    min-width: 100px;
+    max-width: 45%;
   }
 
   .lessons-list {
-    gap: 8px;
-  }
-
-  .lesson-card {
-    padding: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
   .lesson-card h3 {
-    font-size: 11px;
-    margin-bottom: 6px;
+    font-size: 16px;
   }
 
   .lesson-card p {
-    font-size: 9px;
+    font-size: 12px;
   }
 
-  .lesson-card button {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .challenge-section {
-    padding: 6px;
-    max-height: 180px;
-  }
-
-  .challenge-section h2 {
-    font-size: 13px;
-  }
-
-  .code-editor {
-    padding: 5px;
-    font-size: 8px;
-    max-height: 80px;
-  }
-
-  .submit-challenge {
-    padding: 4px 8px;
-    font-size: 9px;
-  }
-
+  .challenge-section,
   .chat-container {
-    padding: 6px;
-    max-height: 180px;
+    max-height: 400px;
   }
 
   .messages {
-    max-height: 100px;
+    max-height: 300px;
   }
+}
 
-  .message {
-    padding: 5px;
-    font-size: 10px;
-  }
+/* xl (1280px+) */
+@media (min-width: 1280px) {
+  /* Additional adjustments if needed */
+}
 
-  .user-message {
-    margin-left: 8%;
-  }
-
-  .bot-message {
-    margin-right: 8%;
-  }
-
-  .timestamp {
-    font-size: 8px;
-  }
-
-  .response-meta {
-    font-size: 8px;
-    gap: 6px;
-  }
-
-  .play-button,
-  .action-button {
-    padding: 3px 6px;
-    font-size: 9px;
-  }
-
-  .comment-input {
-    padding: 4px;
-    font-size: 9px;
-  }
-
-  .comment {
-    padding: 4px;
-    font-size: 9px;
-  }
-
-  .chat-input {
-    padding: 5px;
-    font-size: 10px;
-  }
-
-  .mic-button,
-  .send-button,
-  .file-label {
-    padding: 5px;
-    font-size: 10px;
-  }
-
-  .modal-content {
-    padding: 8px;
-    max-width: 95%;
-  }
-
-  .modal-close {
-    font-size: 12px;
-  }
+/* 2xl (1536px+) */
+@media (min-width: 1536px) {
+  /* Additional adjustments if needed */
 }

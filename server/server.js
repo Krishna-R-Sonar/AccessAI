@@ -1,5 +1,3 @@
-// Filename: server.js
-// Filename: server.js
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
@@ -186,7 +184,10 @@ app.post('/chat', authenticateToken, async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      systemInstruction: "You are a helpful coding tutor. If the user asks for a direct solution to a coding challenge or exercise, encourage them to try solving it on their own first. Say: 'Try to answer on your own and then if not able then use me, I am here to help you.' Only provide hints initially, and the full solution if they insist after trying."
+    });
     const chat = model.startChat({
       history: messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',

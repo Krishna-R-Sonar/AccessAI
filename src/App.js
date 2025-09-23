@@ -1,4 +1,3 @@
-// Filename: src/App.js
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import ReactMarkdown from 'react-markdown';
@@ -14,43 +13,330 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 // Backend API URL from environment variable or default
 const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
 
-// Learning paths for each programming language
+// Learning paths for each programming language - updated to nested structure with chapters
 const learningPaths = {
-  javascript: [
-    { id: 1, title: 'Variables and Data Types', difficulty: 'Beginner', points: 50 },
-    { id: 2, title: 'Functions and Scope', difficulty: 'Beginner', points: 75 },
-    { id: 3, title: 'Arrays and Loops', difficulty: 'Intermediate', points: 100 },
-    { id: 4, title: 'Promises and Async/Await', difficulty: 'Intermediate', points: 150 },
-    { id: 5, title: 'Build a Mini Project', difficulty: 'Advanced', points: 200 },
-  ],
-  python: [
-    { id: 1, title: 'Basics of Python', difficulty: 'Beginner', points: 50 },
-    { id: 2, title: 'Lists and Dictionaries', difficulty: 'Beginner', points: 75 },
-    { id: 3, title: 'Functions and Modules', difficulty: 'Intermediate', points: 100 },
-    { id: 4, title: 'File Handling', difficulty: 'Intermediate', points: 150 },
-    { id: 5, title: 'Data Analysis with Pandas', difficulty: 'Advanced', points: 200 },
-  ],
-  java: [
-    { id: 1, title: 'Classes and Objects', difficulty: 'Beginner', points: 50 },
-    { id: 2, title: 'Methods and Constructors', difficulty: 'Beginner', points: 75 },
-    { id: 3, title: 'Inheritance and Polymorphism', difficulty: 'Intermediate', points: 100 },
-    { id: 4, title: 'Exception Handling', difficulty: 'Intermediate', points: 150 },
-    { id: 5, title: 'Build a Java App', difficulty: 'Advanced', points: 200 },
-  ],
-  cpp: [
-    { id: 1, title: 'Pointers and Memory', difficulty: 'Beginner', points: 50 },
-    { id: 2, title: 'Classes and Objects', difficulty: 'Beginner', points: 75 },
-    { id: 3, title: 'Templates', difficulty: 'Intermediate', points: 100 },
-    { id: 4, title: 'STL (Standard Template Library)', difficulty: 'Intermediate', points: 150 },
-    { id: 5, title: 'Build a C++ Project', difficulty: 'Advanced', points: 200 },
-  ],
-  solidity: [
-    { id: 1, title: 'Introduction to Smart Contracts', difficulty: 'Beginner', points: 50 },
-    { id: 2, title: 'Writing Your First Contract', difficulty: 'Beginner', points: 75 },
-    { id: 3, title: 'State Variables and Functions', difficulty: 'Intermediate', points: 100 },
-    { id: 4, title: 'Build a Voting Contract', difficulty: 'Intermediate', points: 150 },
-    { id: 5, title: 'Create a Simple Token', difficulty: 'Advanced', points: 200 },
-  ],
+  javascript: {
+    chapters: [
+      {
+        title: 'JavaScript Fundamentals',
+        lessons: [
+          { id: 1, title: 'Introduction to JavaScript and its role in web development', difficulty: 'Beginner', points: 50 },
+          { id: 2, title: 'Setting up development environment (Node.js, browser console)', difficulty: 'Beginner', points: 50 },
+          { id: 3, title: 'Variables (var, let, const) and data types', difficulty: 'Beginner', points: 50 },
+          { id: 4, title: 'Operators and expressions', difficulty: 'Beginner', points: 50 },
+          { id: 5, title: 'Basic input/output', difficulty: 'Beginner', points: 50 },
+        ],
+      },
+      {
+        title: 'Control Flow and Functions',
+        lessons: [
+          { id: 6, title: 'Conditional statements (if/else, switch)', difficulty: 'Beginner', points: 75 },
+          { id: 7, title: 'Looping structures (for, while, do-while)', difficulty: 'Beginner', points: 75 },
+          { id: 8, title: 'Functions declaration and expression', difficulty: 'Beginner', points: 75 },
+          { id: 9, title: 'Function parameters and return values', difficulty: 'Beginner', points: 75 },
+          { id: 10, title: 'Scope and hoisting', difficulty: 'Beginner', points: 75 },
+        ],
+      },
+      {
+        title: 'Arrays and Objects',
+        lessons: [
+          { id: 11, title: 'Array creation and manipulation', difficulty: 'Intermediate', points: 100 },
+          { id: 12, title: 'Array methods (mutating and non-mutating)', difficulty: 'Intermediate', points: 100 },
+          { id: 13, title: 'Object literals and properties', difficulty: 'Intermediate', points: 100 },
+          { id: 14, title: 'Object methods and `this` keyword', difficulty: 'Intermediate', points: 100 },
+          { id: 15, title: 'Object manipulation techniques', difficulty: 'Intermediate', points: 100 },
+        ],
+      },
+      {
+        title: 'Advanced JavaScript Concepts',
+        lessons: [
+          { id: 16, title: 'Closures and lexical scoping', difficulty: 'Intermediate', points: 150 },
+          { id: 17, title: 'Prototypes and inheritance', difficulty: 'Intermediate', points: 150 },
+          { id: 18, title: 'Asynchronous JavaScript (callbacks, promises, async/await)', difficulty: 'Intermediate', points: 150 },
+          { id: 19, title: 'Error handling (try/catch/finally)', difficulty: 'Intermediate', points: 150 },
+          { id: 20, title: 'ES6+ features (destructuring, spread/rest, template literals)', difficulty: 'Intermediate', points: 150 },
+        ],
+      },
+      {
+        title: 'Modern JavaScript and Browser APIs',
+        lessons: [
+          { id: 21, title: 'DOM manipulation and events', difficulty: 'Advanced', points: 200 },
+          { id: 22, title: 'Fetch API and AJAX', difficulty: 'Advanced', points: 200 },
+          { id: 23, title: 'Modern array methods (map, filter, reduce)', difficulty: 'Advanced', points: 200 },
+          { id: 24, title: 'Modules (import/export)', difficulty: 'Advanced', points: 200 },
+          { id: 25, title: 'Web Storage API', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+      {
+        title: 'Testing and Tooling',
+        lessons: [
+          { id: 26, title: 'Debugging techniques', difficulty: 'Advanced', points: 200 },
+          { id: 27, title: 'Unit testing with Jest', difficulty: 'Advanced', points: 200 },
+          { id: 28, title: 'Package management with npm', difficulty: 'Advanced', points: 200 },
+          { id: 29, title: 'Build tools (Webpack, Babel)', difficulty: 'Advanced', points: 200 },
+          { id: 30, title: 'Code quality tools (ESLint, Prettier)', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+    ],
+  },
+  // Similarly for python, java, cpp, solidity - filling based on provided structure
+  python: {
+    chapters: [
+      {
+        title: 'Python Basics',
+        lessons: [
+          { id: 1, title: 'Introduction to Python and its applications', difficulty: 'Beginner', points: 50 },
+          { id: 2, title: 'Setting up Python environment', difficulty: 'Beginner', points: 50 },
+          { id: 3, title: 'Variables, data types, and basic operations', difficulty: 'Beginner', points: 50 },
+          { id: 4, title: 'Input/output operations', difficulty: 'Beginner', points: 50 },
+          { id: 5, title: 'Comments and documentation', difficulty: 'Beginner', points: 50 },
+        ],
+      },
+      {
+        title: 'Control Structures and Functions',
+        lessons: [
+          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
+          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
+          { id: 8, title: 'Function definition and invocation', difficulty: 'Beginner', points: 75 },
+          { id: 9, title: 'Function arguments and return values', difficulty: 'Beginner', points: 75 },
+          { id: 10, title: 'Lambda functions', difficulty: 'Beginner', points: 75 },
+        ],
+      },
+      {
+        title: 'Data Structures',
+        lessons: [
+          { id: 11, title: 'Lists and list comprehensions', difficulty: 'Intermediate', points: 100 },
+          { id: 12, title: 'Tuples and sets', difficulty: 'Intermediate', points: 100 },
+          { id: 13, title: 'Dictionaries and dictionary comprehensions', difficulty: 'Intermediate', points: 100 },
+          { id: 14, title: 'Strings and string manipulation', difficulty: 'Intermediate', points: 100 },
+          { id: 15, title: 'Common operations on data structures', difficulty: 'Intermediate', points: 100 },
+        ],
+      },
+      {
+        title: 'Object-Oriented Programming',
+        lessons: [
+          { id: 16, title: 'Classes and objects', difficulty: 'Intermediate', points: 150 },
+          { id: 17, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 150 },
+          { id: 18, title: 'Encapsulation and abstraction', difficulty: 'Intermediate', points: 150 },
+          { id: 19, title: 'Special methods (__init__, __str__, etc.)', difficulty: 'Intermediate', points: 150 },
+          { id: 20, title: 'Exception handling', difficulty: 'Intermediate', points: 150 },
+        ],
+      },
+      {
+        title: 'Advanced Python Concepts',
+        lessons: [
+          { id: 21, title: 'Modules and packages', difficulty: 'Advanced', points: 200 },
+          { id: 22, title: 'File handling', difficulty: 'Advanced', points: 200 },
+          { id: 23, title: 'Decorators and generators', difficulty: 'Advanced', points: 200 },
+          { id: 24, title: 'Context managers', difficulty: 'Advanced', points: 200 },
+          { id: 25, title: 'Regular expressions', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+      {
+        title: 'Python Ecosystem',
+        lessons: [
+          { id: 26, title: 'Virtual environments', difficulty: 'Advanced', points: 200 },
+          { id: 27, title: 'Package management with pip', difficulty: 'Advanced', points: 200 },
+          { id: 28, title: 'Popular libraries (NumPy, Pandas, Requests)', difficulty: 'Advanced', points: 200 },
+          { id: 29, title: 'Web frameworks introduction (Flask, Django)', difficulty: 'Advanced', points: 200 },
+          { id: 30, title: 'Testing with unittest/pytest', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+    ],
+  },
+  java: {
+    chapters: [
+      // Fill similarly from provided structure
+      {
+        title: 'Java Fundamentals',
+        lessons: [
+          { id: 1, title: 'Introduction to Java and JVM', difficulty: 'Beginner', points: 50 },
+          { id: 2, title: 'Setting up Java development environment', difficulty: 'Beginner', points: 50 },
+          { id: 3, title: 'Basic syntax and program structure', difficulty: 'Beginner', points: 50 },
+          { id: 4, title: 'Variables, data types, and operators', difficulty: 'Beginner', points: 50 },
+          { id: 5, title: 'Basic input/output', difficulty: 'Beginner', points: 50 },
+        ],
+      },
+      {
+        title: 'Control Flow and Methods',
+        lessons: [
+          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
+          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
+          { id: 8, title: 'Method declaration and invocation', difficulty: 'Beginner', points: 75 },
+          { id: 9, title: 'Method overloading', difficulty: 'Beginner', points: 75 },
+          { id: 10, title: 'Command-line arguments', difficulty: 'Beginner', points: 75 },
+        ],
+      },
+      {
+        title: 'Object-Oriented Programming',
+        lessons: [
+          { id: 11, title: 'Classes and objects', difficulty: 'Intermediate', points: 100 },
+          { id: 12, title: 'Constructors', difficulty: 'Intermediate', points: 100 },
+          { id: 13, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 100 },
+          { id: 14, title: 'Interfaces and abstract classes', difficulty: 'Intermediate', points: 100 },
+          { id: 15, title: 'Packages and access modifiers', difficulty: 'Intermediate', points: 100 },
+        ],
+      },
+      {
+        title: 'Java Collections Framework',
+        lessons: [
+          { id: 16, title: 'List implementations (ArrayList, LinkedList)', difficulty: 'Intermediate', points: 150 },
+          { id: 17, title: 'Set implementations (HashSet, TreeSet)', difficulty: 'Intermediate', points: 150 },
+          { id: 18, title: 'Map implementations (HashMap, TreeMap)', difficulty: 'Intermediate', points: 150 },
+          { id: 19, title: 'Iterators and comparators', difficulty: 'Intermediate', points: 150 },
+          { id: 20, title: 'Collections utility class', difficulty: 'Intermediate', points: 150 },
+        ],
+      },
+      {
+        title: 'Exception Handling and I/O',
+        lessons: [
+          { id: 21, title: 'Exception hierarchy', difficulty: 'Advanced', points: 200 },
+          { id: 22, title: 'Try-catch-finally blocks', difficulty: 'Advanced', points: 200 },
+          { id: 23, title: 'Custom exceptions', difficulty: 'Advanced', points: 200 },
+          { id: 24, title: 'File I/O operations', difficulty: 'Advanced', points: 200 },
+          { id: 25, title: 'Serialization', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+      {
+        title: 'Advanced Java Concepts',
+        lessons: [
+          { id: 26, title: 'Multithreading', difficulty: 'Advanced', points: 200 },
+          { id: 27, title: 'Generics', difficulty: 'Advanced', points: 200 },
+          { id: 28, title: 'Annotations', difficulty: 'Advanced', points: 200 },
+          { id: 29, title: 'Lambda expressions and functional interfaces', difficulty: 'Advanced', points: 200 },
+          { id: 30, title: 'Java modules system', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+    ],
+  },
+  cpp: {
+    chapters: [
+      {
+        title: 'C++ Fundamentals',
+        lessons: [
+          { id: 1, title: 'Introduction to C++ and its features', difficulty: 'Beginner', points: 50 },
+          { id: 2, title: 'Setting up development environment', difficulty: 'Beginner', points: 50 },
+          { id: 3, title: 'Basic syntax and program structure', difficulty: 'Beginner', points: 50 },
+          { id: 4, title: 'Variables, data types, and operators', difficulty: 'Beginner', points: 50 },
+          { id: 5, title: 'Basic input/output with iostream', difficulty: 'Beginner', points: 50 },
+        ],
+      },
+      {
+        title: 'Control Flow and Functions',
+        lessons: [
+          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
+          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
+          { id: 8, title: 'Function declaration and definition', difficulty: 'Beginner', points: 75 },
+          { id: 9, title: 'Function overloading', difficulty: 'Beginner', points: 75 },
+          { id: 10, title: 'References and pointers', difficulty: 'Beginner', points: 75 },
+        ],
+      },
+      {
+        title: 'Object-Oriented Programming',
+        lessons: [
+          { id: 11, title: 'Classes and objects', difficulty: 'Intermediate', points: 100 },
+          { id: 12, title: 'Constructors and destructors', difficulty: 'Intermediate', points: 100 },
+          { id: 13, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 100 },
+          { id: 14, title: 'Operator overloading', difficulty: 'Intermediate', points: 100 },
+          { id: 15, title: 'Templates and generic programming', difficulty: 'Intermediate', points: 100 },
+        ],
+      },
+      {
+        title: 'Memory Management',
+        lessons: [
+          { id: 16, title: 'Stack vs heap memory', difficulty: 'Intermediate', points: 150 },
+          { id: 17, title: 'Dynamic memory allocation', difficulty: 'Intermediate', points: 150 },
+          { id: 18, title: 'Smart pointers', difficulty: 'Intermediate', points: 150 },
+          { id: 19, title: 'Memory leaks and debugging', difficulty: 'Intermediate', points: 150 },
+          { id: 20, title: 'RAII principle', difficulty: 'Intermediate', points: 150 },
+        ],
+      },
+      {
+        title: 'Standard Template Library (STL)',
+        lessons: [
+          { id: 21, title: 'Containers (vector, list, map, etc.)', difficulty: 'Advanced', points: 200 },
+          { id: 22, title: 'Iterators', difficulty: 'Advanced', points: 200 },
+          { id: 23, title: 'Algorithms', difficulty: 'Advanced', points: 200 },
+          { id: 24, title: 'Function objects', difficulty: 'Advanced', points: 200 },
+          { id: 25, title: 'STL utilities', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+      {
+        title: 'Advanced C++ Concepts',
+        lessons: [
+          { id: 26, title: 'Exception handling', difficulty: 'Advanced', points: 200 },
+          { id: 27, title: 'File I/O operations', difficulty: 'Advanced', points: 200 },
+          { id: 28, title: 'Multithreading', difficulty: 'Advanced', points: 200 },
+          { id: 29, title: 'Move semantics', difficulty: 'Advanced', points: 200 },
+          { id: 30, title: 'Modern C++ features (C++11/14/17/20)', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+    ],
+  },
+  solidity: {
+    chapters: [
+      {
+        title: 'Blockchain and Ethereum Basics',
+        lessons: [
+          { id: 1, title: 'Introduction to blockchain technology', difficulty: 'Beginner', points: 50 },
+          { id: 2, title: 'Understanding Ethereum and smart contracts', difficulty: 'Beginner', points: 50 },
+          { id: 3, title: 'Setting up development environment (Remix, Truffle)', difficulty: 'Beginner', points: 50 },
+          { id: 4, title: 'Ethereum accounts and transactions', difficulty: 'Beginner', points: 50 },
+          { id: 5, title: 'Gas and transaction costs', difficulty: 'Beginner', points: 50 },
+        ],
+      },
+      {
+        title: 'Solidity Fundamentals',
+        lessons: [
+          { id: 6, title: 'Basic syntax and structure of smart contracts', difficulty: 'Beginner', points: 75 },
+          { id: 7, title: 'Data types and variables', difficulty: 'Beginner', points: 75 },
+          { id: 8, title: 'Functions and modifiers', difficulty: 'Beginner', points: 75 },
+          { id: 9, title: 'Events and logging', difficulty: 'Beginner', points: 75 },
+          { id: 10, title: 'Error handling (require, revert, assert)', difficulty: 'Beginner', points: 75 },
+        ],
+      },
+      {
+        title: 'Advanced Solidity Concepts',
+        lessons: [
+          { id: 11, title: 'Inheritance and interfaces', difficulty: 'Intermediate', points: 100 },
+          { id: 12, title: 'Libraries and imports', difficulty: 'Intermediate', points: 100 },
+          { id: 13, title: 'Memory vs storage', difficulty: 'Intermediate', points: 100 },
+          { id: 14, title: 'Function visibility and modifiers', difficulty: 'Intermediate', points: 100 },
+          { id: 15, title: 'Contract interactions', difficulty: 'Intermediate', points: 100 },
+        ],
+      },
+      {
+        title: 'Security Considerations',
+        lessons: [
+          { id: 16, title: 'Common vulnerabilities (reentrancy, overflow)', difficulty: 'Intermediate', points: 150 },
+          { id: 17, title: 'Security best practices', difficulty: 'Intermediate', points: 150 },
+          { id: 18, title: 'Testing strategies', difficulty: 'Intermediate', points: 150 },
+          { id: 19, title: 'Audit processes', difficulty: 'Intermediate', points: 150 },
+          { id: 20, title: 'Upgrade patterns', difficulty: 'Intermediate', points: 150 },
+        ],
+      },
+      {
+        title: 'Decentralized Application Development',
+        lessons: [
+          { id: 21, title: 'Web3.js and Ethers.js integration', difficulty: 'Advanced', points: 200 },
+          { id: 22, title: 'Frontend development for dApps', difficulty: 'Advanced', points: 200 },
+          { id: 23, title: 'IPFS integration', difficulty: 'Advanced', points: 200 },
+          { id: 24, title: 'Oracles and external data', difficulty: 'Advanced', points: 200 },
+          { id: 25, title: 'Token standards (ERC-20, ERC-721)', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+      {
+        title: 'Deployment and Maintenance',
+        lessons: [
+          { id: 26, title: 'Testnet deployment', difficulty: 'Advanced', points: 200 },
+          { id: 27, title: 'Mainnet deployment', difficulty: 'Advanced', points: 200 },
+          { id: 28, title: 'Monitoring and analytics', difficulty: 'Advanced', points: 200 },
+          { id: 29, title: 'Upgrade mechanisms', difficulty: 'Advanced', points: 200 },
+          { id: 30, title: 'Governance models', difficulty: 'Advanced', points: 200 },
+        ],
+      },
+    ],
+  },
 };
 
 // Badges for gamification milestones
@@ -72,6 +358,7 @@ function App({ user, setUser }) {
     return savedProjects ? JSON.parse(savedProjects) : [];
   });
   const [currentProject, setCurrentProject] = useState('');
+  const [newProjectName, setNewProjectName] = useState(''); // For creating/renaming
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState('');
@@ -100,119 +387,38 @@ function App({ user, setUser }) {
   });
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState('');
-  const [userProgress, setUserProgress] = useState(() => {
-    const savedProgress = localStorage.getItem('userProgress');
-    return savedProgress ? JSON.parse(savedProgress) : { points: 0, completedLessons: {}, badges: [] };
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [userProgress, setUserProgress] = useState({
+    points: 0,
+    completedLessons: {},
+    badges: [],
   });
   const [currentLesson, setCurrentLesson] = useState(null);
   const [challengeInput, setChallengeInput] = useState('');
   const [challengeResult, setChallengeResult] = useState(null);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  // New states for STT and TTS
-  const [isRecording, setIsRecording] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(false);
-  const [ttsSupported, setTtsSupported] = useState(false);
   const [autoTts, setAutoTts] = useState(false);
   const [speechError, setSpeechError] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const [ttsSupported, setTtsSupported] = useState(true);
 
-  // Refs
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
-  const recognitionRef = useRef(null);
-
   const navigate = useNavigate();
+  const recognitionRef = useRef(null);
+  const speechSynth = useRef(window.speechSynthesis);
 
-  // Initialize Speech Recognition for STT
+  // Scroll to bottom of messages
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      setSpeechSupported(true);
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-      recognitionRef.current.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        setInput(transcript);
-        setSpeechError('');
-      };
-
-      recognitionRef.current.onerror = (event) => {
-        let errorMessage = '';
-        switch (event.error) {
-          case 'no-speech':
-            errorMessage = 'No speech detected. Please try speaking again.';
-            break;
-          case 'audio-capture':
-            errorMessage = 'Microphone access denied. Please allow microphone access.';
-            break;
-          case 'not-allowed':
-            errorMessage = 'Microphone permission denied. Check browser settings.';
-            break;
-          case 'network':
-            errorMessage = 'Network error. Please check your connection.';
-            break;
-          default:
-            errorMessage = `Speech recognition error: ${event.error}. Try again.`;
-        }
-        setSpeechError(errorMessage);
-        setIsRecording(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsRecording(false);
-      };
-    } else {
-      setSpeechError('Speech recognition not supported. Use Chrome or Edge.');
-    }
-
-    // Check TTS support
-    if ('speechSynthesis' in window) {
-      setTtsSupported(true);
-    } else {
-      setSpeechError('Text-to-speech not supported in this browser.');
-    }
-  }, []);
-
-  // Persist state changes to localStorage
+  // Save messages and projects to localStorage
   useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     localStorage.setItem('chatProjects', JSON.stringify(projects));
-    localStorage.setItem('userProgress', JSON.stringify(userProgress));
-    localStorage.setItem('credits', credits.toString());
-    scrollToBottom();
-  }, [messages, projects, userProgress, credits]);
-
-  // Scroll to bottom when loading or messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [loading, messages]);
-
-  // Handle clicks outside sidebar to close it
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setSidebarOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [sidebarOpen]);
-
-  // Focus management for accessibility
-  useEffect(() => {
-    if (!sidebarOpen) {
-      document.querySelector('.hamburger')?.focus();
-    }
-  }, [sidebarOpen]);
+    localStorage.setItem('credits', credits);
+  }, [messages, projects, credits]);
 
   // Fetch leaderboard data
   useEffect(() => {
@@ -225,365 +431,180 @@ function App({ user, setUser }) {
       }
     };
     fetchLeaderboard();
-  }, [userProgress]);
+  }, []);
 
-  // Auto-play TTS for new assistant messages
-  useEffect(() => {
-    if (
-      autoTts &&
-      ttsSupported &&
-      messages.length > 0 &&
-      messages[messages.length - 1].role === 'assistant'
-    ) {
-      speakText(messages[messages.length - 1].content);
-    }
-  }, [messages, autoTts, ttsSupported]);
-
-  // Scroll to the bottom of the chat
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Handle sidebar toggle
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => !prev);
   };
+
+  // Close sidebar on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarOpen]);
 
   // Toggle theme
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  // Toggle sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
-  };
-
   // Handle logout
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
-    navigate('/');
+    navigate('/login');
   };
 
-  // Simple emotion detection
-  const detectEmotion = (text) => {
-    const lowerText = text.toLowerCase();
-    if (lowerText.includes('frustrated') || lowerText.includes('stuck') || lowerText.includes('hard') || lowerText.includes('difficult')) {
-      return 'frustrated';
-    } else if (lowerText.includes('great') || lowerText.includes('awesome') || lowerText.includes('good')) {
-      return 'positive';
-    }
-    return 'neutral';
-  };
+  // Handle file upload
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // Text-to-Speech function
-  const speakText = (text) => {
-    if (ttsSupported) {
-      try {
-        window.speechSynthesis.cancel(); // Cancel any ongoing speech
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.volume = 1;
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        utterance.onerror = (event) => {
-          setSpeechError(`Text-to-speech error: ${event.error}. Please try again.`);
-        };
-        window.speechSynthesis.speak(utterance);
-        setSpeechError('');
-      } catch (error) {
-        setSpeechError('Failed to initialize text-to-speech. Please try again.');
+    setFileName(file.name);
+    let fileContent = '';
+    if (file.type === 'application/pdf') {
+      const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        fileContent += textContent.items.map(item => item.str).join(' ');
       }
+    } else if (file.type.startsWith('image/')) {
+      fileContent = `[Image uploaded: ${file.name}. Describe or analyze as needed.]`;
     } else {
-      setSpeechError('Text-to-speech not supported in this browser.');
+      fileContent = await file.text();
+    }
+
+    handleSubmit(fileContent, true);
+  };
+
+  // Handle chat submit
+  const handleSubmit = async (userInput, isFile = false) => {
+    if (!userInput.trim() && !isFile) return;
+
+    const newMessages = [
+      ...messages,
+      { role: 'user', content: userInput, timestamp: new Date().toLocaleTimeString() },
+    ];
+    setMessages(newMessages);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await axios.post(API_URL, {
+        messages: newMessages,
+        input: userInput,
+        credits,
+      }, {
+        headers: { Authorization: user ? `Bearer ${user.token}` : '' },
+      });
+      const botMessage = {
+        role: 'assistant',
+        content: response.data.response,
+        timestamp: new Date().toLocaleTimeString(),
+        tone,
+        responseLength,
+        language: codeMode ? codeLanguage : undefined,
+        isAudit: auditMode,
+        isSimulation: simulationMode,
+        isCollaboration: collaborationMode,
+      };
+      setMessages(prev => [...prev, botMessage]);
+      setCredits(response.data.credits);
+
+      if (autoTts) {
+        speakText(response.data.response);
+      }
+
+      if (currentProject) {
+        setProjects(prev => prev.map(p =>
+          p.name === currentProject ? { ...p, messages: [...p.messages, botMessage] } : p
+        ));
+      }
+    } catch (error) {
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'Error: Failed to get response.', timestamp: new Date().toLocaleTimeString() },
+      ]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Toggle recording for STT
-  const toggleRecording = () => {
-    if (!speechSupported) {
-      setSpeechError('Speech recognition not supported. Use Chrome or Edge.');
-      return;
+  // Speech recognition setup
+  useEffect(() => {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(prev => prev + transcript);
+      };
+      recognitionRef.current.onerror = (event) => {
+        setSpeechError(`Speech recognition error: ${event.error}`);
+      };
+      recognitionRef.current.onend = () => setIsRecording(false);
+    } else {
+      setSpeechSupported(false);
+      setSpeechError('Speech recognition not supported in this browser.');
     }
+
+    if (!speechSynth.current) {
+      setTtsSupported(false);
+    }
+  }, []);
+
+  // Toggle recording
+  const toggleRecording = () => {
     if (isRecording) {
       recognitionRef.current.stop();
     } else {
-      try {
-        recognitionRef.current.start();
-        setIsRecording(true);
-        setSpeechError('');
-      } catch (error) {
-        setSpeechError('Failed to start recording. Check microphone permissions.');
-        setIsRecording(false);
-      }
+      recognitionRef.current.start();
     }
+    setIsRecording(prev => !prev);
   };
 
-  // Handle message submission
-  const handleSubmit = useCallback(
-    async (textToProcess, isStudyGuide = false) => {
-      if (!textToProcess || textToProcess.trim() === '') return;
-
-      if (!user && credits <= 0) {
-        setMessages(prev => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: 'You have used all your credits. Please sign up or log in to get unlimited chat responses.',
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-        return;
-      }
-
-      const timestamp = new Date().toLocaleTimeString();
-      const userMessage = { role: 'user', content: textToProcess, timestamp };
-      setMessages(prev => [...prev, userMessage]);
-
-      if (currentProject) {
-        setProjects(prev => {
-          const updated = [...prev];
-          const project = updated.find(p => p.name === currentProject);
-          if (project) {
-            project.messages = [...project.messages, userMessage];
-          } else {
-            updated.push({ name: currentProject, messages: [userMessage] });
-          }
-          return updated;
-        });
-      }
-
-      setLoading(true);
-
-      try {
-        if (offlineMode) {
-          const assistantMessage = {
-            role: 'assistant',
-            content: `**Offline Mode**: Limited functionality available. Here's a basic response:\n\nI can help with simple queries offline. For example, if you're asking about basic math, I can assist. What is your question?`,
-            timestamp: new Date().toLocaleTimeString(),
-          };
-          setMessages(prev => [...prev, assistantMessage]);
-          setLoading(false);
-          setFileName('');
-          return;
-        }
-
-        let detectedEmotion = 'neutral';
-        if (emotionDetection) {
-          detectedEmotion = detectEmotion(textToProcess);
-        }
-
-        let adjustedTone = tone;
-        if (emotionDetection && detectedEmotion === 'frustrated') {
-          adjustedTone = 'encouraging';
-        } else if (emotionDetection && detectedEmotion === 'positive') {
-          adjustedTone = 'celebratory';
-        }
-
-        let prompt = textToProcess;
-        if (isStudyGuide) {
-          prompt = `Generate a concise study guide from the following notes in Markdown format: ${textToProcess}`;
-        } else if (auditMode) {
-          prompt = `Act as a code auditor for ${codeLanguage} code. Analyze the following code for syntax errors, potential issues, and best practices. Provide a detailed audit report in Markdown format, including a summary of findings, specific issues with line numbers (if applicable), reasoning for each issue, and suggestions for improvement. Here is the code to audit:\n\n\`\`\`${codeLanguage}\n${textToProcess}\n\`\`\``;
-        } else if (codeMode) {
-          if (criticalThinkingMode) {
-            prompt = `Act as a coding mentor for ${codeLanguage}. Instead of providing the full solution, ask probing questions to guide the user to solve: ${textToProcess}. Then, suggest alternative approaches and explain their trade-offs in Markdown format.`;
-          } else {
-            prompt = `Act as a coding assistant. Generate a complete ${codeLanguage} code file for: ${textToProcess}. Include all necessary imports, main logic, and exports. Provide explanations in Markdown format.`;
-          }
-        } else if (simulationMode) {
-          prompt = `Act as a simulation guide. Guide the user through a real-world scenario related to: ${textToProcess}. Provide a step-by-step simulation in Markdown format, asking for user decisions at each step and providing feedback on their choices. For example, if the topic is project management, simulate managing a project budget.`;
-        } else if (collaborationMode) {
-          prompt = `Act as a collaboration facilitator. Suggest a group activity or networking opportunity related to: ${textToProcess}. Provide prompts to guide collaborative problem-solving in Markdown format. For example, suggest joining a study group or coding challenge and provide discussion prompts.`;
-        } else {
-          if (criticalThinkingMode) {
-            prompt = `Act as a Socratic tutor. Instead of answering directly, ask probing questions to guide the user to the answer for: ${textToProcess}. Provide hints and encourage critical thinking in Markdown format.`;
-          } else {
-            prompt = `Respond in a ${adjustedTone} tone with a ${responseLength} response in Markdown format. ${textToProcess}`;
-            if (factCheck) {
-              prompt += ' Verify the information and provide sources if possible.';
-            }
-            if (showReasoning) {
-              prompt = `Show your reasoning step-by-step before providing the final answer in Markdown format. ${prompt}`;
-            }
-            if (detailedMode) {
-              prompt = `Provide a detailed and thorough response in Markdown format. ${prompt}`;
-            }
-          }
-        }
-
-        if (textToProcess.toLowerCase().includes('search for') && !auditMode && !codeMode && !simulationMode && !collaborationMode) {
-          prompt = `Simulate a web search for: ${textToProcess} in Markdown format`;
-        }
-
-        if (aiLiteracyMode) {
-          prompt = `${prompt}\n\nAfter providing the response, explain in simple terms how you arrived at this answer, including the steps you took and any limitations or biases I should be aware of. Also, provide a tip for using AI responsibly. Format this explanation in Markdown under a section titled 'How I Processed This Request'.`;
-        }
-
-        const headers = user ? { Authorization: `Bearer ${user.token}` } : {};
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...headers,
-          },
-          body: JSON.stringify({
-            messages,
-            input: prompt,
-            credits,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Backend request failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        let assistantContent = data.response;
-
-        if (emotionDetection && detectedEmotion === 'frustrated') {
-          assistantContent = `**I noticed you might be feeling frustrated. Let’s tackle this together!** Here’s my response:\n\n${assistantContent}\n\nWould you like to take a short break or try a different approach?`;
-        }
-
-        const assistantMessage = {
-          role: 'assistant',
-          content: assistantContent,
-          timestamp: new Date().toLocaleTimeString(),
-          tone: adjustedTone,
-          responseLength,
-          language: (codeMode || auditMode) ? codeLanguage : null,
-          isAudit: auditMode,
-          isSimulation: simulationMode,
-          isCollaboration: collaborationMode,
-        };
-
-        setMessages(prev => [...prev, assistantMessage]);
-
-        if (currentProject) {
-          setProjects(prev => {
-            const updated = [...prev];
-            const project = updated.find(p => p.name === currentProject);
-            if (project) {
-              project.messages = [...project.messages, assistantMessage];
-            }
-            return updated;
-          });
-        }
-
-        if (!user) {
-          setCredits(data.credits);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        setMessages(prev => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: `Sorry, I couldn't process your request (Error: ${error.message}). Please try again later.`,
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-      } finally {
-        setLoading(false);
-        setFileName('');
-      }
-    },
-    [messages, currentProject, tone, responseLength, factCheck, showReasoning, detailedMode, codeMode, auditMode, emotionDetection, criticalThinkingMode, offlineMode, simulationMode, aiLiteracyMode, collaborationMode, codeLanguage, user, credits]
-  );
-
-  // Handle file upload
-  const handleFileUpload = useCallback(
-    async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      setFileName(file.name);
-      setLoading(true);
-
-      try {
-        let text;
-        if (file.type === 'text/plain') {
-          text = await file.text();
-        } else if (file.type === 'application/pdf') {
-          text = await extractTextFromPDF(file);
-        } else if (file.type.startsWith('image/')) {
-          text = `Describe this image: [User uploaded an image named ${file.name}]`;
-        } else {
-          setMessages(prev => [
-            ...prev,
-            { role: 'assistant', content: 'Unsupported file type. Please upload a .txt, .pdf, or image file.', timestamp: new Date().toLocaleTimeString() },
-          ]);
-          setFileName('');
-          setLoading(false);
-          return;
-        }
-        handleSubmit(text);
-      } catch (error) {
-        console.error('Error processing file:', error);
-        setMessages(prev => [
-          ...prev,
-          { role: 'assistant', content: 'Failed to process the file. Please try a different file.', timestamp: new Date().toLocaleTimeString() },
-        ]);
-        setFileName('');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [handleSubmit]
-  );
-
-  // Extract text from PDF
-  const extractTextFromPDF = async (file) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    let text = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      text += content.items.map(item => item.str).join(' ') + '\n';
+  // Speak text
+  const speakText = (text) => {
+    if (ttsSupported) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynth.current.speak(utterance);
     }
-    return text;
   };
 
   // Clear chat
   const clearChat = () => {
     setMessages([]);
     if (currentProject) {
-      setProjects(prev => {
-        const updated = [...prev];
-        const project = updated.find(p => p.name === currentProject);
-        if (project) {
-          project.messages = [];
-        }
-        return updated;
-      });
+      setProjects(prev => prev.map(p =>
+        p.name === currentProject ? { ...p, messages: [] } : p
+      ));
     }
-    localStorage.setItem('chatMessages', JSON.stringify([]));
   };
 
   // Reset context
   const resetContext = () => {
-    setMessages([]);
-    if (currentProject) {
-      setProjects(prev => {
-        const updated = [...prev];
-        const project = updated.find(p => p.name === currentProject);
-        if (project) {
-          project.messages = [];
-        }
-        return updated;
-      });
-    }
+    setMessages([{ role: 'assistant', content: 'Context reset. How can I help?', timestamp: new Date().toLocaleTimeString() }]);
   };
 
   // Generate study guide
-  const generateStudyGuide = () => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === 'user') {
-      handleSubmit(lastMessage.content, true);
-    } else {
-      setMessages(prev => [
+  const generateStudyGuide = async () => {
+    const notes = messages.filter(msg => msg.role === 'user').map(msg => msg.content).join('\n');
+    if (!notes) {
+      return setMessages(prev => [
         ...prev,
         { role: 'assistant', content: 'Please provide some notes to generate a study guide.', timestamp: new Date().toLocaleTimeString() },
       ]);
     }
+    await handleSubmit(`Generate a study guide based on these notes: ${notes}`);
   };
 
   // Export chat
@@ -669,105 +690,42 @@ Would you like to learn more about a specific AI topic?
     }));
   };
 
-  // Start learning path
+  // Create new project
+  const createProject = () => {
+    if (!newProjectName.trim()) return alert('Enter a project name');
+    if (projects.some(p => p.name === newProjectName)) return alert('Project name already exists');
+    setProjects(prev => [...prev, { name: newProjectName, messages: [] }]);
+    setCurrentProject(newProjectName);
+    setNewProjectName('');
+  };
+
+  // Rename project
+  const renameProject = (oldName) => {
+    const newName = prompt('New project name:', oldName);
+    if (newName && newName !== oldName && !projects.some(p => p.name === newName)) {
+      setProjects(prev => prev.map(p => p.name === oldName ? { ...p, name: newName } : p));
+      if (currentProject === oldName) setCurrentProject(newName);
+    }
+  };
+
+  // Start learning path - navigate to separate page
   const startLearningPath = (language) => {
     if (!user) {
       setShowLoginPrompt(true);
       return;
     }
-    setSelectedLanguage(language);
-    setCurrentLesson(null);
-    setChallengeInput('');
-    setChallengeResult(null);
-    setCodeLanguage(language);
-    setCodeMode(true);
+    navigate(`/learn/${language}`);
   };
 
-  // Start lesson
-  const startLesson = async (lesson) => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
-    }
-    setCurrentLesson(lesson);
-    setChallengeInput('');
-    setChallengeResult(null);
-    const prompt = `Provide a detailed lesson on "${lesson.title}" for ${selectedLanguage} in Markdown format. Include:
-    - A brief introduction to the topic
-    - Key concepts with examples
-    - A coding challenge for the user to solve
-    - An explanation of the solution
-    If the language is Solidity, include blockchain-specific context (e.g., how this concept applies to smart contracts).`;
-    await handleSubmit(prompt);
-  };
+  // Start lesson - moved to LearningPath.js
 
-  // Submit challenge
-  const submitChallenge = async () => {
-    if (!challengeInput || !currentLesson) return;
-
-    const prompt = `Evaluate the following ${selectedLanguage} code for the challenge in the lesson "${currentLesson.title}":
-    \`\`\`${selectedLanguage}
-    ${challengeInput}
-    \`\`\`
-    Provide feedback in Markdown format, including:
-    - Whether the solution is correct
-    - Any errors or improvements needed
-    - If correct, award the user ${currentLesson.points} points and congratulate them
-    If the language is Solidity, ensure the code follows smart contract best practices (e.g., security considerations).`;
-
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: user ? `Bearer ${user.token}` : '',
-      },
-      body: JSON.stringify({
-        messages,
-        input: prompt,
-      }),
-    });
-
-    if (!response.ok) {
-      setChallengeResult('Failed to evaluate your solution. Please try again.');
-      return;
-    }
-
-    const data = await response.json();
-    setChallengeResult(data.response);
-
-    if (data.response.toLowerCase().includes('correct')) {
-      setUserProgress(prev => {
-        const newProgress = { ...prev };
-        newProgress.points += currentLesson.points;
-        newProgress.completedLessons[selectedLanguage] = newProgress.completedLessons[selectedLanguage] || [];
-        newProgress.completedLessons[selectedLanguage].push(currentLesson.id);
-        badges.forEach(badge => {
-          if (newProgress.points >= badge.points && !newProgress.badges.includes(badge.name)) {
-            newProgress.badges.push(badge.name);
-            alert(`🎉 Congratulations! You've earned the "${badge.name}" badge: ${badge.description}`);
-          }
-        });
-        return newProgress;
-      });
-
-      if (user) {
-        try {
-          await axios.post(
-            'https://accessai-onh4.onrender.com/update-points',
-            { points: currentLesson.points },
-            { headers: { Authorization: `Bearer ${user.token}` } }
-          );
-        } catch (error) {
-          console.error('Error updating points:', error);
-        }
-      }
-    }
-  };
+  // Submit challenge - moved to LearningPath.js
 
   // Calculate progress percentage
   const getProgressPercentage = () => {
     if (!selectedLanguage) return 0;
-    const totalLessons = learningPaths[selectedLanguage].length;
+    const path = learningPaths[selectedLanguage];
+    const totalLessons = path.chapters.reduce((sum, chap) => sum + chap.lessons.length, 0);
     const completed = userProgress.completedLessons[selectedLanguage]?.length || 0;
     return (completed / totalLessons) * 100;
   };
@@ -859,7 +817,7 @@ Would you like to learn more about a specific AI topic?
         </div>
       </header>
 
-      <div className="main-layout">
+      <div className="main-layout container">
         {/* Sidebar */}
         <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-hidden={!sidebarOpen}>
           <div className="sidebar-section">
@@ -996,7 +954,7 @@ Would you like to learn more about a specific AI topic?
                   </select>
                 </>
               )}
-              <button onClick={generateStudyGuide} className="study-guide-button">
+              <button onClick={generateStudyGuide} className="sidebar-button">
                 Generate Study Guide
               </button>
             </div>
@@ -1009,22 +967,25 @@ Would you like to learn more about a specific AI topic?
                 id="project-input"
                 type="text"
                 placeholder="Project Name"
-                value={currentProject}
-                onChange={e => setCurrentProject(e.target.value)}
+                value={newProjectName}
+                onChange={e => setNewProjectName(e.target.value)}
                 className="project-input"
               />
+              <button onClick={createProject} className="sidebar-button">Create Project</button>
               <div className="project-list">
                 {projects.map(project => (
-                  <button
-                    key={project.name}
-                    onClick={() => {
-                      setCurrentProject(project.name);
-                      setMessages(project.messages);
-                    }}
-                    className={currentProject === project.name ? 'active' : ''}
-                  >
-                    {project.name}
-                  </button>
+                  <div key={project.name} style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      onClick={() => {
+                        setCurrentProject(project.name);
+                        setMessages(project.messages);
+                      }}
+                      className={currentProject === project.name ? 'active' : ''}
+                    >
+                      {project.name}
+                    </button>
+                    <button onClick={() => renameProject(project.name)} className="action-button">Rename</button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -1086,7 +1047,7 @@ Would you like to learn more about a specific AI topic?
             </div>
           ) : (
             <div className="learning-path">
-              <div className="flex justify-between items-center">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2>{`${selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)} Learning Path`}</h2>
                 <button
                   onClick={() => setSelectedLanguage('')}
@@ -1096,7 +1057,7 @@ Would you like to learn more about a specific AI topic?
                 </button>
               </div>
               <div className="lessons-list">
-                {learningPaths[selectedLanguage].map(lesson => (
+                {learningPaths[selectedLanguage].chapters[0].lessons.map(lesson => ( // Note: Flat list for App.js, but nested in LearningPath
                   <div
                     key={lesson.id}
                     className={`lesson-card ${userProgress.completedLessons[selectedLanguage]?.includes(lesson.id) ? 'completed' : ''}`}
@@ -1105,7 +1066,7 @@ Would you like to learn more about a specific AI topic?
                     <p>Difficulty: {lesson.difficulty}</p>
                     <p>Points: {lesson.points}</p>
                     <button
-                      onClick={() => startLesson(lesson)}
+                      onClick={() => startLearningPath(lesson)} // Updated to navigate
                       disabled={currentLesson?.id === lesson.id}
                     >
                       {currentLesson?.id === lesson.id ? 'In Progress' : 'Start Lesson'}
@@ -1118,23 +1079,23 @@ Would you like to learn more about a specific AI topic?
 
           {/* Login Prompt */}
           {showLoginPrompt && (
-            <div className="login-prompt p-6 bg-yellow-50 dark:bg-yellow-900 rounded-lg shadow-md text-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <div style={{ padding: '1.5rem', backgroundColor: theme === 'light' ? '#fff3cd' : '#8a6d3b', borderRadius: '0.375rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: theme === 'light' ? '#856404' : '#ffeeba', marginBottom: '1rem' }}>
                 Please Sign Up or Log In
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
+              <p style={{ color: theme === 'light' ? '#856404' : '#ffeeba', marginBottom: '1rem' }}>
                 You need to be logged in to start lessons and earn points.
               </p>
-              <div className="flex justify-center gap-4">
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                 <button
                   onClick={() => navigate('/login')}
-                  className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                  style={{ backgroundColor: '#007bff', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.25rem', border: 'none', cursor: 'pointer' }}
                 >
                   Login
                 </button>
                 <button
                   onClick={() => navigate('/signup')}
-                  className="bg-green-600 text-white p-2 rounded-md hover:bg-green-700"
+                  style={{ backgroundColor: '#28a745', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.25rem', border: 'none', cursor: 'pointer' }}
                 >
                   Sign Up
                 </button>
@@ -1142,7 +1103,7 @@ Would you like to learn more about a specific AI topic?
             </div>
           )}
 
-          {/* Challenge Section */}
+          {/* Challenge Section - kept for compatibility, but main challenge in LearningPath */}
           {currentLesson && (
             <div className="challenge-section">
               <h2>{`Challenge: ${currentLesson.title}`}</h2>
