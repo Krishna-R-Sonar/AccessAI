@@ -76,7 +76,7 @@ app.get('/', (req, res) => {
     <body>
       <h1>Welcome to the AccessAI Backend API</h1>
       <p>This is the backend server for the AccessAI chatbot.</p>
-      <p>Visit the frontend at <a href="https://access-ai-iota.vercel.app/">https://access-ai-iota.vercel.app/</a></p>
+      <p>Visit the frontend at <a href="https://accessai-five.vercel.app/">https://accessai-five.vercel.app/</a></p>
       <p>Available endpoints:</p>
       <ul style="list-style: none;">
         <li><strong>/health</strong> - Check server status</li>

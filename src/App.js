@@ -661,7 +661,7 @@ Would you like to learn more about a specific AI topic?
 
   // Share response
   const shareResponse = (index, content) => {
-    const shareUrl = `https://access-ai-iota.vercel.app/share/${index}`;
+    const shareUrl = `https://accessai-five.vercel.app/share/${index}`;
     copyToClipboard(shareUrl);
     alert('Shareable link copied to clipboard!');
   };
