@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Middleware setup
 app.use(cors({
-  origin: 'https://access-ai-iota.vercel.app', // Frontend URL (update if different)
+  origin: 'https://accessai-five.vercel.app/',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
