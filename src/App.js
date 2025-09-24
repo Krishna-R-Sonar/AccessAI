@@ -79,7 +79,6 @@ const learningPaths = {
       },
     ],
   },
-  // Similarly for python, java, cpp, solidity - filling based on provided structure
   python: {
     chapters: [
       {
@@ -146,7 +145,6 @@ const learningPaths = {
   },
   java: {
     chapters: [
-      // Fill similarly from provided structure
       {
         title: 'Java Fundamentals',
         lessons: [
@@ -394,8 +392,6 @@ function App({ user, setUser }) {
     badges: [],
   });
   const [currentLesson, setCurrentLesson] = useState(null);
-  const [challengeInput, setChallengeInput] = useState('');
-  const [challengeResult, setChallengeResult] = useState(null);
   const [autoTts, setAutoTts] = useState(false);
   const [speechError, setSpeechError] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -716,10 +712,6 @@ Would you like to learn more about a specific AI topic?
     }
     navigate(`/learn/${language}`);
   };
-
-  // Start lesson - moved to LearningPath.js
-
-  // Submit challenge - moved to LearningPath.js
 
   // Calculate progress percentage
   const getProgressPercentage = () => {
@@ -1100,30 +1092,6 @@ Would you like to learn more about a specific AI topic?
                   Sign Up
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Challenge Section - kept for compatibility, but main challenge in LearningPath */}
-          {currentLesson && (
-            <div className="challenge-section">
-              <h2>{`Challenge: ${currentLesson.title}`}</h2>
-              <label htmlFor="code-editor">Write your code below:</label>
-              <textarea
-                id="code-editor"
-                value={challengeInput}
-                onChange={e => setChallengeInput(e.target.value)}
-                placeholder="Write your code here..."
-                className="code-editor"
-                rows={10}
-              />
-              <button onClick={submitChallenge} className="submit-challenge">
-                Submit Solution
-              </button>
-              {challengeResult && (
-                <div className="challenge-result">
-                  <ReactMarkdown>{challengeResult}</ReactMarkdown>
-                </div>
-              )}
             </div>
           )}
 

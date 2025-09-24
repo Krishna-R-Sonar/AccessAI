@@ -74,7 +74,6 @@ const learningPaths = {
       },
     ],
   },
-  // Similarly for python, java, cpp, solidity - filling based on provided structure
   python: {
     chapters: [
       {
@@ -141,7 +140,6 @@ const learningPaths = {
   },
   java: {
     chapters: [
-      // Fill similarly from provided structure
       {
         title: 'Java Fundamentals',
         lessons: [
@@ -352,6 +350,20 @@ function LearningPath({ user }) {
   const sidebarRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [learningMessages]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarOpen]);
+
   if (!learningPaths[language]) {
     navigate('/');
     return null;
@@ -432,26 +444,10 @@ function LearningPath({ user }) {
     }
   };
 
-  // Scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [learningMessages]);
-
   // Toggle sidebar
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
   };
-
-  // Close sidebar on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setSidebarOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [sidebarOpen]);
 
   // Mark lesson complete
   const markComplete = (chapterIndex, lessonIndex) => {
