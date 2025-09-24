@@ -1,7 +1,7 @@
+// my-chatbot/src/Signup.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import './App.css';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Signup({ setUser }) {
   const [email, setEmail] = useState('');
@@ -10,72 +10,61 @@ function Signup({ setUser }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle signup form submission
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const response = await axios.post('https://accessai-onh4.onrender.com/signup', {
-        email,
-        password,
-      });
+      const response = await axios.post('https://accessai-onh4.onrender.com/signup', { email, password });
       const userData = { token: response.data.token, ...response.data.user };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to sign up. Please try again.');
+      setError(err.response?.data?.error || 'Failed to sign up.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-card" role="region" aria-labelledby="signup-title">
-      <h2 id="signup-title">Create Your Account</h2>
-      {/* Display error message if present */}
-      {error && <div className="error-message">{error}</div>}
-      <form className="auth-form" onSubmit={handleSignup}>
-        <div className="form-group">
-          <label htmlFor="signup-email">Email</label>
-          <input
-            id="signup-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-            aria-describedby={error ? 'signup-error' : undefined}
-          />
+     <div className="app-container light">
+        <div className="card auth-card">
+            <h2>Create Account</h2>
+            {error && <p style={{color: 'var(--danger-light)'}}>{error}</p>}
+            <form onSubmit={handleSignup}>
+                <div className="form-group">
+                    <label className="form-label" htmlFor="signup-email">Email</label>
+                    <input
+                        id="signup-email"
+                        type="email"
+                        className="form-input"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                    />
+                </div>
+                <div className="form-group">
+                    <label className="form-label" htmlFor="signup-password">Password</label>
+                    <input
+                        id="signup-password"
+                        type="password"
+                        className="form-input"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={loading}
+                    />
+                </div>
+                <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
+                    {loading ? 'Signing Up...' : 'Sign Up'}
+                </button>
+            </form>
+            <div className="footer-link">
+                Already have an account? <Link to="/login">Log In</Link>
+            </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="signup-password">Password</label>
-          <input
-            id="signup-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-            aria-describedby={error ? 'signup-error' : undefined}
-          />
-        </div>
-        <button type="submit" className="submit-button" disabled={loading} aria-busy={loading}>
-          {loading ? (
-            <span className="loading-spinner">
-              <span className="spinner-icon" aria-hidden="true"></span>
-              Signing Up...
-            </span>
-          ) : (
-            'Sign Up'
-          )}
-        </button>
-      </form>
-      <div className="footer-link">
-        Already have an account? <a href="/login">Log In</a>
-      </div>
     </div>
   );
 }
