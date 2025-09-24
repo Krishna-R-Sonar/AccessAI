@@ -1,522 +1,698 @@
 // my-chatbot/src/App.js
-import { useState, useEffect, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import './App.css';
 
-// Set PDF.js worker source for PDF processing
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
-// Backend API URL from environment variable or default
 const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
-
-// NOTE: In a larger application, this would be imported from a shared module.
-const learningPaths = {
-  javascript: {
-    chapters: [
-      {
-        title: 'JavaScript Fundamentals',
-        lessons: [
-          { id: 1, title: 'Introduction to JavaScript and its role in web development', difficulty: 'Beginner', points: 50 },
-          { id: 2, title: 'Setting up development environment (Node.js, browser console)', difficulty: 'Beginner', points: 50 },
-          { id: 3, title: 'Variables (var, let, const) and data types', difficulty: 'Beginner', points: 50 },
-          { id: 4, title: 'Operators and expressions', difficulty: 'Beginner', points: 50 },
-          { id: 5, title: 'Basic input/output', difficulty: 'Beginner', points: 50 },
-        ],
-      },
-      {
-        title: 'Control Flow and Functions',
-        lessons: [
-          { id: 6, title: 'Conditional statements (if/else, switch)', difficulty: 'Beginner', points: 75 },
-          { id: 7, title: 'Looping structures (for, while, do-while)', difficulty: 'Beginner', points: 75 },
-          { id: 8, title: 'Functions declaration and expression', difficulty: 'Beginner', points: 75 },
-          { id: 9, title: 'Function parameters and return values', difficulty: 'Beginner', points: 75 },
-          { id: 10, title: 'Scope and hoisting', difficulty: 'Beginner', points: 75 },
-        ],
-      },
-      {
-        title: 'Arrays and Objects',
-        lessons: [
-          { id: 11, title: 'Array creation and manipulation', difficulty: 'Intermediate', points: 100 },
-          { id: 12, title: 'Array methods (mutating and non-mutating)', difficulty: 'Intermediate', points: 100 },
-          { id: 13, title: 'Object literals and properties', difficulty: 'Intermediate', points: 100 },
-          { id: 14, title: 'Object methods and `this` keyword', difficulty: 'Intermediate', points: 100 },
-          { id: 15, title: 'Object manipulation techniques', difficulty: 'Intermediate', points: 100 },
-        ],
-      },
-      {
-        title: 'Advanced JavaScript Concepts',
-        lessons: [
-          { id: 16, title: 'Closures and lexical scoping', difficulty: 'Intermediate', points: 150 },
-          { id: 17, title: 'Prototypes and inheritance', difficulty: 'Intermediate', points: 150 },
-          { id: 18, title: 'Asynchronous JavaScript (callbacks, promises, async/await)', difficulty: 'Intermediate', points: 150 },
-          { id: 19, title: 'Error handling (try/catch/finally)', difficulty: 'Intermediate', points: 150 },
-          { id: 20, title: 'ES6+ features (destructuring, spread/rest, template literals)', difficulty: 'Intermediate', points: 150 },
-        ],
-      },
-      {
-        title: 'Modern JavaScript and Browser APIs',
-        lessons: [
-          { id: 21, title: 'DOM manipulation and events', difficulty: 'Advanced', points: 200 },
-          { id: 22, title: 'Fetch API and AJAX', difficulty: 'Advanced', points: 200 },
-          { id: 23, title: 'Modern array methods (map, filter, reduce)', difficulty: 'Advanced', points: 200 },
-          { id: 24, title: 'Modules (import/export)', difficulty: 'Advanced', points: 200 },
-          { id: 25, title: 'Web Storage API', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-      {
-        title: 'Testing and Tooling',
-        lessons: [
-          { id: 26, title: 'Debugging techniques', difficulty: 'Advanced', points: 200 },
-          { id: 27, title: 'Unit testing with Jest', difficulty: 'Advanced', points: 200 },
-          { id: 28, title: 'Package management with npm', difficulty: 'Advanced', points: 200 },
-          { id: 29, title: 'Build tools (Webpack, Babel)', difficulty: 'Advanced', points: 200 },
-          { id: 30, title: 'Code quality tools (ESLint, Prettier)', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-    ],
-  },
-  python: {
-    chapters: [
-      {
-        title: 'Python Basics',
-        lessons: [
-          { id: 1, title: 'Introduction to Python and its applications', difficulty: 'Beginner', points: 50 },
-          { id: 2, title: 'Setting up Python environment', difficulty: 'Beginner', points: 50 },
-          { id: 3, title: 'Variables, data types, and basic operations', difficulty: 'Beginner', points: 50 },
-          { id: 4, title: 'Input/output operations', difficulty: 'Beginner', points: 50 },
-          { id: 5, title: 'Comments and documentation', difficulty: 'Beginner', points: 50 },
-        ],
-      },
-      {
-        title: 'Control Structures and Functions',
-        lessons: [
-          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
-          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
-          { id: 8, title: 'Function definition and invocation', difficulty: 'Beginner', points: 75 },
-          { id: 9, title: 'Function arguments and return values', difficulty: 'Beginner', points: 75 },
-          { id: 10, title: 'Lambda functions', difficulty: 'Beginner', points: 75 },
-        ],
-      },
-      {
-        title: 'Data Structures',
-        lessons: [
-          { id: 11, title: 'Lists and list comprehensions', difficulty: 'Intermediate', points: 100 },
-          { id: 12, title: 'Tuples and sets', difficulty: 'Intermediate', points: 100 },
-          { id: 13, title: 'Dictionaries and dictionary comprehensions', difficulty: 'Intermediate', points: 100 },
-          { id: 14, title: 'Strings and string manipulation', difficulty: 'Intermediate', points: 100 },
-          { id: 15, title: 'Common operations on data structures', difficulty: 'Intermediate', points: 100 },
-        ],
-      },
-      {
-        title: 'Object-Oriented Programming',
-        lessons: [
-          { id: 16, title: 'Classes and objects', difficulty: 'Intermediate', points: 150 },
-          { id: 17, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 150 },
-          { id: 18, title: 'Encapsulation and abstraction', difficulty: 'Intermediate', points: 150 },
-          { id: 19, title: 'Special methods (__init__, __str__, etc.)', difficulty: 'Intermediate', points: 150 },
-          { id: 20, title: 'Exception handling', difficulty: 'Intermediate', points: 150 },
-        ],
-      },
-      {
-        title: 'Advanced Python Concepts',
-        lessons: [
-          { id: 21, title: 'Modules and packages', difficulty: 'Advanced', points: 200 },
-          { id: 22, title: 'File handling', difficulty: 'Advanced', points: 200 },
-          { id: 23, title: 'Decorators and generators', difficulty: 'Advanced', points: 200 },
-          { id: 24, title: 'Context managers', difficulty: 'Advanced', points: 200 },
-          { id: 25, title: 'Regular expressions', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-      {
-        title: 'Python Ecosystem',
-        lessons: [
-          { id: 26, title: 'Virtual environments', difficulty: 'Advanced', points: 200 },
-          { id: 27, title: 'Package management with pip', difficulty: 'Advanced', points: 200 },
-          { id: 28, title: 'Popular libraries (NumPy, Pandas, Requests)', difficulty: 'Advanced', points: 200 },
-          { id: 29, title: 'Web frameworks introduction (Flask, Django)', difficulty: 'Advanced', points: 200 },
-          { id: 30, title: 'Testing with unittest/pytest', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-    ],
-  },
-  java: {
-    chapters: [
-      {
-        title: 'Java Fundamentals',
-        lessons: [
-          { id: 1, title: 'Introduction to Java and JVM', difficulty: 'Beginner', points: 50 },
-          { id: 2, title: 'Setting up Java development environment', difficulty: 'Beginner', points: 50 },
-          { id: 3, title: 'Basic syntax and program structure', difficulty: 'Beginner', points: 50 },
-          { id: 4, title: 'Variables, data types, and operators', difficulty: 'Beginner', points: 50 },
-          { id: 5, title: 'Basic input/output', difficulty: 'Beginner', points: 50 },
-        ],
-      },
-      {
-        title: 'Control Flow and Methods',
-        lessons: [
-          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
-          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
-          { id: 8, title: 'Method declaration and invocation', difficulty: 'Beginner', points: 75 },
-          { id: 9, title: 'Method overloading', difficulty: 'Beginner', points: 75 },
-          { id: 10, title: 'Command-line arguments', difficulty: 'Beginner', points: 75 },
-        ],
-      },
-      {
-        title: 'Object-Oriented Programming',
-        lessons: [
-          { id: 11, title: 'Classes and objects', difficulty: 'Intermediate', points: 100 },
-          { id: 12, title: 'Constructors', difficulty: 'Intermediate', points: 100 },
-          { id: 13, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 100 },
-          { id: 14, title: 'Interfaces and abstract classes', difficulty: 'Intermediate', points: 100 },
-          { id: 15, title: 'Packages and access modifiers', difficulty: 'Intermediate', points: 100 },
-        ],
-      },
-      {
-        title: 'Java Collections Framework',
-        lessons: [
-          { id: 16, title: 'List implementations (ArrayList, LinkedList)', difficulty: 'Intermediate', points: 150 },
-          { id: 17, title: 'Set implementations (HashSet, TreeSet)', difficulty: 'Intermediate', points: 150 },
-          { id: 18, title: 'Map implementations (HashMap, TreeMap)', difficulty: 'Intermediate', points: 150 },
-          { id: 19, title: 'Iterators and comparators', difficulty: 'Intermediate', points: 150 },
-          { id: 20, title: 'Collections utility class', difficulty: 'Intermediate', points: 150 },
-        ],
-      },
-      {
-        title: 'Exception Handling and I/O',
-        lessons: [
-          { id: 21, title: 'Exception hierarchy', difficulty: 'Advanced', points: 200 },
-          { id: 22, title: 'Try-catch-finally blocks', difficulty: 'Advanced', points: 200 },
-          { id: 23, title: 'Custom exceptions', difficulty: 'Advanced', points: 200 },
-          { id: 24, title: 'File I/O operations', difficulty: 'Advanced', points: 200 },
-          { id: 25, title: 'Serialization', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-      {
-        title: 'Advanced Java Concepts',
-        lessons: [
-          { id: 26, title: 'Multithreading', difficulty: 'Advanced', points: 200 },
-          { id: 27, title: 'Generics', difficulty: 'Advanced', points: 200 },
-          { id: 28, title: 'Annotations', difficulty: 'Advanced', points: 200 },
-          { id: 29, title: 'Lambda expressions and functional interfaces', difficulty: 'Advanced', points: 200 },
-          { id: 30, title: 'Java modules system', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-    ],
-  },
-  cpp: {
-    chapters: [
-      {
-        title: 'C++ Fundamentals',
-        lessons: [
-          { id: 1, title: 'Introduction to C++ and its features', difficulty: 'Beginner', points: 50 },
-          { id: 2, title: 'Setting up development environment', difficulty: 'Beginner', points: 50 },
-          { id: 3, title: 'Basic syntax and program structure', difficulty: 'Beginner', points: 50 },
-          { id: 4, title: 'Variables, data types, and operators', difficulty: 'Beginner', points: 50 },
-          { id: 5, title: 'Basic input/output with iostream', difficulty: 'Beginner', points: 50 },
-        ],
-      },
-      {
-        title: 'Control Flow and Functions',
-        lessons: [
-          { id: 6, title: 'Conditional statements', difficulty: 'Beginner', points: 75 },
-          { id: 7, title: 'Looping constructs', difficulty: 'Beginner', points: 75 },
-          { id: 8, title: 'Function declaration and definition', difficulty: 'Beginner', points: 75 },
-          { id: 9, title: 'Function overloading', difficulty: 'Beginner', points: 75 },
-          { id: 10, title: 'References and pointers', difficulty: 'Beginner', points: 75 },
-        ],
-      },
-      {
-        title: 'Object-Oriented Programming',
-        lessons: [
-          { id: 11, title: 'Classes and objects', difficulty: 'Intermediate', points: 100 },
-          { id: 12, title: 'Constructors and destructors', difficulty: 'Intermediate', points: 100 },
-          { id: 13, title: 'Inheritance and polymorphism', difficulty: 'Intermediate', points: 100 },
-          { id: 14, title: 'Operator overloading', difficulty: 'Intermediate', points: 100 },
-          { id: 15, title: 'Templates and generic programming', difficulty: 'Intermediate', points: 100 },
-        ],
-      },
-      {
-        title: 'Memory Management',
-        lessons: [
-          { id: 16, title: 'Stack vs heap memory', difficulty: 'Intermediate', points: 150 },
-          { id: 17, title: 'Dynamic memory allocation', difficulty: 'Intermediate', points: 150 },
-          { id: 18, title: 'Smart pointers', difficulty: 'Intermediate', points: 150 },
-          { id: 19, title: 'Memory leaks and debugging', difficulty: 'Intermediate', points: 150 },
-          { id: 20, title: 'RAII principle', difficulty: 'Intermediate', points: 150 },
-        ],
-      },
-      {
-        title: 'Standard Template Library (STL)',
-        lessons: [
-          { id: 21, title: 'Containers (vector, list, map, etc.)', difficulty: 'Advanced', points: 200 },
-          { id: 22, title: 'Iterators', difficulty: 'Advanced', points: 200 },
-          { id: 23, title: 'Algorithms', difficulty: 'Advanced', points: 200 },
-          { id: 24, title: 'Function objects', difficulty: 'Advanced', points: 200 },
-          { id: 25, title: 'STL utilities', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-      {
-        title: 'Advanced C++ Concepts',
-        lessons: [
-          { id: 26, title: 'Exception handling', difficulty: 'Advanced', points: 200 },
-          { id: 27, title: 'File I/O operations', difficulty: 'Advanced', points: 200 },
-          { id: 28, title: 'Multithreading', difficulty: 'Advanced', points: 200 },
-          { id: 29, title: 'Move semantics', difficulty: 'Advanced', points: 200 },
-          { id: 30, title: 'Modern C++ features (C++11/14/17/20)', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-    ],
-  },
-  solidity: {
-    chapters: [
-      {
-        title: 'Blockchain and Ethereum Basics',
-        lessons: [
-          { id: 1, title: 'Introduction to blockchain technology', difficulty: 'Beginner', points: 50 },
-          { id: 2, title: 'Understanding Ethereum and smart contracts', difficulty: 'Beginner', points: 50 },
-          { id: 3, title: 'Setting up development environment (Remix, Truffle)', difficulty: 'Beginner', points: 50 },
-          { id: 4, title: 'Ethereum accounts and transactions', difficulty: 'Beginner', points: 50 },
-          { id: 5, title: 'Gas and transaction costs', difficulty: 'Beginner', points: 50 },
-        ],
-      },
-      {
-        title: 'Solidity Fundamentals',
-        lessons: [
-          { id: 6, title: 'Basic syntax and structure of smart contracts', difficulty: 'Beginner', points: 75 },
-          { id: 7, title: 'Data types and variables', difficulty: 'Beginner', points: 75 },
-          { id: 8, title: 'Functions and modifiers', difficulty: 'Beginner', points: 75 },
-          { id: 9, title: 'Events and logging', difficulty: 'Beginner', points: 75 },
-          { id: 10, title: 'Error handling (require, revert, assert)', difficulty: 'Beginner', points: 75 },
-        ],
-      },
-      {
-        title: 'Advanced Solidity Concepts',
-        lessons: [
-          { id: 11, title: 'Inheritance and interfaces', difficulty: 'Intermediate', points: 100 },
-          { id: 12, title: 'Libraries and imports', difficulty: 'Intermediate', points: 100 },
-          { id: 13, title: 'Memory vs storage', difficulty: 'Intermediate', points: 100 },
-          { id: 14, title: 'Function visibility and modifiers', difficulty: 'Intermediate', points: 100 },
-          { id: 15, title: 'Contract interactions', difficulty: 'Intermediate', points: 100 },
-        ],
-      },
-      {
-        title: 'Security Considerations',
-        lessons: [
-          { id: 16, title: 'Common vulnerabilities (reentrancy, overflow)', difficulty: 'Intermediate', points: 150 },
-          { id: 17, title: 'Security best practices', difficulty: 'Intermediate', points: 150 },
-          { id: 18, title: 'Testing strategies', difficulty: 'Intermediate', points: 150 },
-          { id: 19, title: 'Audit processes', difficulty: 'Intermediate', points: 150 },
-          { id: 20, title: 'Upgrade patterns', difficulty: 'Intermediate', points: 150 },
-        ],
-      },
-      {
-        title: 'Decentralized Application Development',
-        lessons: [
-          { id: 21, title: 'Web3.js and Ethers.js integration', difficulty: 'Advanced', points: 200 },
-          { id: 22, title: 'Frontend development for dApps', difficulty: 'Advanced', points: 200 },
-          { id: 23, title: 'IPFS integration', difficulty: 'Advanced', points: 200 },
-          { id: 24, title: 'Oracles and external data', difficulty: 'Advanced', points: 200 },
-          { id: 25, title: 'Token standards (ERC-20, ERC-721)', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-      {
-        title: 'Deployment and Maintenance',
-        lessons: [
-          { id: 26, title: 'Testnet deployment', difficulty: 'Advanced', points: 200 },
-          { id: 27, title: 'Mainnet deployment', difficulty: 'Advanced', points: 200 },
-          { id: 28, title: 'Monitoring and analytics', difficulty: 'Advanced', points: 200 },
-          { id: 29, title: 'Upgrade mechanisms', difficulty: 'Advanced', points: 200 },
-          { id: 30, title: 'Governance models', difficulty: 'Advanced', points: 200 },
-        ],
-      },
-    ],
-  },
-};
-
+const LEADERBOARD_URL = 'https://accessai-onh4.onrender.com/leaderboard';
 
 function App({ user, setUser }) {
-  const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem('chatMessages');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState('light');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [credits, setCredits] = useState(() => {
-    const saved = localStorage.getItem('credits');
-    return saved ? parseInt(saved, 10) : 5;
-  });
-  
-  // ... other existing states ...
-  
-  const navigate = useNavigate();
+  const [codeMode, setCodeMode] = useState(false);
+  const [auditMode, setAuditMode] = useState(false);
+  const [emotionDetection, setEmotionDetection] = useState(false);
+  const [criticalThinking, setCriticalThinking] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [simulationMode, setSimulationMode] = useState(false);
+  const [aiLiteracy, setAiLiteracy] = useState(false);
+  const [collaborationMode, setCollaborationMode] = useState(false);
+  const [tone, setTone] = useState('friendly');
+  const [responseLength, setResponseLength] = useState('concise');
+  const [projects, setProjects] = useState([]);
+  const [currentProject, setCurrentProject] = useState(null);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [credits, setCredits] = useState(5);
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const [ttsSupported, setTtsSupported] = useState(false);
+  const [speechError, setSpeechError] = useState('');
+  const [fileName, setFileName] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [points, setPoints] = useState(user ? user.points : 0);
+  const [progress, setProgress] = useState(0);
+  const [feedback, setFeedback] = useState({});
+  const [comments, setComments] = useState({});
+  const [fullCodeView, setFullCodeView] = useState(null);
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+  const mediaRecorderRef = useRef(null);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
-  
+  const recognitionRef = useRef(null);
+  const navigate = useNavigate();
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
-    localStorage.setItem('credits', credits);
-  }, [messages, credits]);
+    const handleClickOutside = (event) => {
+      if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarOpen]);
 
-  const toggleSidebar = () => setSidebarOpen(prev => !prev);
-  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  useEffect(() => {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      setSpeechSupported(true);
+      recognitionRef.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        handleSubmit(transcript);
+      };
+      recognitionRef.current.onerror = (event) => {
+        setSpeechError(`Speech recognition error: ${event.error}`);
+      };
+    }
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    navigate('/login');
+    if ('speechSynthesis' in window) {
+      setTtsSupported(true);
+    }
+
+    fetchLeaderboard();
+  }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await axios.get(LEADERBOARD_URL);
+      setLeaderboard(response.data);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    }
+  };
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  const createProject = () => {
+    if (newProjectName.trim()) {
+      setProjects((prev) => [...prev, { name: newProjectName, messages: [] }]);
+      setNewProjectName('');
+    }
+  };
+
+  const switchProject = (projectName) => {
+    if (currentProject) {
+      const currentMessages = messages;
+      setProjects((prev) =>
+        prev.map((p) => (p.name === currentProject ? { ...p, messages: currentMessages } : p))
+      );
+    }
+    setCurrentProject(projectName);
+    const project = projects.find((p) => p.name === projectName);
+    setMessages(project ? project.messages : []);
   };
 
   const handleSubmit = async (userInput) => {
     if (!userInput.trim()) return;
 
-    const newMessages = [...messages, { role: 'user', content: userInput }];
+    const newMessages = [
+      ...messages,
+      { role: 'user', content: userInput, timestamp: new Date().toLocaleTimeString() },
+    ];
     setMessages(newMessages);
     setInput('');
     setLoading(true);
 
+    if (!user && credits <= 0) {
+      setShowSignupPrompt(true);
+      setLoading(false);
+      return;
+    }
+
+    let enhancedPrompt = userInput;
+    if (codeMode) enhancedPrompt = `Provide response in ${tone} tone, ${responseLength} length, with code examples. ${enhancedPrompt}`;
+    if (auditMode) enhancedPrompt = `Audit the code for best practices: ${enhancedPrompt}`;
+    if (emotionDetection) enhancedPrompt = `Detect emotion and respond empathetically: ${enhancedPrompt}`;
+    if (criticalThinking) enhancedPrompt = `Encourage critical thinking: ${enhancedPrompt}`;
+    if (simulationMode) enhancedPrompt = `Simulate the scenario: ${enhancedPrompt}`;
+    if (aiLiteracy) enhancedPrompt = `Explain AI concepts: ${enhancedPrompt}`;
+    if (collaborationMode) enhancedPrompt = `Collaborate on the idea: ${enhancedPrompt}`;
+
     try {
       const response = await axios.post(API_URL, {
         messages: newMessages,
-        input: userInput,
+        input: enhancedPrompt,
         credits,
       }, {
         headers: { Authorization: user ? `Bearer ${user.token}` : '' },
       });
-
-      const botMessage = { role: 'assistant', content: response.data.response };
-      setMessages(prev => [...prev, botMessage]);
+      const botMessage = {
+        role: 'assistant',
+        content: response.data.response,
+        timestamp: new Date().toLocaleTimeString(),
+        tone,
+        responseLength,
+        isAudit: auditMode,
+        isSimulation: simulationMode,
+        isCollaboration: collaborationMode,
+      };
+      setMessages((prev) => [...prev, botMessage]);
       setCredits(response.data.credits);
+      if (user) {
+        setPoints((prev) => prev + 10);
+        await axios.post('https://accessai-onh4.onrender.com/update-points', { points: 10 }, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+      }
     } catch (error) {
-      const errorMessage = { role: 'assistant', content: 'Error: Could not get a response.' };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Error: Failed to get response.', timestamp: new Date().toLocaleTimeString() },
+      ]);
     } finally {
       setLoading(false);
     }
   };
-  
-  // Effect to handle closing sidebar on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-        if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-            setSidebarOpen(false);
-        }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-}, [sidebarOpen]);
 
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  };
+
+  const speakText = (text) => {
+    if (ttsSupported) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const editResponse = (index, content) => {
+    const newContent = prompt('Edit response:', content);
+    if (newContent) {
+      setMessages((prev) => prev.map((msg, i) => (i === index ? { ...msg, content: newContent } : msg)));
+    }
+  };
+
+  const shareResponse = (index, content) => {
+    alert(`Share this: ${content}`);
+  };
+
+  const downloadCode = (code, language) => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `code.${language}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFeedback = (index, type) => {
+    setFeedback((prev) => ({ ...prev, [index]: type }));
+  };
+
+  const addComment = (index, text) => {
+    setComments((prev) => ({
+      ...prev,
+      [index]: [...(prev[index] || []), { text, timestamp: new Date().toLocaleTimeString() }],
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target.result;
+        handleSubmit(`Uploaded file content: ${content}`);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
 
   return (
     <div className={`app-container ${theme}`}>
       <header className="header">
         <div className="header-left">
-          <button className="btn btn-icon hamburger" onClick={toggleSidebar} aria-label="Toggle Menu">
+          <button className="hamburger" onClick={toggleSidebar} aria-label="Toggle sidebar">
             ☰
           </button>
-          <h1 className="app-title">AccessAI</h1>
+          <h1 className="app-title">AccessAI Chatbot</h1>
         </div>
         <div className="header-right">
-          {user ? (
-            <>
-              <span>{user.email}</span>
-              <button onClick={handleLogout} className="btn btn-secondary">Logout</button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => navigate('/login')} className="btn btn-secondary">Login</button>
-              <button onClick={() => navigate('/signup')} className="btn btn-primary">Sign Up</button>
-            </>
-          )}
-          <button onClick={toggleTheme} className="btn btn-icon">
-            {theme === 'light' ? '🌙' : '☀️'}
+          <div className="user-stats">
+            {user ? (
+              <>
+                <span>Points: {points}</span>
+                <button onClick={handleLogout} className="action-button">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <span>Credits: {credits}</span>
+                <a href="/login">Login</a> / <a href="/signup">Signup</a>
+              </>
+            )}
+          </div>
+          <button onClick={toggleTheme} className="theme-toggle">
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
           </button>
         </div>
       </header>
-
       <div className="main-layout container">
-        {sidebarOpen && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
         <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-section">
             <h2>Settings</h2>
             <div className="settings-bar">
-                {/* Simplified settings for clarity */}
-                <label className="form-label" htmlFor="tone-select">Tone:</label>
-                <select id="tone-select" className="form-select">
-                    <option value="neutral">Neutral</option>
-                    <option value="formal">Formal</option>
-                    <option value="casual">Casual</option>
-                </select>
+              <label className={codeMode ? 'code-mode-active' : ''}>
+                <input type="checkbox" checked={codeMode} onChange={() => setCodeMode(!codeMode)} />
+                Code Mode
+              </label>
+              <label className={auditMode ? 'audit-mode-active' : ''}>
+                <input type="checkbox" checked={auditMode} onChange={() => setAuditMode(!auditMode)} />
+                Audit Mode
+              </label>
+              <label className={emotionDetection ? 'emotion-detection-active' : ''}>
+                <input type="checkbox" checked={emotionDetection} onChange={() => setEmotionDetection(!emotionDetection)} />
+                Emotion Detection
+              </label>
+              <label className={criticalThinking ? 'critical-thinking-active' : ''}>
+                <input type="checkbox" checked={criticalThinking} onChange={() => setCriticalThinking(!criticalThinking)} />
+                Critical Thinking
+              </label>
+              <label className={offlineMode ? 'offline-mode-active' : ''}>
+                <input type="checkbox" checked={offlineMode} onChange={() => setOfflineMode(!offlineMode)} />
+                Offline Mode
+              </label>
+              <label className={simulationMode ? 'simulation-mode-active' : ''}>
+                <input type="checkbox" checked={simulationMode} onChange={() => setSimulationMode(!simulationMode)} />
+                Simulation Mode
+              </label>
+              <label className={aiLiteracy ? 'ai-literacy-active' : ''}>
+                <input type="checkbox" checked={aiLiteracy} onChange={() => setAiLiteracy(!aiLiteracy)} />
+                AI Literacy
+              </label>
+              <label className={collaborationMode ? 'collaboration-mode-active' : ''}>
+                <input type="checkbox" checked={collaborationMode} onChange={() => setCollaborationMode(!collaborationMode)} />
+                Collaboration Mode
+              </label>
+              <select value={tone} onChange={(e) => setTone(e.target.value)}>
+                <option value="friendly">Friendly</option>
+                <option value="professional">Professional</option>
+                <option value="humorous">Humorous</option>
+              </select>
+              <select value={responseLength} onChange={(e) => setResponseLength(e.target.value)}>
+                <option value="concise">Concise</option>
+                <option value="detailed">Detailed</option>
+              </select>
             </div>
           </div>
-           <div className="sidebar-section">
-                <h2>Actions</h2>
-                <div className="settings-bar">
-                    <button className="btn btn-secondary">Clear Chat</button>
-                    <button className="btn btn-secondary">Export Chat</button>
-                </div>
-            </div>
-        </aside>
-
-        <main className="main-content">
-          <div className="chat-container">
-            <div className="messages">
-              {messages.map((msg, index) => (
-                <div key={index} className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}>
-                  <ReactMarkdown
-                     components={{
-                        code({ node, inline, className, children, ...props }) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          return !inline && match ? (
-                            <SyntaxHighlighter style={vscDarkPlus} language={match[1]} PreTag="div" {...props}>
-                              {String(children).replace(/\n$/, '')}
-                            </SyntaxHighlighter>
-                          ) : (
-                            <code className={className} {...props}>
-                              {children}
-                            </code>
-                          );
-                        },
-                      }}
+          <div className="sidebar-section">
+            <h2>Projects</h2>
+            <div className="projects-bar">
+              <input
+                type="text"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="New project name"
+                className="project-input"
+              />
+              <button onClick={createProject} className="sidebar-button">
+                Create Project
+              </button>
+              <div className="project-list">
+                {projects.map((project) => (
+                  <button
+                    key={project.name}
+                    onClick={() => switchProject(project.name)}
+                    className={currentProject === project.name ? 'active' : ''}
                   >
-                    {msg.content}
-                  </ReactMarkdown>
-                  {msg.role === 'assistant' && (
-                     <div className="response-actions">
-                        <button className="btn btn-icon" title="Copy">📋</button>
-                        <button className="btn btn-icon" title="Listen">🔊</button>
-                        <button className="btn btn-icon" title="Good response">👍</button>
-                        <button className="btn btn-icon" title="Bad response">👎</button>
-                    </div>
-                  )}
+                    {project.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+        <main className="main-content">
+          {/* Gamification Bar */}
+          <div className="gamification-bar">
+            <span>Progress: {progress}%</span>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }}>
+                <span>{progress}%</span>
+              </div>
+            </div>
+            <div className="leaderboard">
+              <h2>Leaderboard</h2>
+              <ul>
+                {leaderboard.map((entry, index) => (
+                  <li key={index}>
+                    {entry.username}: {entry.points}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Language Selection */}
+          <div className="language-selection">
+            <h2>Select Programming Language</h2>
+            <div className="language-options">
+              <button onClick={() => navigate('/learn/javascript')} className="language-button">
+                JavaScript
+              </button>
+              <button onClick={() => navigate('/learn/python')} className="language-button">
+                Python
+              </button>
+              <button onClick={() => navigate('/learn/java')} className="language-button">
+                Java
+              </button>
+              <button onClick={() => navigate('/learn/cpp')} className="language-button">
+                C++
+              </button>
+              <button onClick={() => navigate('/learn/solidity')} className="language-button">
+                Solidity
+              </button>
+            </div>
+          </div>
+
+          {/* Learning Path Placeholder */}
+          <div className="learning-path">
+            {/* Learning path content would go here if integrated */}
+          </div>
+
+          {/* Challenge Section */}
+          <div className="challenge-section">
+            <h2>Coding Challenge</h2>
+            <label htmlFor="code-editor">Write your code here:</label>
+            <textarea id="code-editor" className="code-editor" placeholder="Enter your code..."></textarea>
+            <button className="submit-challenge">Submit Challenge</button>
+            <div className="challenge-result">
+              {/* Challenge result would go here */}
+            </div>
+          </div>
+
+          {/* Signup Prompt Modal */}
+          {showSignupPrompt && (
+            <div className="modal">
+              <div className="modal-content">
+                <button onClick={() => setShowSignupPrompt(false)} className="modal-close">
+                  ✕
+                </button>
+                <h2>No Credits Left</h2>
+                <p>Please sign up or log in to continue chatting.</p>
+                <div className="modal-actions">
+                  <button onClick={() => navigate('/login')} className="action-button">
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => navigate('/signup')}
+                    className="action-button"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Chat Interface */}
+          <div className="chat-container">
+            {/* Speech Error Display */}
+            {speechError && (
+              <div className="chat-error" role="alert">
+                <span>⚠️ {speechError}</span>
+                <button
+                  onClick={() => setSpeechError('')}
+                  className="action-button"
+                  aria-label="Dismiss error"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <div className="messages">
+              {(currentProject
+                ? projects.find(p => p.name === currentProject)?.messages || messages
+                : messages
+              ).map((msg, index) => (
+                <div
+                  key={index}
+                  className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}
+                >
+                  <div className="message-content">
+                    {msg.role === 'assistant' ? (
+                      <>
+                        <div className="response-meta">
+                          <span>Tone: {msg.tone || 'N/A'}</span>
+                          <span>Length: {msg.responseLength || 'N/A'}</span>
+                          {msg.language && <span>Language: {msg.language}</span>}
+                          {msg.isAudit && <span>Type: Audit Report</span>}
+                          {msg.isSimulation && <span>Type: Simulation</span>}
+                          {msg.isCollaboration && <span>Type: Collaboration</span>}
+                        </div>
+                        <div className="response-body">
+                          <ReactMarkdown
+                            components={{
+                              code({ node, inline, className, children, ...props }) {
+                                const match = /language-(\w+)/.exec(className || '');
+                                const language = match ? match[1] : msg.language || 'text';
+                                return !inline && language ? (
+                                  <SyntaxHighlighter
+                                    style={theme === 'dark' ? vscDarkPlus : coy}
+                                    language={language}
+                                    PreTag="div"
+                                    showLineNumbers
+                                    wrapLines
+                                    {...props}
+                                  >
+                                    {String(children).replace(/\n$/, '')}
+                                  </SyntaxHighlighter>
+                                ) : (
+                                  <code className={className} {...props}>
+                                    {children}
+                                  </code>
+                                );
+                              },
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                        <div className="response-actions">
+                          <button
+                            onClick={() => speakText(msg.content)}
+                            className="play-button"
+                            disabled={!ttsSupported}
+                            aria-label="Play response aloud"
+                          >
+                            ▶
+                          </button>
+                          <button
+                            onClick={() => copyToClipboard(msg.content)}
+                            className="action-button"
+                            aria-label="Copy response"
+                          >
+                            Copy
+                          </button>
+                          <button
+                            onClick={() => editResponse(index, msg.content)}
+                            className="action-button"
+                            aria-label="Edit response"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => shareResponse(index, msg.content)}
+                            className="action-button"
+                            aria-label="Share response"
+                          >
+                            Share
+                          </button>
+                          {msg.language && !msg.isAudit && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  setFullCodeView({ content: msg.content, language: msg.language })
+                                }
+                                className="action-button"
+                                aria-label="View full code"
+                              >
+                                Full Code View
+                              </button>
+                              <button
+                                onClick={() => downloadCode(msg.content, msg.language)}
+                                className="action-button"
+                                aria-label="Download code"
+                              >
+                                Download Code
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleFeedback(index, 'like')}
+                            className={`action-button ${feedback[index] === 'like' ? 'active' : ''}`}
+                            aria-label="Like response"
+                          >
+                            👍
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(index, 'dislike')}
+                            className={`action-button ${feedback[index] === 'dislike' ? 'active' : ''}`}
+                            aria-label="Dislike response"
+                          >
+                            👎
+                          </button>
+                          {msg.language && !msg.isAudit && (
+                            <>
+                              <button
+                                onClick={() => handleFeedback(index, 'works')}
+                                className={`action-button ${feedback[index] === 'works' ? 'active' : ''}`}
+                                aria-label="Code works"
+                              >
+                                Works
+                              </button>
+                              <button
+                                onClick={() => handleFeedback(index, 'errors')}
+                                className={`action-button ${feedback[index] === 'errors' ? 'active' : ''}`}
+                                aria-label="Code has errors"
+                              >
+                                Errors
+                              </button>
+                            </>
+                          )}
+                          {msg.isAudit && (
+                            <>
+                              <button
+                                onClick={() => handleFeedback(index, 'helpful')}
+                                className={`action-button ${feedback[index] === 'helpful' ? 'active' : ''}`}
+                                aria-label="Audit helpful"
+                              >
+                                Helpful
+                              </button>
+                              <button
+                                onClick={() => handleFeedback(index, 'not-helpful')}
+                                className={`action-button ${feedback[index] === 'not-helpful' ? 'active' : ''}`}
+                                aria-label="Audit not helpful"
+                              >
+                                Not Helpful
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        <div className="comment-section">
+                          <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
+                          <input
+                            id={`comment-input-${index}`}
+                            type="text"
+                            placeholder="Add a comment..."
+                            onKeyPress={e => {
+                              if (e.key === 'Enter' && e.target.value) {
+                                addComment(index, e.target.value);
+                                e.target.value = '';
+                              }
+                            }}
+                            className="comment-input"
+                            aria-label="Add comment"
+                          />
+                          {(comments[index] || []).map((comment, i) => (
+                            <div key={i} className="comment">
+                              <p>{comment.text}</p>
+                              <span className="timestamp">{comment.timestamp}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <p>{msg.content}</p>
+                    )}
+                    <span className="timestamp">{msg.timestamp}</span>
+                  </div>
                 </div>
               ))}
-               {loading && (
-                <div className="message bot-message">
-                  <div className="spinner"></div>
+              {loading && (
+                <div className="message bot-message fade-in">
+                  <div className="message-content">
+                    <div className="spinner" role="status" aria-label="Loading"></div>
+                  </div>
+                </div>
+              )}
+              {fileName && !loading && (
+                <div className="message user-message fade-in">
+                  <div className="message-content">
+                    <p>Uploaded: {fileName}</p>
+                  </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
             <div className="input-container">
+              <label htmlFor="chat-input">Type or speak your message:</label>
               <input
+                id="chat-input"
                 type="text"
-                className="form-input chat-input"
-                placeholder="Ask me anything..."
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit(input)}
+                onChange={e => setInput(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
+                className="chat-input"
+                placeholder="Type or speak your message..."
                 disabled={loading}
+                aria-label="Chat input"
               />
-              <button onClick={() => handleSubmit(input)} className="btn btn-primary" disabled={loading}>Send</button>
+              <button
+                onClick={toggleRecording}
+                className={`mic-button ${isRecording ? 'recording' : ''}`}
+                disabled={loading || !speechSupported}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+              >
+                🎤
+              </button>
+              <button
+                onClick={() => handleSubmit(input)}
+                className="send-button"
+                disabled={loading}
+                aria-label="Send message"
+              >
+                Send
+              </button>
+              <input
+                type="file"
+                accept=".txt,.pdf,image/*"
+                onChange={handleFileUpload}
+                className="file-input"
+                disabled={loading}
+                aria-label="Upload files"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="file-label">
+                Upload File
+              </label>
             </div>
           </div>
         </main>

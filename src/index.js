@@ -1,7 +1,7 @@
 // my-chatbot/src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './App.css'; // Changed from index.css to App.css for consolidated styles
+import './index.css';
 import App from './App';
 import Login from './Login';
 import Signup from './Signup';
@@ -21,7 +21,7 @@ function Root() {
         <Route path="/" element={<App user={user} setUser={setUser} />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/signup" element={<Signup setUser={setUser} />} />
-        <Route path="/learn/:language" element={<LearningPath user={user} />} />
+        <Route path="/learn/:language" element={<LearningPath user={user} setUser={setUser} />} />
       </Routes>
     </BrowserRouter>
   );

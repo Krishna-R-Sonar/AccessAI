@@ -101,23 +101,27 @@ app.post('/signup', async (req, res) => {
   console.log('Signup request received:', req.body);
   const { email, password } = req.body;
 
+  // Input validation
   if (!email || !password) {
     console.error('Signup error: Email and password are required');
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
+    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.error('Signup error: Email already exists');
       return res.status(400).json({ error: 'Email already exists' });
     }
 
+    // Hash password and save new user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ email, password: hashedPassword });
     await user.save();
     console.log('User created successfully:', email);
 
+    // Generate JWT token
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token, user: { email: user.email, points: user.points } });
   } catch (error) {
@@ -131,24 +135,28 @@ app.post('/login', async (req, res) => {
   console.log('Login request received:', req.body);
   const { email, password } = req.body;
 
+  // Input validation
   if (!email || !password) {
     console.error('Login error: Email and password are required');
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       console.error('Login error: Invalid email or password');
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
+    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.error('Login error: Invalid email or password');
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
+    // Generate JWT token
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(200).json({ token, user: { email: user.email, points: user.points } });
   } catch (error) {
@@ -162,11 +170,13 @@ app.post('/chat', authenticateToken, async (req, res) => {
   console.log('Chat request received:', req.body);
   const { messages, input, credits } = req.body;
 
+  // Input validation
   if (!messages || !input) {
     console.error('Chat error: Missing messages or input');
     return res.status(400).json({ error: 'Messages and input are required' });
   }
 
+  // Check credits for non-logged-in users
   if (!req.user) {
     if (credits <= 0) {
       console.error('Chat error: No credits left');
@@ -175,7 +185,7 @@ app.post('/chat', authenticateToken, async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({
+    const model = genAI.getGenerativeModel({ 
       model: 'gemini-1.5-flash',
       systemInstruction: "You are a helpful coding tutor. If the user asks for a direct solution to a coding challenge or exercise, encourage them to try solving it on their own first. Say: 'Try to answer on your own and then if not able then use me, I am here to help you.' Only provide hints initially, and the full solution if they insist after trying."
     });
@@ -189,6 +199,7 @@ app.post('/chat', authenticateToken, async (req, res) => {
     const responseText = result.response.text();
     console.log('Chat request processed successfully:', { input, response: responseText });
 
+    // Decrement credits for non-logged-in users
     const updatedCredits = req.user ? credits : credits - 1;
     res.json({ response: responseText, credits: updatedCredits });
   } catch (error) {
@@ -203,6 +214,7 @@ app.post('/update-points', authenticateToken, async (req, res) => {
     console.error('Update points error: Unauthorized');
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
   const { points } = req.body;
   try {
     const user = await User.findById(req.user.id);
