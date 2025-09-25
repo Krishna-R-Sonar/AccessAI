@@ -1,4 +1,5 @@
 // my-chatbot/src/App.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -7,20 +8,28 @@ import { vscDarkPlus, coy } from 'react-syntax-highlighter/dist/esm/styles/prism
 import axios from 'axios';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
-const LEADERBOARD_URL = 'https://accessai-onh4.onrender.com/leaderboard';
+const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com';
+const CHAT_ENDPOINT = `${API_URL}/chat`;
+const LEADERBOARD_URL = `${API_URL}/leaderboard`;
+const UPDATE_POINTS_URL = `${API_URL}/update-points`;
 
 function App({ user, setUser }) {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('accessai-theme');
+    return savedTheme || 'light';
+  });
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [codeMode, setCodeMode] = useState(false);
-  const [auditMode, setAuditMode] = useState(false);
-  const [emotionDetection, setEmotionDetection] = useState(false);
-  const [criticalThinking, setCriticalThinking] = useState(false);
-  const [offlineMode, setOfflineMode] = useState(false);
-  const [simulationMode, setSimulationMode] = useState(false);
-  const [aiLiteracy, setAiLiteracy] = useState(false);
-  const [collaborationMode, setCollaborationMode] = useState(false);
+  const [activeModes, setActiveModes] = useState({
+    codeMode: false,
+    auditMode: false,
+    emotionDetection: false,
+    criticalThinking: false,
+    simulationMode: false,
+    aiLiteracy: false,
+    collaborationMode: false
+  });
+  
   const [tone, setTone] = useState('friendly');
   const [responseLength, setResponseLength] = useState('concise');
   const [projects, setProjects] = useState([]);
@@ -29,7 +38,7 @@ function App({ user, setUser }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [credits, setCredits] = useState(5);
+  const [credits, setCredits] = useState(user ? Infinity : 5);
   const [isRecording, setIsRecording] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
@@ -37,157 +46,248 @@ function App({ user, setUser }) {
   const [fileName, setFileName] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
   const [points, setPoints] = useState(user ? user.points : 0);
+  const [level, setLevel] = useState(user ? user.level : 1);
   const [progress, setProgress] = useState(0);
   const [feedback, setFeedback] = useState({});
   const [comments, setComments] = useState({});
   const [fullCodeView, setFullCodeView] = useState(null);
   const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+  const [error, setError] = useState('');
+
   const mediaRecorderRef = useRef(null);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
   const recognitionRef = useRef(null);
   const navigate = useNavigate();
 
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('accessai-theme', theme);
+  }, [theme]);
+
+  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setSidebarOpen(false);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [sidebarOpen]);
 
+  // Initialize speech recognition and synthesis
   useEffect(() => {
+    // Speech recognition
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       setSpeechSupported(true);
       recognitionRef.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
       recognitionRef.current.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
-        handleSubmit(transcript);
       };
+
       recognitionRef.current.onerror = (event) => {
         setSpeechError(`Speech recognition error: ${event.error}`);
+        setIsRecording(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
       };
     }
 
+    // Text-to-speech
     if ('speechSynthesis' in window) {
       setTtsSupported(true);
     }
 
+    // Load leaderboard
     fetchLeaderboard();
-  }, []);
+
+    // Calculate progress
+    setProgress(Math.min(100, Math.floor((points % 100) / 100 * 100)));
+  }, [points]);
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await axios.get(LEADERBOARD_URL);
-      setLeaderboard(response.data);
+      const response = await axios.get(LEADERBOARD_URL, {
+        params: { limit: 5 }
+      });
+      setLeaderboard(response.data.leaderboard || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     }
   };
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
+    setSidebarOpen(prev => !prev);
+  };
+
+  const toggleMode = (mode) => {
+    setActiveModes(prev => ({
+      ...prev,
+      [mode]: !prev[mode]
+    }));
   };
 
   const createProject = () => {
     if (newProjectName.trim()) {
-      setProjects((prev) => [...prev, { name: newProjectName, messages: [] }]);
+      const project = { 
+        name: newProjectName.trim(), 
+        messages: [],
+        createdAt: new Date().toISOString()
+      };
+      setProjects(prev => [...prev, project]);
       setNewProjectName('');
+      setCurrentProject(project.name);
     }
   };
 
   const switchProject = (projectName) => {
     if (currentProject) {
-      const currentMessages = messages;
-      setProjects((prev) =>
-        prev.map((p) => (p.name === currentProject ? { ...p, messages: currentMessages } : p))
+      // Save current messages to project
+      setProjects(prev => 
+        prev.map(p => 
+          p.name === currentProject ? { ...p, messages } : p
+        )
       );
     }
     setCurrentProject(projectName);
-    const project = projects.find((p) => p.name === projectName);
+    const project = projects.find(p => p.name === projectName);
     setMessages(project ? project.messages : []);
   };
 
   const handleSubmit = async (userInput) => {
     if (!userInput.trim()) return;
 
-    const newMessages = [
-      ...messages,
-      { role: 'user', content: userInput, timestamp: new Date().toLocaleTimeString() },
-    ];
-    setMessages(newMessages);
+    const newMessage = { 
+      role: 'user', 
+      content: userInput, 
+      timestamp: new Date().toLocaleTimeString(),
+      id: Date.now()
+    };
+
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setInput('');
     setLoading(true);
+    setError('');
 
+    // Check credits for non-logged-in users
     if (!user && credits <= 0) {
       setShowSignupPrompt(true);
       setLoading(false);
       return;
     }
 
+    // Build enhanced prompt based on active modes
     let enhancedPrompt = userInput;
-    if (codeMode) enhancedPrompt = `Provide response in ${tone} tone, ${responseLength} length, with code examples. ${enhancedPrompt}`;
-    if (auditMode) enhancedPrompt = `Audit the code for best practices: ${enhancedPrompt}`;
-    if (emotionDetection) enhancedPrompt = `Detect emotion and respond empathetically: ${enhancedPrompt}`;
-    if (criticalThinking) enhancedPrompt = `Encourage critical thinking: ${enhancedPrompt}`;
-    if (simulationMode) enhancedPrompt = `Simulate the scenario: ${enhancedPrompt}`;
-    if (aiLiteracy) enhancedPrompt = `Explain AI concepts: ${enhancedPrompt}`;
-    if (collaborationMode) enhancedPrompt = `Collaborate on the idea: ${enhancedPrompt}`;
+    const modeInstructions = [];
+
+    if (activeModes.codeMode) modeInstructions.push('Provide response with code examples');
+    if (activeModes.auditMode) modeInstructions.push('Audit the code for best practices');
+    if (activeModes.emotionDetection) modeInstructions.push('Detect emotion and respond empathetically');
+    if (activeModes.criticalThinking) modeInstructions.push('Encourage critical thinking');
+    if (activeModes.simulationMode) modeInstructions.push('Simulate the scenario');
+    if (activeModes.aiLiteracy) modeInstructions.push('Explain AI concepts');
+    if (activeModes.collaborationMode) modeInstructions.push('Collaborate on the idea');
+
+    if (modeInstructions.length > 0) {
+      enhancedPrompt = `${modeInstructions.join('. ')}. ${enhancedPrompt}`;
+    }
 
     try {
-      const response = await axios.post(API_URL, {
-        messages: newMessages,
+      const response = await axios.post(CHAT_ENDPOINT, {
+        messages: updatedMessages.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        })),
         input: enhancedPrompt,
-        credits,
+        credits
       }, {
-        headers: { Authorization: user ? `Bearer ${user.token}` : '' },
+        headers: { 
+          Authorization: user ? `Bearer ${user.token}` : '',
+          'Content-Type': 'application/json'
+        }
       });
-      const botMessage = {
-        role: 'assistant',
-        content: response.data.response,
-        timestamp: new Date().toLocaleTimeString(),
-        tone,
-        responseLength,
-        isAudit: auditMode,
-        isSimulation: simulationMode,
-        isCollaboration: collaborationMode,
-      };
-      setMessages((prev) => [...prev, botMessage]);
-      setCredits(response.data.credits);
-      if (user) {
-        setPoints((prev) => prev + 10);
-        await axios.post('https://accessai-onh4.onrender.com/update-points', { points: 10 }, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
+
+      if (response.data.success) {
+        const botMessage = {
+          role: 'assistant',
+          content: response.data.response,
+          timestamp: new Date().toLocaleTimeString(),
+          id: Date.now() + 1,
+          tone,
+          responseLength,
+          modes: { ...activeModes }
+        };
+
+        setMessages(prev => [...prev, botMessage]);
+        
+        if (!user) {
+          setCredits(response.data.credits);
+        } else {
+          // Update points for logged-in users
+          setPoints(prev => {
+            const newPoints = prev + 10;
+            if (newPoints >= level * 100) {
+              setLevel(prevLevel => prevLevel + 1);
+            }
+            return newPoints;
+          });
+
+          try {
+            await axios.post(UPDATE_POINTS_URL, { points: 10 }, {
+              headers: { Authorization: `Bearer ${user.token}` }
+            });
+          } catch (pointsError) {
+            console.error('Error updating points:', pointsError);
+          }
+        }
+      } else {
+        throw new Error(response.data.error || 'Failed to get response');
       }
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Error: Failed to get response.', timestamp: new Date().toLocaleTimeString() },
-      ]);
+      console.error('Chat error:', error);
+      setError(error.response?.data?.details || 'Failed to send message. Please try again.');
+      
+      const errorMessage = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toLocaleTimeString(),
+        id: Date.now() + 1,
+        isError: true
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   };
 
   const toggleRecording = () => {
+    if (!speechSupported) return;
+
     if (isRecording) {
       recognitionRef.current.stop();
-      setIsRecording(false);
     } else {
+      setSpeechError('');
       recognitionRef.current.start();
       setIsRecording(true);
     }
@@ -196,23 +296,45 @@ function App({ user, setUser }) {
   const speakText = (text) => {
     if (ttsSupported) {
       const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.8;
+      utterance.pitch: 1;
       window.speechSynthesis.speak(utterance);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // You could add a toast notification here
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   const editResponse = (index, content) => {
     const newContent = prompt('Edit response:', content);
-    if (newContent) {
-      setMessages((prev) => prev.map((msg, i) => (i === index ? { ...msg, content: newContent } : msg)));
+    if (newContent !== null) {
+      setMessages(prev => prev.map((msg, i) => 
+        i === index ? { ...msg, content: newContent } : msg
+      ));
     }
   };
 
-  const shareResponse = (index, content) => {
-    alert(`Share this: ${content}`);
+  const shareResponse = async (index, content) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'AccessAI Response',
+          text: content
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      await copyToClipboard(content);
+      alert('Response copied to clipboard!');
+    }
   };
 
   const downloadCode = (code, language) => {
@@ -220,483 +342,497 @@ function App({ user, setUser }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `code.${language}`;
+    a.download = `code.${language || 'txt'}`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
   const handleFeedback = (index, type) => {
-    setFeedback((prev) => ({ ...prev, [index]: type }));
+    setFeedback(prev => ({ ...prev, [index]: type }));
   };
 
   const addComment = (index, text) => {
-    setComments((prev) => ({
+    if (!text.trim()) return;
+    
+    setComments(prev => ({
       ...prev,
-      [index]: [...(prev[index] || []), { text, timestamp: new Date().toLocaleTimeString() }],
+      [index]: [...(prev[index] || []), { 
+        text, 
+        timestamp: new Date().toLocaleTimeString(),
+        id: Date.now()
+      }]
     }));
   };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setFileName(file.name);
+    if (!file) return;
+
+    setFileName(file.name);
+    
+    if (file.type.startsWith('image/')) {
+      // Handle image files
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        handleSubmit(`I uploaded an image file: ${file.name}. Please help me analyze it.`);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Handle text-based files
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target.result;
-        handleSubmit(`Uploaded file content: ${content}`);
+        handleSubmit(`I uploaded a file: ${file.name}. Content: ${content.substring(0, 1000)}...`);
       };
       reader.readAsText(file);
     }
+    
+    // Reset file input
+    e.target.value = '';
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    setCredits(5);
+    setPoints(0);
+    setLevel(1);
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setError('');
   };
 
   return (
     <div className={`app-container ${theme}`}>
+      {/* Header */}
       <header className="header">
         <div className="header-left">
-          <button className="hamburger" onClick={toggleSidebar} aria-label="Toggle sidebar">
+          <button 
+            className="hamburger" 
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
+          >
             ☰
           </button>
-          <h1 className="app-title">AccessAI Chatbot</h1>
+          <h1 className="app-title">AccessAI</h1>
         </div>
+        
         <div className="header-right">
           <div className="user-stats">
             {user ? (
               <>
-                <span>Points: {points}</span>
-                <button onClick={handleLogout} className="action-button">
+                <span className="user-points">⭐ {points}</span>
+                <span className="user-level">Level {level}</span>
+                <button onClick={handleLogout} className="action-btn">
                   Logout
                 </button>
               </>
             ) : (
               <>
                 <span>Credits: {credits}</span>
-                <a href="/login">Login</a> / <a href="/signup">Signup</a>
+                <a href="/login" className="auth-link">Login</a>
+                <a href="/signup" className="auth-link">Signup</a>
               </>
             )}
           </div>
+          
           <button onClick={toggleTheme} className="theme-toggle">
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            {theme === 'light' ? '🌙' : '☀️'}
           </button>
         </div>
       </header>
-      <div className="main-layout container">
-        <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+
+      {/* Main Layout */}
+      <div className="main-layout">
+        {/* Sidebar */}
+        <aside 
+          ref={sidebarRef} 
+          className={`sidebar ${sidebarOpen ? 'open' : ''}`}
+        >
+          <div className="sidebar-header">
+            <h3>Settings</h3>
+            <button 
+              className="sidebar-close" 
+              onClick={toggleSidebar}
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
+
           <div className="sidebar-section">
-            <h2>Settings</h2>
-            <div className="settings-bar">
-              <label className={codeMode ? 'code-mode-active' : ''}>
-                <input type="checkbox" checked={codeMode} onChange={() => setCodeMode(!codeMode)} />
-                Code Mode
-              </label>
-              <label className={auditMode ? 'audit-mode-active' : ''}>
-                <input type="checkbox" checked={auditMode} onChange={() => setAuditMode(!auditMode)} />
-                Audit Mode
-              </label>
-              <label className={emotionDetection ? 'emotion-detection-active' : ''}>
-                <input type="checkbox" checked={emotionDetection} onChange={() => setEmotionDetection(!emotionDetection)} />
-                Emotion Detection
-              </label>
-              <label className={criticalThinking ? 'critical-thinking-active' : ''}>
-                <input type="checkbox" checked={criticalThinking} onChange={() => setCriticalThinking(!criticalThinking)} />
-                Critical Thinking
-              </label>
-              <label className={offlineMode ? 'offline-mode-active' : ''}>
-                <input type="checkbox" checked={offlineMode} onChange={() => setOfflineMode(!offlineMode)} />
-                Offline Mode
-              </label>
-              <label className={simulationMode ? 'simulation-mode-active' : ''}>
-                <input type="checkbox" checked={simulationMode} onChange={() => setSimulationMode(!simulationMode)} />
-                Simulation Mode
-              </label>
-              <label className={aiLiteracy ? 'ai-literacy-active' : ''}>
-                <input type="checkbox" checked={aiLiteracy} onChange={() => setAiLiteracy(!aiLiteracy)} />
-                AI Literacy
-              </label>
-              <label className={collaborationMode ? 'collaboration-mode-active' : ''}>
-                <input type="checkbox" checked={collaborationMode} onChange={() => setCollaborationMode(!collaborationMode)} />
-                Collaboration Mode
-              </label>
-              <select value={tone} onChange={(e) => setTone(e.target.value)}>
+            <h3>AI Modes</h3>
+            {Object.entries(activeModes).map(([mode, isActive]) => (
+              <div 
+                key={mode}
+                className={`settings-toggle ${isActive ? 'active' : ''}`}
+                onClick={() => toggleMode(mode)}
+              >
+                <span>{mode.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                <div className="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    checked={isActive}
+                    onChange={() => {}}
+                  />
+                  <span className="toggle-slider"></span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="sidebar-section">
+            <h3>Response Settings</h3>
+            <div className="form-group">
+              <label className="form-label">Tone</label>
+              <select 
+                value={tone} 
+                onChange={(e) => setTone(e.target.value)}
+                className="form-input"
+              >
                 <option value="friendly">Friendly</option>
                 <option value="professional">Professional</option>
                 <option value="humorous">Humorous</option>
+                <option value="technical">Technical</option>
               </select>
-              <select value={responseLength} onChange={(e) => setResponseLength(e.target.value)}>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Response Length</label>
+              <select 
+                value={responseLength} 
+                onChange={(e) => setResponseLength(e.target.value)}
+                className="form-input"
+              >
                 <option value="concise">Concise</option>
                 <option value="detailed">Detailed</option>
+                <option value="comprehensive">Comprehensive</option>
               </select>
             </div>
           </div>
+
           <div className="sidebar-section">
-            <h2>Projects</h2>
-            <div className="projects-bar">
+            <h3>Projects</h3>
+            <div className="project-input-group">
               <input
                 type="text"
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
                 placeholder="New project name"
                 className="project-input"
+                onKeyPress={(e) => e.key === 'Enter' && createProject()}
               />
-              <button onClick={createProject} className="sidebar-button">
-                Create Project
+              <button onClick={createProject} className="send-btn">
+                +
               </button>
-              <div className="project-list">
-                {projects.map((project) => (
-                  <button
-                    key={project.name}
-                    onClick={() => switchProject(project.name)}
-                    className={currentProject === project.name ? 'active' : ''}
-                  >
-                    {project.name}
-                  </button>
-                ))}
-              </div>
+            </div>
+            
+            <div className="project-list">
+              {projects.map((project) => (
+                <div
+                  key={project.name}
+                  className={`project-item ${currentProject === project.name ? 'active' : ''}`}
+                  onClick={() => switchProject(project.name)}
+                >
+                  <span>{project.name}</span>
+                  <span>{project.messages.length} messages</span>
+                </div>
+              ))}
             </div>
           </div>
+
+          <div className="sidebar-section">
+            <button onClick={clearChat} className="submit-btn" style={{background: 'var(--error-color)'}}>
+              Clear Chat
+            </button>
+          </div>
         </aside>
+
+        {/* Main Content */}
         <main className="main-content">
           {/* Gamification Bar */}
           <div className="gamification-bar">
-            <span>Progress: {progress}%</span>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${progress}%` }}>
-                <span>{progress}%</span>
+            <div className="progress-section">
+              <div className="progress-info">
+                <span>Level {level} Progress</span>
+                <span>{points % 100}/100 XP</span>
+              </div>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
             </div>
-            <div className="leaderboard">
-              <h2>Leaderboard</h2>
-              <ul>
-                {leaderboard.map((entry, index) => (
-                  <li key={index}>
-                    {entry.username}: {entry.points}
-                  </li>
+            
+            <div className="leaderboard-section">
+              <h3>Top Learners</h3>
+              <div className="leaderboard-list">
+                {leaderboard.slice(0, 3).map((entry, index) => (
+                  <div key={index} className="leaderboard-item">
+                    <span className="leaderboard-rank">#{index + 1}</span>
+                    <span>{entry.username}</span>
+                    <span>{entry.points} pts</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
 
           {/* Language Selection */}
-          <div className="language-selection">
-            <h2>Select Programming Language</h2>
-            <div className="language-options">
-              <button onClick={() => navigate('/learn/javascript')} className="language-button">
-                JavaScript
-              </button>
-              <button onClick={() => navigate('/learn/python')} className="language-button">
-                Python
-              </button>
-              <button onClick={() => navigate('/learn/java')} className="language-button">
-                Java
-              </button>
-              <button onClick={() => navigate('/learn/cpp')} className="language-button">
-                C++
-              </button>
-              <button onClick={() => navigate('/learn/solidity')} className="language-button">
-                Solidity
-              </button>
-            </div>
-          </div>
-
-          {/* Learning Path Placeholder */}
-          <div className="learning-path">
-            {/* Learning path content would go here if integrated */}
-          </div>
-
-          {/* Challenge Section */}
-          <div className="challenge-section">
-            <h2>Coding Challenge</h2>
-            <label htmlFor="code-editor">Write your code here:</label>
-            <textarea id="code-editor" className="code-editor" placeholder="Enter your code..."></textarea>
-            <button className="submit-challenge">Submit Challenge</button>
-            <div className="challenge-result">
-              {/* Challenge result would go here */}
-            </div>
-          </div>
-
-          {/* Signup Prompt Modal */}
-          {showSignupPrompt && (
-            <div className="modal">
-              <div className="modal-content">
-                <button onClick={() => setShowSignupPrompt(false)} className="modal-close">
-                  ✕
-                </button>
-                <h2>No Credits Left</h2>
-                <p>Please sign up or log in to continue chatting.</p>
-                <div className="modal-actions">
-                  <button onClick={() => navigate('/login')} className="action-button">
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => navigate('/signup')}
-                    className="action-button"
-                  >
-                    Sign Up
-                  </button>
+          <section className="language-selection">
+            <h2>Start Learning</h2>
+            <p>Choose your programming language to begin your coding journey</p>
+            
+            <div className="language-grid">
+              {['JavaScript', 'Python', 'Java', 'C++', 'Solidity', 'Go'].map((lang) => (
+                <div 
+                  key={lang}
+                  className="language-card"
+                  onClick={() => navigate(`/learn/${lang.toLowerCase()}`)}
+                >
+                  <div className="language-icon">
+                    {lang === 'JavaScript' && '⚡'}
+                    {lang === 'Python' && '🐍'}
+                    {lang === 'Java' && '☕'}
+                    {lang === 'C++' && '⚙️'}
+                    {lang === 'Solidity' && '🔗'}
+                    {lang === 'Go' && '🚀'}
+                  </div>
+                  <h3>{lang}</h3>
                 </div>
-              </div>
+              ))}
             </div>
-          )}
+          </section>
 
           {/* Chat Interface */}
-          <div className="chat-container">
-            {/* Speech Error Display */}
-            {speechError && (
-              <div className="chat-error" role="alert">
-                <span>⚠️ {speechError}</span>
-                <button
-                  onClick={() => setSpeechError('')}
-                  className="action-button"
-                  aria-label="Dismiss error"
-                >
+          <section className="chat-interface">
+            <h2>AI Coding Assistant</h2>
+            <p>Ask me anything about programming, code reviews, or learning paths</p>
+            
+            {error && (
+              <div className="error-message">
+                ⚠️ {error}
+                <button onClick={() => setError('')} className="modal-close">
                   ✕
                 </button>
               </div>
             )}
-            <div className="messages">
-              {(currentProject
-                ? projects.find(p => p.name === currentProject)?.messages || messages
-                : messages
-              ).map((msg, index) => (
-                <div
-                  key={index}
-                  className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'} fade-in`}
-                >
-                  <div className="message-content">
-                    {msg.role === 'assistant' ? (
-                      <>
-                        <div className="response-meta">
-                          <span>Tone: {msg.tone || 'N/A'}</span>
-                          <span>Length: {msg.responseLength || 'N/A'}</span>
-                          {msg.language && <span>Language: {msg.language}</span>}
-                          {msg.isAudit && <span>Type: Audit Report</span>}
-                          {msg.isSimulation && <span>Type: Simulation</span>}
-                          {msg.isCollaboration && <span>Type: Collaboration</span>}
-                        </div>
-                        <div className="response-body">
-                          <ReactMarkdown
-                            components={{
-                              code({ node, inline, className, children, ...props }) {
-                                const match = /language-(\w+)/.exec(className || '');
-                                const language = match ? match[1] : msg.language || 'text';
-                                return !inline && language ? (
+
+            <div className="messages-container">
+              {messages.length === 0 ? (
+                <div className="text-center" style={{padding: '2rem', color: 'var(--text-muted)'}}>
+                  <h3>👋 Welcome to AccessAI!</h3>
+                  <p>Start a conversation by typing a message below or select a learning path above.</p>
+                </div>
+              ) : (
+                messages.map((msg) => (
+                  <div key={msg.id} className={`message ${msg.role}-message`}>
+                    <div className="message-bubble">
+                      {msg.role === 'assistant' ? (
+                        <ReactMarkdown
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '');
+                              const language = match ? match[1] : 'text';
+                              
+                              return !inline ? (
+                                <div style={{position: 'relative'}}>
                                   <SyntaxHighlighter
                                     style={theme === 'dark' ? vscDarkPlus : coy}
                                     language={language}
                                     PreTag="div"
                                     showLineNumbers
-                                    wrapLines
                                     {...props}
                                   >
                                     {String(children).replace(/\n$/, '')}
                                   </SyntaxHighlighter>
-                                ) : (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
-                            {msg.content}
-                          </ReactMarkdown>
+                                  <button 
+                                    onClick={() => setFullCodeView({content: String(children), language})}
+                                    className="action-btn"
+                                    style={{position: 'absolute', top: '0.5rem', right: '0.5rem'}}
+                                  >
+                                    Full View
+                                  </button>
+                                </div>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            },
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        <p>{msg.content}</p>
+                      )}
+                      
+                      {msg.role === 'assistant' && (
+                        <div className="message-actions">
+                          <button onClick={() => speakText(msg.content)} className="action-btn">
+                            🔊 Speak
+                          </button>
+                          <button onClick={() => copyToClipboard(msg.content)} className="action-btn">
+                            📋 Copy
+                          </button>
+                          <button onClick={() => editResponse(msg.id, msg.content)} className="action-btn">
+                            ✏️ Edit
+                          </button>
+                          <button onClick={() => shareResponse(msg.id, msg.content)} className="action-btn">
+                            📤 Share
+                          </button>
                         </div>
-                        <div className="response-actions">
-                          <button
-                            onClick={() => speakText(msg.content)}
-                            className="play-button"
-                            disabled={!ttsSupported}
-                            aria-label="Play response aloud"
-                          >
-                            ▶
-                          </button>
-                          <button
-                            onClick={() => copyToClipboard(msg.content)}
-                            className="action-button"
-                            aria-label="Copy response"
-                          >
-                            Copy
-                          </button>
-                          <button
-                            onClick={() => editResponse(index, msg.content)}
-                            className="action-button"
-                            aria-label="Edit response"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => shareResponse(index, msg.content)}
-                            className="action-button"
-                            aria-label="Share response"
-                          >
-                            Share
-                          </button>
-                          {msg.language && !msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  setFullCodeView({ content: msg.content, language: msg.language })
-                                }
-                                className="action-button"
-                                aria-label="View full code"
-                              >
-                                Full Code View
-                              </button>
-                              <button
-                                onClick={() => downloadCode(msg.content, msg.language)}
-                                className="action-button"
-                                aria-label="Download code"
-                              >
-                                Download Code
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleFeedback(index, 'like')}
-                            className={`action-button ${feedback[index] === 'like' ? 'active' : ''}`}
-                            aria-label="Like response"
-                          >
-                            👍
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(index, 'dislike')}
-                            className={`action-button ${feedback[index] === 'dislike' ? 'active' : ''}`}
-                            aria-label="Dislike response"
-                          >
-                            👎
-                          </button>
-                          {msg.language && !msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() => handleFeedback(index, 'works')}
-                                className={`action-button ${feedback[index] === 'works' ? 'active' : ''}`}
-                                aria-label="Code works"
-                              >
-                                Works
-                              </button>
-                              <button
-                                onClick={() => handleFeedback(index, 'errors')}
-                                className={`action-button ${feedback[index] === 'errors' ? 'active' : ''}`}
-                                aria-label="Code has errors"
-                              >
-                                Errors
-                              </button>
-                            </>
-                          )}
-                          {msg.isAudit && (
-                            <>
-                              <button
-                                onClick={() => handleFeedback(index, 'helpful')}
-                                className={`action-button ${feedback[index] === 'helpful' ? 'active' : ''}`}
-                                aria-label="Audit helpful"
-                              >
-                                Helpful
-                              </button>
-                              <button
-                                onClick={() => handleFeedback(index, 'not-helpful')}
-                                className={`action-button ${feedback[index] === 'not-helpful' ? 'active' : ''}`}
-                                aria-label="Audit not helpful"
-                              >
-                                Not Helpful
-                              </button>
-                            </>
-                          )}
-                        </div>
-                        <div className="comment-section">
-                          <label htmlFor={`comment-input-${index}`}>Add a comment:</label>
-                          <input
-                            id={`comment-input-${index}`}
-                            type="text"
-                            placeholder="Add a comment..."
-                            onKeyPress={e => {
-                              if (e.key === 'Enter' && e.target.value) {
-                                addComment(index, e.target.value);
-                                e.target.value = '';
-                              }
-                            }}
-                            className="comment-input"
-                            aria-label="Add comment"
-                          />
-                          {(comments[index] || []).map((comment, i) => (
-                            <div key={i} className="comment">
-                              <p>{comment.text}</p>
-                              <span className="timestamp">{comment.timestamp}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p>{msg.content}</p>
-                    )}
-                    <span className="timestamp">{msg.timestamp}</span>
+                      )}
+                      
+                      <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
+                        {msg.timestamp}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
+              
               {loading && (
-                <div className="message bot-message fade-in">
-                  <div className="message-content">
-                    <div className="spinner" role="status" aria-label="Loading"></div>
+                <div className="message bot-message">
+                  <div className="message-bubble">
+                    <div className="loading"></div>
+                    <span style={{marginLeft: '0.5rem'}}>AI is thinking...</span>
                   </div>
                 </div>
               )}
-              {fileName && !loading && (
-                <div className="message user-message fade-in">
-                  <div className="message-content">
-                    <p>Uploaded: {fileName}</p>
-                  </div>
-                </div>
-              )}
+              
               <div ref={messagesEndRef} />
             </div>
+
             <div className="input-container">
-              <label htmlFor="chat-input">Type or speak your message:</label>
               <input
-                id="chat-input"
                 type="text"
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !loading && handleSubmit(input)}
+                placeholder="Type your message here..."
                 className="chat-input"
-                placeholder="Type or speak your message..."
                 disabled={loading}
-                aria-label="Chat input"
               />
+              
               <button
                 onClick={toggleRecording}
-                className={`mic-button ${isRecording ? 'recording' : ''}`}
-                disabled={loading || !speechSupported}
-                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+                className={`send-btn ${isRecording ? 'recording' : ''}`}
+                disabled={!speechSupported || loading}
+                style={{background: isRecording ? 'var(--error-color)' : 'var(--secondary-color)'}}
               >
-                🎤
+                {isRecording ? '⏹️' : '🎤'}
               </button>
+              
               <button
                 onClick={() => handleSubmit(input)}
-                className="send-button"
-                disabled={loading}
-                aria-label="Send message"
+                className="send-btn"
+                disabled={loading || !input.trim()}
               >
-                Send
+                {loading ? '⏳' : '📤'}
               </button>
+            </div>
+
+            <div style={{display: 'flex', gap: '0.5rem', marginTop: '0.5rem'}}>
               <input
                 type="file"
-                accept=".txt,.pdf,image/*"
-                onChange={handleFileUpload}
-                className="file-input"
-                disabled={loading}
-                aria-label="Upload files"
                 id="file-upload"
+                onChange={handleFileUpload}
+                accept=".txt,.js,.py,.java,.cpp,.sol,.go,image/*"
+                style={{display: 'none'}}
               />
-              <label htmlFor="file-upload" className="file-label">
-                Upload File
+              <label htmlFor="file-upload" className="action-btn">
+                📎 Upload File
               </label>
+              
+              {fileName && (
+                <span style={{fontSize: '0.875rem', color: 'var(--text-muted)'}}>
+                  Selected: {fileName}
+                </span>
+              )}
             </div>
-          </div>
+          </section>
         </main>
       </div>
+
+      {/* Signup Prompt Modal */}
+      {showSignupPrompt && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button 
+              onClick={() => setShowSignupPrompt(false)} 
+              className="modal-close"
+            >
+              ✕
+            </button>
+            
+            <h2>🎉 Unlock Full Access!</h2>
+            <p>You've used all your free credits. Sign up now to get:</p>
+            
+            <ul style={{margin: '1rem 0', paddingLeft: '1.5rem'}}>
+              <li>✨ Unlimited AI conversations</li>
+              <li>⭐ Earn points and level up</li>
+              <li>🏆 Compete on the leaderboard</li>
+              <li>💾 Save your projects and chat history</li>
+            </ul>
+            
+            <div style={{display: 'flex', gap: '1rem', marginTop: '1.5rem'}}>
+              <button 
+                onClick={() => navigate('/login')} 
+                className="submit-btn"
+                style={{flex: 1}}
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => navigate('/signup')} 
+                className="submit-btn"
+                style={{flex: 1, background: 'var(--success-color)'}}
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Code View Modal */}
+      {fullCodeView && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button 
+              onClick={() => setFullCodeView(null)} 
+              className="modal-close"
+            >
+              ✕
+            </button>
+            
+            <h2>Complete Code</h2>
+            <SyntaxHighlighter
+              style={theme === 'dark' ? vscDarkPlus : coy}
+              language={fullCodeView.language}
+              showLineNumbers
+              style={{maxHeight: '60vh', overflow: 'auto'}}
+            >
+              {fullCodeView.content}
+            </SyntaxHighlighter>
+            
+            <button 
+              onClick={() => downloadCode(fullCodeView.content, fullCodeView.language)}
+              className="submit-btn"
+              style={{marginTop: '1rem'}}
+            >
+              Download Code
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

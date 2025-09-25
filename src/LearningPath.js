@@ -1,4 +1,5 @@
 // my-chatbot/src/LearningPath.js
+
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -9,7 +10,7 @@ import './App.css'; // Reuse styles from App.css
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
 
-// Reuse learningPaths from App.js (duplicate for simplicity, or import if modular)
+// Learning paths data
 const learningPaths = {
   javascript: {
     chapters: [
@@ -336,7 +337,7 @@ const learningPaths = {
 function LearningPath({ user }) {
   const { language } = useParams();
   const navigate = useNavigate();
-  const [theme, setTheme] = useState('light');
+  const [theme] = useState(localStorage.getItem('accessai-theme') || 'light'); // Sync with app theme
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
@@ -482,7 +483,7 @@ function LearningPath({ user }) {
                 {chapter.title} {expandedChapters.includes(chapIdx) ? '-' : '+'}
               </button>
               {expandedChapters.includes(chapIdx) && (
-                <ul>
+                <ul style={{listStyle: 'none', padding: '0'}}>
                   {chapter.lessons.map((lesson, lessIdx) => (
                     <li key={lessIdx}>
                       <button onClick={() => startLesson(chapIdx, lessIdx)}>
@@ -499,7 +500,7 @@ function LearningPath({ user }) {
           {currentLessonIndex !== null ? (
             <div>
               <h2>{path.chapters[currentChapterIndex].lessons[currentLessonIndex].title}</h2>
-              {loading ? <div className="spinner" /> : 
+              {loading ? <div className="loading" /> : 
                 <ReactMarkdown
                   components={{
                     code({ node, inline, className, children, ...props }) {
@@ -546,8 +547,9 @@ function LearningPath({ user }) {
               onChange={e => setAskInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && handleAskSubmit()}
               placeholder="Ask about this lesson..."
+              className="chat-input"
             />
-            <button onClick={handleAskSubmit} disabled={loading}>Send</button>
+            <button onClick={handleAskSubmit} disabled={loading} className="send-btn">Send</button>
           </div>
         </main>
       </div>
