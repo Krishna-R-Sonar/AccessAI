@@ -297,7 +297,7 @@ function App({ user, setUser }) {
     if (ttsSupported) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.8;
-      utterance.pitch: 1;
+      utterance.pitch = 1;
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -818,7 +818,7 @@ function App({ user, setUser }) {
               style={theme === 'dark' ? vscDarkPlus : coy}
               language={fullCodeView.language}
               showLineNumbers
-              style={{maxHeight: '60vh', overflow: 'auto'}}
+              customStyle={{maxHeight: '60vh', overflow: 'auto'}}
             >
               {fullCodeView.content}
             </SyntaxHighlighter>
