@@ -8,7 +8,7 @@ import { vscDarkPlus, coy } from 'react-syntax-highlighter/dist/esm/styles/prism
 import axios from 'axios';
 import './App.css'; // Reuse styles from App.css
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com/chat';
+const API_URL = process.env.REACT_APP_API_URL || 'https://accessai-onh4.onrender.com';
 
 // Learning paths data
 const learningPaths = {
