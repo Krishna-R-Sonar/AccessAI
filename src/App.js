@@ -1,5 +1,3 @@
-// my-chatbot/src/App.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -340,144 +338,112 @@ function App({ user, setUser }) {
   const downloadCode = (code, language) => {
     const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `code.${language || 'txt'}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `code.${language || 'txt'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  const handleFeedback = (index, type) => {
-    setFeedback(prev => ({ ...prev, [index]: type }));
+  const handleFeedback = (messageId, type) => {
+    setFeedback(prev => ({ ...prev, [messageId]: type }));
+    // Could send to backend for analysis
   };
 
-  const addComment = (index, text) => {
-    if (!text.trim()) return;
-    
-    setComments(prev => ({
-      ...prev,
-      [index]: [...(prev[index] || []), { 
-        text, 
-        timestamp: new Date().toLocaleTimeString(),
-        id: Date.now()
-      }]
-    }));
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setFileName(file.name);
-    
-    if (file.type.startsWith('image/')) {
-      // Handle image files
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        handleSubmit(`I uploaded an image file: ${file.name}. Please help me analyze it.`);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // Handle text-based files
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const content = event.target.result;
-        handleSubmit(`I uploaded a file: ${file.name}. Content: ${content.substring(0, 1000)}...`);
-      };
-      reader.readAsText(file);
+  const addComment = (messageId) => {
+    const comment = prompt('Add a comment:');
+    if (comment) {
+      setComments(prev => ({ ...prev, [messageId]: comment }));
     }
-    
-    // Reset file input
-    e.target.value = '';
   };
 
-  const handleLogout = () => {
+  const viewFullCode = (code) => {
+    setFullCodeView(code);
+  };
+
+  const closeFullCode = () => {
+    setFullCodeView(null);
+  };
+
+  const handleSignupPrompt = () => {
+    setShowSignupPrompt(false);
+    navigate('/signup');
+  };
+
+  const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem('accessai-user');
     setCredits(5);
     setPoints(0);
     setLevel(1);
   };
 
-  const clearChat = () => {
-    setMessages([]);
-    setError('');
+  const languages = [
+    { name: 'JavaScript', icon: '🟨', path: 'javascript' },
+    { name: 'Python', icon: '🐍', path: 'python' },
+    { name: 'Java', icon: '☕', path: 'java' },
+    { name: 'C++', icon: '➕', path: 'cpp' },
+    { name: 'Solidity', icon: '🔗', path: 'solidity' },
+  ];
+
+  const startLearning = (path) => {
+    navigate(`/learn/${path}`);
   };
 
   return (
-    <div className={`app-container ${theme}`}>
-      {/* Header */}
+    <div className="app-container">
       <header className="header">
         <div className="header-left">
-          <button 
-            className="hamburger" 
-            onClick={toggleSidebar}
-            aria-label="Toggle sidebar"
-          >
+          <button className="hamburger" onClick={toggleSidebar} aria-label="Toggle Sidebar">
             ☰
           </button>
           <h1 className="app-title">AccessAI</h1>
         </div>
-        
         <div className="header-right">
-          <div className="user-stats">
-            {user ? (
-              <>
-                <span className="user-points">⭐ {points}</span>
-                <span className="user-level">Level {level}</span>
-                <button onClick={handleLogout} className="action-btn">
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <span>Credits: {credits}</span>
-                <a href="/login" className="auth-link">Login</a>
-                <a href="/signup" className="auth-link">Signup</a>
-              </>
-            )}
-          </div>
-          
+          {user ? (
+            <>
+              <div className="user-stats">
+                <span className="user-points">Points: {points}</span>
+                <span className="user-level">Level: {level}</span>
+              </div>
+              <button onClick={logout} className="auth-button">Logout</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => navigate('/login')} className="auth-button">Login</button>
+              <button onClick={() => navigate('/signup')} className="auth-button primary">Signup</button>
+            </>
+          )}
           <button onClick={toggleTheme} className="theme-toggle">
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
           </button>
         </div>
       </header>
 
-      {/* Main Layout */}
       <div className="main-layout">
-        {/* Sidebar */}
-        <aside 
-          ref={sidebarRef} 
-          className={`sidebar ${sidebarOpen ? 'open' : ''}`}
-        >
+        <aside ref={sidebarRef} className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-header">
-            <h3>Settings</h3>
-            <button 
-              className="sidebar-close" 
-              onClick={toggleSidebar}
-              aria-label="Close sidebar"
-            >
-              ✕
-            </button>
+            <h2>Settings</h2>
+            <button className="sidebar-close" onClick={toggleSidebar} aria-label="Close Sidebar">✕</button>
           </div>
-
+          
           <div className="sidebar-section">
-            <h3>AI Modes</h3>
-            {Object.entries(activeModes).map(([mode, isActive]) => (
+            <h3>Modes</h3>
+            {Object.entries(activeModes).map(([mode, active]) => (
               <div 
-                key={mode}
-                className={`settings-toggle ${isActive ? 'active' : ''}`}
+                key={mode} 
+                className={`settings-toggle ${active ? 'active' : ''}`}
                 onClick={() => toggleMode(mode)}
               >
-                <span>{mode.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                {mode.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                 <div className="toggle-switch">
                   <input 
                     type="checkbox" 
-                    checked={isActive}
-                    onChange={() => {}}
+                    checked={active} 
+                    readOnly 
+                    aria-hidden="true"
                   />
                   <span className="toggle-slider"></span>
                 </div>
@@ -486,350 +452,211 @@ function App({ user, setUser }) {
           </div>
 
           <div className="sidebar-section">
-            <h3>Response Settings</h3>
-            <div className="form-group">
-              <label className="form-label">Tone</label>
-              <select 
-                value={tone} 
-                onChange={(e) => setTone(e.target.value)}
-                className="form-input"
-              >
-                <option value="friendly">Friendly</option>
-                <option value="professional">Professional</option>
-                <option value="humorous">Humorous</option>
-                <option value="technical">Technical</option>
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Response Length</label>
-              <select 
-                value={responseLength} 
-                onChange={(e) => setResponseLength(e.target.value)}
-                className="form-input"
-              >
-                <option value="concise">Concise</option>
-                <option value="detailed">Detailed</option>
-                <option value="comprehensive">Comprehensive</option>
-              </select>
-            </div>
+            <h3>Tone</h3>
+            <select 
+              value={tone} 
+              onChange={e => setTone(e.target.value)}
+              className="settings-select"
+            >
+              <option value="friendly">Friendly</option>
+              <option value="professional">Professional</option>
+              <option value="humorous">Humorous</option>
+            </select>
+          </div>
+
+          <div className="sidebar-section">
+            <h3>Response Length</h3>
+            <select 
+              value={responseLength} 
+              onChange={e => setResponseLength(e.target.value)}
+              className="settings-select"
+            >
+              <option value="concise">Concise</option>
+              <option value="detailed">Detailed</option>
+              <option value="comprehensive">Comprehensive</option>
+            </select>
           </div>
 
           <div className="sidebar-section">
             <h3>Projects</h3>
             <div className="project-input-group">
-              <input
-                type="text"
+              <input 
+                type="text" 
                 value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
+                onChange={e => setNewProjectName(e.target.value)}
                 placeholder="New project name"
                 className="project-input"
-                onKeyPress={(e) => e.key === 'Enter' && createProject()}
               />
-              <button onClick={createProject} className="send-btn">
-                +
-              </button>
+              <button onClick={createProject} className="action-btn">Create</button>
             </div>
-            
             <div className="project-list">
-              {projects.map((project) => (
-                <div
+              {projects.map(project => (
+                <div 
                   key={project.name}
                   className={`project-item ${currentProject === project.name ? 'active' : ''}`}
                   onClick={() => switchProject(project.name)}
                 >
-                  <span>{project.name}</span>
-                  <span>{project.messages.length} messages</span>
+                  {project.name}
+                  <span className="project-date">{new Date(project.createdAt).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="sidebar-section">
-            <button onClick={clearChat} className="submit-btn" style={{background: 'var(--error-color)'}}>
-              Clear Chat
-            </button>
-          </div>
         </aside>
 
-        {/* Main Content */}
         <main className="main-content">
-          {/* Gamification Bar */}
-          <div className="gamification-bar">
+          <section className="gamification-bar">
             <div className="progress-section">
               <div className="progress-info">
-                <span>Level {level} Progress</span>
-                <span>{points % 100}/100 XP</span>
+                <span>Level {level}</span>
+                <span>{points} / {level * 100} XP</span>
               </div>
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${progress}%` }}
-                ></div>
+                <div className="progress-fill" style={{ width: `${progress}%` }} />
               </div>
             </div>
-            
             <div className="leaderboard-section">
-              <h3>Top Learners</h3>
+              <h3>Leaderboard</h3>
               <div className="leaderboard-list">
-                {leaderboard.slice(0, 3).map((entry, index) => (
+                {leaderboard.map((entry, index) => (
                   <div key={index} className="leaderboard-item">
-                    <span className="leaderboard-rank">#{index + 1}</span>
-                    <span>{entry.username}</span>
+                    <span>
+                      <span className="leaderboard-rank">#{index + 1}</span> {entry.username}
+                    </span>
                     <span>{entry.points} pts</span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Language Selection */}
           <section className="language-selection">
-            <h2>Start Learning</h2>
-            <p>Choose your programming language to begin your coding journey</p>
-            
+            <h2>Choose a Language to Learn</h2>
             <div className="language-grid">
-              {['JavaScript', 'Python', 'Java', 'C++', 'Solidity', 'Go'].map((lang) => (
+              {languages.map(lang => (
                 <div 
-                  key={lang}
+                  key={lang.path}
                   className="language-card"
-                  onClick={() => navigate(`/learn/${lang.toLowerCase()}`)}
+                  onClick={() => startLearning(lang.path)}
                 >
-                  <div className="language-icon">
-                    {lang === 'JavaScript' && '⚡'}
-                    {lang === 'Python' && '🐍'}
-                    {lang === 'Java' && '☕'}
-                    {lang === 'C++' && '⚙️'}
-                    {lang === 'Solidity' && '🔗'}
-                    {lang === 'Go' && '🚀'}
-                  </div>
-                  <h3>{lang}</h3>
+                  <span className="language-icon">{lang.icon}</span>
+                  <h3>{lang.name}</h3>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Chat Interface */}
           <section className="chat-interface">
-            <h2>AI Coding Assistant</h2>
-            <p>Ask me anything about programming, code reviews, or learning paths</p>
-            
-            {error && (
-              <div className="error-message">
-                ⚠️ {error}
-                <button onClick={() => setError('')} className="modal-close">
-                  ✕
-                </button>
-              </div>
-            )}
-
+            <h2>Chat with AI Tutor</h2>
+            {!user && <p className="credits-info">Credits left: {credits}</p>}
+            {error && <p className="error-message">{error}</p>}
             <div className="messages-container">
-              {messages.length === 0 ? (
-                <div className="text-center" style={{padding: '2rem', color: 'var(--text-muted)'}}>
-                  <h3>👋 Welcome to AccessAI!</h3>
-                  <p>Start a conversation by typing a message below or select a learning path above.</p>
-                </div>
-              ) : (
-                messages.map((msg) => (
-                  <div key={msg.id} className={`message ${msg.role}-message`}>
-                    <div className="message-bubble">
-                      {msg.role === 'assistant' ? (
-                        <ReactMarkdown
-                          components={{
-                            code({ node, inline, className, children, ...props }) {
-                              const match = /language-(\w+)/.exec(className || '');
-                              const language = match ? match[1] : 'text';
-                              
-                              return !inline ? (
-                                <div style={{position: 'relative'}}>
-                                  <SyntaxHighlighter
-                                    style={theme === 'dark' ? vscDarkPlus : coy}
-                                    language={language}
-                                    PreTag="div"
-                                    showLineNumbers
-                                    {...props}
-                                  >
-                                    {String(children).replace(/\n$/, '')}
-                                  </SyntaxHighlighter>
-                                  <button 
-                                    onClick={() => setFullCodeView({content: String(children), language})}
-                                    className="action-btn"
-                                    style={{position: 'absolute', top: '0.5rem', right: '0.5rem'}}
-                                  >
-                                    Full View
-                                  </button>
-                                </div>
-                              ) : (
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
-                              );
-                            },
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
-                      ) : (
-                        <p>{msg.content}</p>
-                      )}
-                      
-                      {msg.role === 'assistant' && (
-                        <div className="message-actions">
-                          <button onClick={() => speakText(msg.content)} className="action-btn">
-                            🔊 Speak
-                          </button>
-                          <button onClick={() => copyToClipboard(msg.content)} className="action-btn">
-                            📋 Copy
-                          </button>
-                          <button onClick={() => editResponse(msg.id, msg.content)} className="action-btn">
-                            ✏️ Edit
-                          </button>
-                          <button onClick={() => shareResponse(msg.id, msg.content)} className="action-btn">
-                            📤 Share
-                          </button>
-                        </div>
-                      )}
-                      
-                      <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>
-                        {msg.timestamp}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-              
-              {loading && (
-                <div className="message bot-message">
+              {messages.map((msg, index) => (
+                <div 
+                  key={msg.id} 
+                  className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}${msg.isError ? ' error' : ''}`}
+                >
                   <div className="message-bubble">
-                    <div className="loading"></div>
-                    <span style={{marginLeft: '0.5rem'}}>AI is thinking...</span>
+                    <ReactMarkdown
+                      components={{
+                        code({ node, inline, className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          return !inline && match ? (
+                            <div className="code-block">
+                              <SyntaxHighlighter
+                                style={theme === 'dark' ? vscDarkPlus : coy}
+                                language={match[1]}
+                                PreTag="div"
+                                {...props}
+                              >
+                                {String(children).replace(/\n$/, '')}
+                              </SyntaxHighlighter>
+                              <div className="code-actions">
+                                <button onClick={() => copyToClipboard(String(children))} className="action-btn">Copy</button>
+                                <button onClick={() => downloadCode(String(children), match[1])} className="action-btn">Download</button>
+                                <button onClick={() => viewFullCode(String(children))} className="action-btn">Full View</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        }
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                  <div className="message-meta">
+                    <span>{msg.timestamp}</span>
+                    {msg.role === 'assistant' && (
+                      <div className="message-actions">
+                        <button onClick={() => speakText(msg.content)} disabled={!ttsSupported} className="action-btn">🔊 Read</button>
+                        <button onClick={() => copyToClipboard(msg.content)} className="action-btn">Copy</button>
+                        <button onClick={() => editResponse(index, msg.content)} className="action-btn">Edit</button>
+                        <button onClick={() => shareResponse(index, msg.content)} className="action-btn">Share</button>
+                        <button onClick={() => handleFeedback(msg.id, 'thumbsup')} className={`action-btn ${feedback[msg.id] === 'thumbsup' ? 'active' : ''}`}>👍</button>
+                        <button onClick={() => handleFeedback(msg.id, 'thumbsdown')} className={`action-btn ${feedback[msg.id] === 'thumbsdown' ? 'active' : ''}`}>👎</button>
+                        <button onClick={() => addComment(msg.id)} className="action-btn">💬 Comment</button>
+                      </div>
+                    )}
+                    {comments[msg.id] && <p className="comment">Comment: {comments[msg.id]}</p>}
                   </div>
                 </div>
-              )}
-              
+              ))}
+              {loading && <div className="message bot-message">AI is thinking...</div>}
               <div ref={messagesEndRef} />
             </div>
-
             <div className="input-container">
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && !loading && handleSubmit(input)}
-                placeholder="Type your message here..."
-                className="chat-input"
+                onChange={e => setInput(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && handleSubmit(input)}
+                placeholder="Type your message..."
                 disabled={loading}
+                className="chat-input"
               />
-              
-              <button
-                onClick={toggleRecording}
-                className={`send-btn ${isRecording ? 'recording' : ''}`}
-                disabled={!speechSupported || loading}
-                style={{background: isRecording ? 'var(--error-color)' : 'var(--secondary-color)'}}
+              <button 
+                onClick={toggleRecording} 
+                disabled={!speechSupported || loading} 
+                className="action-btn"
+                aria-label={isRecording ? 'Stop Recording' : 'Start Recording'}
               >
                 {isRecording ? '⏹️' : '🎤'}
               </button>
-              
-              <button
-                onClick={() => handleSubmit(input)}
-                className="send-btn"
+              <button 
+                onClick={() => handleSubmit(input)} 
                 disabled={loading || !input.trim()}
+                className="send-btn"
               >
-                {loading ? '⏳' : '📤'}
+                Send
               </button>
             </div>
-
-            <div style={{display: 'flex', gap: '0.5rem', marginTop: '0.5rem'}}>
-              <input
-                type="file"
-                id="file-upload"
-                onChange={handleFileUpload}
-                accept=".txt,.js,.py,.java,.cpp,.sol,.go,image/*"
-                style={{display: 'none'}}
-              />
-              <label htmlFor="file-upload" className="action-btn">
-                📎 Upload File
-              </label>
-              
-              {fileName && (
-                <span style={{fontSize: '0.875rem', color: 'var(--text-muted)'}}>
-                  Selected: {fileName}
-                </span>
-              )}
-            </div>
+            {speechError && <p className="error-message">{speechError}</p>}
           </section>
         </main>
       </div>
 
-      {/* Signup Prompt Modal */}
       {showSignupPrompt && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <button 
-              onClick={() => setShowSignupPrompt(false)} 
-              className="modal-close"
-            >
-              ✕
-            </button>
-            
-            <h2>🎉 Unlock Full Access!</h2>
-            <p>You've used all your free credits. Sign up now to get:</p>
-            
-            <ul style={{margin: '1rem 0', paddingLeft: '1.5rem'}}>
-              <li>✨ Unlimited AI conversations</li>
-              <li>⭐ Earn points and level up</li>
-              <li>🏆 Compete on the leaderboard</li>
-              <li>💾 Save your projects and chat history</li>
-            </ul>
-            
-            <div style={{display: 'flex', gap: '1rem', marginTop: '1.5rem'}}>
-              <button 
-                onClick={() => navigate('/login')} 
-                className="submit-btn"
-                style={{flex: 1}}
-              >
-                Login
-              </button>
-              <button 
-                onClick={() => navigate('/signup')} 
-                className="submit-btn"
-                style={{flex: 1, background: 'var(--success-color)'}}
-              >
-                Sign Up
-              </button>
-            </div>
+            <button className="modal-close" onClick={() => setShowSignupPrompt(false)}>✕</button>
+            <h2>Out of Credits</h2>
+            <p>Sign up for unlimited access!</p>
+            <button onClick={handleSignupPrompt} className="submit-btn">Sign Up Now</button>
           </div>
         </div>
       )}
 
-      {/* Full Code View Modal */}
       {fullCodeView && (
         <div className="modal-overlay">
-          <div className="modal-content">
-            <button 
-              onClick={() => setFullCodeView(null)} 
-              className="modal-close"
-            >
-              ✕
-            </button>
-            
-            <h2>Complete Code</h2>
-            <SyntaxHighlighter
-              style={theme === 'dark' ? vscDarkPlus : coy}
-              language={fullCodeView.language}
-              showLineNumbers
-              customStyle={{maxHeight: '60vh', overflow: 'auto'}}
-            >
-              {fullCodeView.content}
-            </SyntaxHighlighter>
-            
-            <button 
-              onClick={() => downloadCode(fullCodeView.content, fullCodeView.language)}
-              className="submit-btn"
-              style={{marginTop: '1rem'}}
-            >
-              Download Code
-            </button>
+          <div className="modal-content full-code-modal">
+            <button className="modal-close" onClick={closeFullCode}>✕</button>
+            <pre className="full-code-view">
+              <code>{fullCodeView}</code>
+            </pre>
           </div>
         </div>
       )}

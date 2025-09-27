@@ -1,14 +1,12 @@
-// my-chatbot/server/server.js
 require('dotenv').config();
-
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
+const axios = require('axios');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -46,9 +44,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   },
 }));
-
-// Initialize Google Generative AI with API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Enhanced User Schema for MongoDB
 const userSchema = new mongoose.Schema({
@@ -443,26 +438,36 @@ app.post('/chat', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 1024,
-      },
-      systemInstruction: "You are a helpful coding tutor..."
-    });
+    const systemPrompt = "You are a helpful coding tutor...";
 
-    const chat = model.startChat({
-      history: (messages || []).map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }],
+    const fullMessages = [
+      { role: 'system', content: systemPrompt },
+      ...(messages || []).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
       })),
-    });
+      { role: 'user', content: input }
+    ];
 
-    const result = await chat.sendMessage(input);
-    const responseText = result.response.text();
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        messages: fullMessages,
+        max_tokens: 1024,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.FRONTEND_URL || 'https://accessai-five.vercel.app',
+          'X-Title': 'AccessAI'
+        }
+      }
+    );
+
+    const responseText = response.data.choices[0].message.content;
 
     console.log('Chat response generated successfully');
 
@@ -496,7 +501,6 @@ app.post('/chat', async (req, res) => {
     });
   }
 });
-
 
 // Enhanced update points endpoint
 app.post('/update-points', authenticateToken, async (req, res) => {
