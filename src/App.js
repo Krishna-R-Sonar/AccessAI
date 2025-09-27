@@ -1,3 +1,4 @@
+// my-chatbot/src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
