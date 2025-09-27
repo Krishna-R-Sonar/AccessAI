@@ -418,7 +418,7 @@ app.post('/chat', async (req, res) => {
     ];
 
     console.log('Sending request to OpenRouter:', {
-      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      model: 'x-ai/grok-4-fast:free',
       messageCount: fullMessages.length,
       inputLength: input.length
     });
@@ -426,7 +426,7 @@ app.post('/chat', async (req, res) => {
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        model: 'x-ai/grok-4-fast:free',
         messages: fullMessages,
         max_tokens: 1024,
         temperature: 0.7,
