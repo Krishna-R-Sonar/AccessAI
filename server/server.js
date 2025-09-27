@@ -1,4 +1,5 @@
 // my-chatbot/server/server.js
+require('dotenv').config();
 
 const express = require('express');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -8,7 +9,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3001;
