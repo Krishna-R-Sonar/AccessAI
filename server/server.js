@@ -11,14 +11,29 @@ const axios = require('axios');
 const app = express();
 const port = process.env.PORT || 3001;
 
-// MongoDB connection with error handling
-mongoose.connect(process.env.MONGODB_URI)
+// Validate environment variables
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'OPENROUTER_API_KEY', 'FRONTEND_URL'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingEnvVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  process.exit(1);
+}
+
+// MongoDB connection with detailed error handling
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', {
+      message: err.message,
+      stack: err.stack,
+      name: err.name
+    });
+    process.exit(1);
+  });
 
 // Enhanced CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://accessai-five.vercel.app',
+  origin: process.env.FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
@@ -27,25 +42,24 @@ app.use(cors({
 // Rate limiting for security
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 100,
 });
 app.use(limiter);
 
-// Enhanced middleware setup
+// Middleware setup
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-
 app.use(session({
   secret: process.env.JWT_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { 
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000
   },
 }));
 
-// Enhanced User Schema for MongoDB
+// User Schema
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -58,17 +72,22 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Enhanced middleware to verify JWT token
+// Authentication middleware
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
-  
   if (!token) {
+    console.warn('No token provided', { url: req.url, method: req.method });
     return res.status(401).json({ error: 'Access token required' });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      console.error('Token verification error:', err.message);
+      console.error('Token verification failed:', {
+        message: err.message,
+        stack: err.stack,
+        url: req.url,
+        method: req.method
+      });
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
     req.user = user;
@@ -76,8 +95,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Enhanced root route with better HTML response
+// Root route
 app.get('/', (req, res) => {
+  console.log('Root endpoint accessed', { ip: req.ip, time: new Date().toISOString() });
   res.send(`
     <!DOCTYPE html>
     <html lang="en">
@@ -86,103 +106,63 @@ app.get('/', (req, res) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>AccessAI Backend API</title>
       <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Segoe UI', sans-serif; 
+          line-height: 1.6; 
+          color: #333; 
+          background: linear-gradient(135deg, #667eea, #764ba2); 
+          min-height: 100vh; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          padding: 1rem; 
         }
-        
-        body {
-          font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 1rem;
+        .container { 
+          max-width: 800px; 
+          background: white; 
+          border-radius: 20px; 
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
+          overflow: hidden; 
+          margin: 2rem; 
         }
-        
-        .container {
-          max-width: 800px;
-          background: white;
-          border-radius: 20px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-          overflow: hidden;
-          margin: 2rem;
+        .header { 
+          background: linear-gradient(135deg, #4f46e5, #7c3aed); 
+          color: white; 
+          padding: 3rem 2rem; 
+          text-align: center; 
         }
-        
-        .header {
-          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-          color: white;
-          padding: 3rem 2rem;
-          text-align: center;
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .header p { font-size: 1.2rem; opacity: 0.9; }
+        .content { padding: 3rem 2rem; }
+        .endpoints { display: grid; gap: 1rem; margin: 2rem 0; }
+        .endpoint { 
+          background: #f8fafc; 
+          padding: 1.5rem; 
+          border-radius: 12px; 
+          border-left: 4px solid #4f46e5; 
+          transition: transform 0.2s ease, box-shadow 0.2s ease; 
         }
-        
-        .header h1 {
-          font-size: 2.5rem;
-          margin-bottom: 0.5rem;
-          font-weight: 700;
+        .endpoint:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .endpoint strong { color: #4f46e5; font-size: 1.1rem; }
+        .footer { 
+          text-align: center; 
+          padding: 2rem; 
+          background: #f8fafc; 
+          border-top: 1px solid #e2e8f0; 
         }
-        
-        .header p {
-          font-size: 1.2rem;
-          opacity: 0.9;
+        .btn { 
+          display: inline-block; 
+          background: #4f46e5; 
+          color: white; 
+          padding: 0.75rem 1.5rem; 
+          border-radius: 8px; 
+          text-decoration: none; 
+          font-weight: 600; 
+          transition: all 0.2s ease; 
+          margin: 0.5rem; 
         }
-        
-        .content {
-          padding: 3rem 2rem;
-        }
-        
-        .endpoints {
-          display: grid;
-          gap: 1rem;
-          margin: 2rem 0;
-        }
-        
-        .endpoint {
-          background: #f8fafc;
-          padding: 1.5rem;
-          border-radius: 12px;
-          border-left: 4px solid #4f46e5;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .endpoint:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        
-        .endpoint strong {
-          color: #4f46e5;
-          font-size: 1.1rem;
-        }
-        
-        .footer {
-          text-align: center;
-          padding: 2rem;
-          background: #f8fafc;
-          border-top: 1px solid #e2e8f0;
-        }
-        
-        .btn {
-          display: inline-block;
-          background: #4f46e5;
-          color: white;
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          text-decoration: none;
-          font-weight: 600;
-          transition: all 0.2s ease;
-          margin: 0.5rem;
-        }
-        
-        .btn:hover {
-          background: #4338ca;
-          transform: translateY(-1px);
-        }
-        
+        .btn:hover { background: #4338ca; transform: translateY(-1px); }
         @media (max-width: 768px) {
           .header h1 { font-size: 2rem; }
           .header p { font-size: 1rem; }
@@ -196,35 +176,19 @@ app.get('/', (req, res) => {
           <h1>🚀 AccessAI Backend API</h1>
           <p>Intelligent chatbot platform for coding education</p>
         </div>
-        
         <div class="content">
           <h2>Welcome to AccessAI</h2>
-          <p>This is the backend server powering the AccessAI chatbot platform. The API provides intelligent chat functionality, user management, and learning path tracking.</p>
-          
+          <p>This is the backend server powering the AccessAI chatbot platform.</p>
           <div class="endpoints">
-            <div class="endpoint">
-              <strong>GET /health</strong> - Check server status and API availability
-            </div>
-            <div class="endpoint">
-              <strong>POST /chat</strong> - Intelligent chat endpoint with AI responses
-            </div>
-            <div class="endpoint">
-              <strong>POST /signup</strong> - User registration with email verification
-            </div>
-            <div class="endpoint">
-              <strong>POST /login</strong> - User authentication and token generation
-            </div>
-            <div class="endpoint">
-              <strong>GET /leaderboard</strong> - Top users ranking by points
-            </div>
-            <div class="endpoint">
-              <strong>POST /update-points</strong> - Update user points and achievements
-            </div>
+            <div class="endpoint"><strong>GET /health</strong> - Check server status</div>
+            <div class="endpoint"><strong>POST /chat</strong> - AI chat responses</div>
+            <div class="endpoint"><strong>POST /signup</strong> - User registration</div>
+            <div class="endpoint"><strong>POST /login</strong> - User authentication</div>
+            <div class="endpoint"><strong>GET /leaderboard</strong> - Top users ranking</div>
+            <div class="endpoint"><strong>POST /update-points</strong> - Update user points</div>
           </div>
         </div>
-        
         <div class="footer">
-          <p>Ready to start building? Visit the frontend application:</p>
           <a href="https://accessai-five.vercel.app/" class="btn">Access Frontend</a>
           <a href="/health" class="btn" style="background: #10b981;">Check API Health</a>
         </div>
@@ -234,8 +198,9 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Enhanced health check endpoint
+// Health check endpoint
 app.get('/health', (req, res) => {
+  console.log('Health check requested', { ip: req.ip, time: new Date().toISOString() });
   const healthcheck = {
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -243,18 +208,16 @@ app.get('/health', (req, res) => {
     memory: process.memoryUsage(),
     environment: process.env.NODE_ENV || 'development'
   };
-  
   res.status(200).json(healthcheck);
 });
 
-// Enhanced signup endpoint with better validation
+// Signup endpoint
 app.post('/signup', async (req, res) => {
-  console.log('Signup request received:', { ...req.body, password: '***' });
-  
+  console.log('Signup request:', { email: req.body.email, ip: req.ip });
   const { email, password } = req.body;
 
-  // Enhanced input validation
   if (!email || !password) {
+    console.warn('Invalid signup data', { email, hasPassword: !!password });
     return res.status(400).json({ 
       error: 'Validation failed',
       details: 'Email and password are required'
@@ -262,6 +225,7 @@ app.post('/signup', async (req, res) => {
   }
 
   if (password.length < 6) {
+    console.warn('Password too short', { email });
     return res.status(400).json({
       error: 'Validation failed',
       details: 'Password must be at least 6 characters long'
@@ -270,6 +234,7 @@ app.post('/signup', async (req, res) => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
+    console.warn('Invalid email format', { email });
     return res.status(400).json({
       error: 'Validation failed',
       details: 'Please provide a valid email address'
@@ -277,16 +242,15 @@ app.post('/signup', async (req, res) => {
   }
 
   try {
-    // Check for existing user
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
+      console.warn('User already exists', { email });
       return res.status(409).json({ 
         error: 'Registration failed',
         details: 'An account with this email already exists'
       });
     }
 
-    // Hash password and save new user
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = new User({ 
       email: email.toLowerCase(), 
@@ -294,10 +258,8 @@ app.post('/signup', async (req, res) => {
     });
     
     await user.save();
+    console.log('User created successfully', { email });
 
-    console.log('User created successfully:', email);
-    
-    // Generate JWT token
     const token = jwt.sign({ 
       id: user._id, 
       email: user.email 
@@ -309,15 +271,15 @@ app.post('/signup', async (req, res) => {
       success: true,
       message: 'Account created successfully',
       token, 
-      user: { 
-        email: user.email, 
-        points: user.points,
-        level: user.level
-      } 
+      user: { email: user.email, points: user.points, level: user.level } 
     });
 
   } catch (error) {
-    console.error('Signup error:', error.message);
+    console.error('Signup error:', {
+      message: error.message,
+      stack: error.stack,
+      email
+    });
     res.status(500).json({ 
       error: 'Registration failed',
       details: 'Internal server error. Please try again later.'
@@ -325,14 +287,13 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Enhanced login endpoint
+// Login endpoint
 app.post('/login', async (req, res) => {
-  console.log('Login request received:', { ...req.body, password: '***' });
-  
+  console.log('Login request:', { email: req.body.email, ip: req.ip });
   const { email, password } = req.body;
 
-  // Enhanced input validation
   if (!email || !password) {
+    console.warn('Invalid login data', { email, hasPassword: !!password });
     return res.status(400).json({ 
       error: 'Validation failed',
       details: 'Email and password are required'
@@ -340,29 +301,27 @@ app.post('/login', async (req, res) => {
   }
 
   try {
-    // Find user by email (case insensitive)
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      console.warn('User not found', { email });
       return res.status(401).json({ 
         error: 'Authentication failed',
         details: 'Invalid email or password'
       });
     }
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.warn('Password mismatch', { email });
       return res.status(401).json({ 
         error: 'Authentication failed',
         details: 'Invalid email or password'
       });
     }
 
-    // Update last active timestamp
     user.lastActive = new Date();
     await user.save();
 
-    // Generate JWT token
     const token = jwt.sign({ 
       id: user._id, 
       email: user.email 
@@ -370,19 +329,20 @@ app.post('/login', async (req, res) => {
       expiresIn: '24h' 
     });
 
+    console.log('Login successful', { email });
     res.status(200).json({ 
       success: true,
       message: 'Login successful',
       token, 
-      user: { 
-        email: user.email, 
-        points: user.points,
-        level: user.level
-      } 
+      user: { email: user.email, points: user.points, level: user.level } 
     });
 
   } catch (error) {
-    console.error('Login error:', error.message);
+    console.error('Login error:', {
+      message: error.message,
+      stack: error.stack,
+      email
+    });
     res.status(500).json({ 
       error: 'Authentication failed',
       details: 'Internal server error. Please try again later.'
@@ -390,32 +350,38 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Enhanced chat endpoint with better error handling
+// Chat endpoint with detailed logging
 app.post('/chat', async (req, res) => {
   let user = null;
-
-  // Try to verify token if provided
   const token = req.headers['authorization']?.split(' ')[1];
   if (token) {
     try {
       user = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Chat request authenticated', { user: user.email, ip: req.ip });
     } catch (err) {
-      console.warn('Invalid or expired token, continuing as guest');
+      console.warn('Invalid or expired token in chat request', {
+        message: err.message,
+        stack: err.stack,
+        ip: req.ip
+      });
     }
+  } else {
+    console.log('Guest chat request', { ip: req.ip });
   }
 
-  req.user = user; // may be null (guest)
+  req.user = user;
+  const { messages, input, credits = 0 } = req.body;
 
   console.log('Chat request received:', {
     user: req.user?.email || 'Guest',
-    messageLength: req.body.messages?.length,
-    hasInput: !!req.body.input
+    messageCount: messages?.length || 0,
+    inputLength: input?.length || 0,
+    credits
   });
-
-  const { messages, input, credits = 0 } = req.body;
 
   // Input validation
   if (!input || typeof input !== 'string') {
+    console.warn('Invalid chat input', { input });
     return res.status(400).json({
       error: 'Validation failed',
       details: 'Valid input message is required'
@@ -423,23 +389,25 @@ app.post('/chat', async (req, res) => {
   }
 
   if (input.length > 1000) {
+    console.warn('Chat input too long', { inputLength: input.length });
     return res.status(400).json({
       error: 'Validation failed',
       details: 'Message too long. Maximum 1000 characters allowed.'
     });
   }
 
-  // Credit system for guests
   if (!req.user && credits <= 0) {
+    console.warn('Guest credit limit exceeded', { credits });
     return res.status(403).json({
       error: 'Credit limit exceeded',
-      details: 'No credits remaining. Please sign up or log in to continue chatting.'
+      details: 'No credits remaining. Please sign up or log in.'
     });
   }
 
   try {
-    const systemPrompt = "You are a helpful coding tutor...";
-
+    const systemPrompt = "You are a helpful coding tutor specializing in programming education. Provide accurate, clear, and concise responses.";
+    
+    // Ensure messages are in the correct format for OpenRouter
     const fullMessages = [
       { role: 'system', content: systemPrompt },
       ...(messages || []).map(msg => ({
@@ -448,6 +416,12 @@ app.post('/chat', async (req, res) => {
       })),
       { role: 'user', content: input }
     ];
+
+    console.log('Sending request to OpenRouter:', {
+      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      messageCount: fullMessages.length,
+      inputLength: input.length
+    });
 
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -461,15 +435,27 @@ app.post('/chat', async (req, res) => {
         headers: {
           'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': process.env.FRONTEND_URL || 'https://accessai-five.vercel.app',
+          'HTTP-Referer': process.env.FRONTEND_URL,
           'X-Title': 'AccessAI'
-        }
+        },
+        timeout: 30000 // 30-second timeout
       }
     );
 
-    const responseText = response.data.choices[0].message.content;
+    console.log('OpenRouter response received:', {
+      status: response.status,
+      choiceCount: response.data.choices?.length
+    });
 
-    console.log('Chat response generated successfully');
+    if (!response.data.choices?.[0]?.message?.content) {
+      console.error('Invalid response from OpenRouter:', { response: response.data });
+      return res.status(500).json({
+        error: 'Chat processing failed',
+        details: 'Invalid response from AI service'
+      });
+    }
+
+    const responseText = response.data.choices[0].message.content;
 
     let updatedCredits = credits;
     if (req.user) {
@@ -480,11 +466,17 @@ app.post('/chat', async (req, res) => {
           dbUser.level += 1;
         }
         await dbUser.save();
+        console.log('User points updated', { userId: req.user.id, points: dbUser.points });
       } catch (userError) {
-        console.error('Error updating user points:', userError.message);
+        console.error('Error updating user points:', {
+          message: userError.message,
+          stack: userError.stack,
+          userId: req.user.id
+        });
       }
     } else {
       updatedCredits = credits - 1;
+      console.log('Guest credits updated', { newCredits: updatedCredits });
     }
 
     res.json({
@@ -494,19 +486,47 @@ app.post('/chat', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Chat error:', error.message);
-    res.status(500).json({
-      error: 'Chat processing failed',
-      details: 'Unable to process your message. Please try again.'
+    console.error('Chat endpoint error:', {
+      message: error.message,
+      stack: error.stack,
+      status: error.response?.status,
+      responseData: error.response?.data,
+      requestData: {
+        messages: messages?.length,
+        inputLength: input?.length,
+        credits
+      }
     });
+
+    if (error.response) {
+      // Error from OpenRouter
+      res.status(500).json({
+        error: 'Chat processing failed',
+        details: `AI service error: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`
+      });
+    } else if (error.request) {
+      // No response received
+      res.status(500).json({
+        error: 'Chat processing failed',
+        details: 'No response from AI service. Please try again later.'
+      });
+    } else {
+      // Other errors
+      res.status(500).json({
+        error: 'Chat processing failed',
+        details: 'Internal server error. Please try again later.'
+      });
+    }
   }
 });
 
-// Enhanced update points endpoint
+// Update points endpoint
 app.post('/update-points', authenticateToken, async (req, res) => {
+  console.log('Update points request:', { userId: req.user.id, ip: req.ip });
   const { points, achievement } = req.body;
 
   if (typeof points !== 'number' || points < 0) {
+    console.warn('Invalid points data', { points, userId: req.user.id });
     return res.status(400).json({ 
       error: 'Validation failed',
       details: 'Valid points value is required'
@@ -521,15 +541,13 @@ app.post('/update-points', authenticateToken, async (req, res) => {
       user.achievements.push(achievement);
     }
     
-    // Level up logic
     if (user.points >= user.level * 100) {
       user.level += 1;
     }
     
     await user.save();
+    console.log('Points updated successfully', { userId: user._id, points: user.points });
 
-    console.log('Points updated successfully for user:', user.email);
-    
     res.status(200).json({ 
       success: true,
       points: user.points,
@@ -538,7 +556,11 @@ app.post('/update-points', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error updating points:', error.message);
+    console.error('Update points error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user.id
+    });
     res.status(500).json({ 
       error: 'Failed to update points',
       details: 'Internal server error'
@@ -546,8 +568,9 @@ app.post('/update-points', authenticateToken, async (req, res) => {
   }
 });
 
-// Enhanced leaderboard endpoint with pagination
+// Leaderboard endpoint
 app.get('/leaderboard', async (req, res) => {
+  console.log('Leaderboard request:', { ip: req.ip });
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
   const skip = (page - 1) * limit;
@@ -568,6 +591,7 @@ app.get('/leaderboard', async (req, res) => {
       lastActive: user.lastActive
     }));
 
+    console.log('Leaderboard fetched', { count: leaderboard.length });
     res.status(200).json({
       success: true,
       leaderboard,
@@ -580,7 +604,10 @@ app.get('/leaderboard', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching leaderboard:', error.message);
+    console.error('Leaderboard error:', {
+      message: error.message,
+      stack: error.stack
+    });
     res.status(500).json({ 
       error: 'Failed to fetch leaderboard',
       details: 'Internal server error'
@@ -588,8 +615,9 @@ app.get('/leaderboard', async (req, res) => {
   }
 });
 
-// User profile endpoint
+// Profile endpoint
 app.get('/profile', authenticateToken, async (req, res) => {
+  console.log('Profile request:', { userId: req.user.id, ip: req.ip });
   try {
     const user = await User.findById(req.user.id)
       .select('email points level achievements createdAt lastActive');
@@ -600,7 +628,11 @@ app.get('/profile', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching profile:', error.message);
+    console.error('Profile error:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user.id
+    });
     res.status(500).json({ 
       error: 'Failed to fetch profile',
       details: 'Internal server error'
@@ -608,43 +640,46 @@ app.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Enhanced 404 handler
+// 404 handler
 app.use((req, res) => {
-  console.warn(`404 - Route not found: ${req.method} ${req.url}`);
+  console.warn('404 - Route not found:', { url: req.url, method: req.method, ip: req.ip });
   res.status(404).json({ 
     error: 'Endpoint not found',
-    details: `The requested resource ${req.url} was not found on this server.`
+    details: `The requested resource ${req.url} was not found.`
   });
 });
 
-// Enhanced global error handler
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message, err.stack);
-  
-  // Mongoose validation error
+  console.error('Unhandled error:', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip
+  });
+
   if (err.name === 'ValidationError') {
     return res.status(400).json({
       error: 'Validation failed',
       details: Object.values(err.errors).map(e => e.message)
     });
   }
-  
-  // Mongoose duplicate key error
+
   if (err.code === 11000) {
     return res.status(409).json({
       error: 'Duplicate entry',
       details: 'A record with this information already exists'
     });
   }
-  
-  // JWT errors
+
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({
       error: 'Invalid token',
       details: 'Authentication token is invalid'
     });
   }
-  
+
   if (err.name === 'TokenExpiredError') {
     return res.status(401).json({
       error: 'Token expired',
@@ -660,7 +695,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Graceful shutdown handling
+// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Starting graceful shutdown...');
   server.close(() => {
@@ -670,7 +705,7 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Start the server with enhanced logging
+// Start server
 const server = app.listen(port, () => {
   console.log(`
 🚀 AccessAI Server running successfully!

@@ -12,11 +12,7 @@ const LEADERBOARD_URL = `${API_URL}/leaderboard`;
 const UPDATE_POINTS_URL = `${API_URL}/update-points`;
 
 function App({ user, setUser }) {
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('accessai-theme');
-    return savedTheme || 'light';
-  });
-  
+  const [theme, setTheme] = useState(() => localStorage.getItem('accessai-theme') || 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeModes, setActiveModes] = useState({
     codeMode: false,
@@ -27,7 +23,6 @@ function App({ user, setUser }) {
     aiLiteracy: false,
     collaborationMode: false
   });
-  
   const [tone, setTone] = useState('friendly');
   const [responseLength, setResponseLength] = useState('concise');
   const [projects, setProjects] = useState([]);
@@ -41,7 +36,6 @@ function App({ user, setUser }) {
   const [speechSupported, setSpeechSupported] = useState(false);
   const [ttsSupported, setTtsSupported] = useState(false);
   const [speechError, setSpeechError] = useState('');
-  const [fileName, setFileName] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
   const [points, setPoints] = useState(user ? user.points : 0);
   const [level, setLevel] = useState(user ? user.level : 1);
@@ -58,32 +52,26 @@ function App({ user, setUser }) {
   const recognitionRef = useRef(null);
   const navigate = useNavigate();
 
-  // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('accessai-theme', theme);
   }, [theme]);
 
-  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (sidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setSidebarOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [sidebarOpen]);
 
-  // Initialize speech recognition and synthesis
   useEffect(() => {
-    // Speech recognition
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       setSpeechSupported(true);
       recognitionRef.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -106,26 +94,25 @@ function App({ user, setUser }) {
       };
     }
 
-    // Text-to-speech
     if ('speechSynthesis' in window) {
       setTtsSupported(true);
     }
 
-    // Load leaderboard
     fetchLeaderboard();
-
-    // Calculate progress
     setProgress(Math.min(100, Math.floor((points % 100) / 100 * 100)));
   }, [points]);
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await axios.get(LEADERBOARD_URL, {
-        params: { limit: 5 }
-      });
+      const response = await axios.get(LEADERBOARD_URL, { params: { limit: 5 } });
+      console.log('Leaderboard fetched successfully:', response.data);
       setLeaderboard(response.data.leaderboard || []);
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
+      console.error('Error fetching leaderboard:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
     }
   };
 
@@ -138,10 +125,7 @@ function App({ user, setUser }) {
   };
 
   const toggleMode = (mode) => {
-    setActiveModes(prev => ({
-      ...prev,
-      [mode]: !prev[mode]
-    }));
+    setActiveModes(prev => ({ ...prev, [mode]: !prev[mode] }));
   };
 
   const createProject = () => {
@@ -154,12 +138,12 @@ function App({ user, setUser }) {
       setProjects(prev => [...prev, project]);
       setNewProjectName('');
       setCurrentProject(project.name);
+      console.log('Project created:', project.name);
     }
   };
 
   const switchProject = (projectName) => {
     if (currentProject) {
-      // Save current messages to project
       setProjects(prev => 
         prev.map(p => 
           p.name === currentProject ? { ...p, messages } : p
@@ -169,6 +153,7 @@ function App({ user, setUser }) {
     setCurrentProject(projectName);
     const project = projects.find(p => p.name === projectName);
     setMessages(project ? project.messages : []);
+    console.log('Switched to project:', projectName);
   };
 
   const handleSubmit = async (userInput) => {
@@ -187,17 +172,15 @@ function App({ user, setUser }) {
     setLoading(true);
     setError('');
 
-    // Check credits for non-logged-in users
     if (!user && credits <= 0) {
+      console.warn('No credits remaining for guest user');
       setShowSignupPrompt(true);
       setLoading(false);
       return;
     }
 
-    // Build enhanced prompt based on active modes
     let enhancedPrompt = userInput;
     const modeInstructions = [];
-
     if (activeModes.codeMode) modeInstructions.push('Provide response with code examples');
     if (activeModes.auditMode) modeInstructions.push('Audit the code for best practices');
     if (activeModes.emotionDetection) modeInstructions.push('Detect emotion and respond empathetically');
@@ -211,19 +194,28 @@ function App({ user, setUser }) {
     }
 
     try {
-      const headers = {'Content-Type': 'application/json' };
+      const headers = { 'Content-Type': 'application/json' };
       if (user?.token) {
         headers.Authorization = `Bearer ${user.token}`;
       }
 
+      console.log('Sending chat request:', {
+        endpoint: CHAT_ENDPOINT,
+        messageCount: updatedMessages.length,
+        inputLength: enhancedPrompt.length,
+        hasToken: !!user?.token
+      });
+
       const response = await axios.post(CHAT_ENDPOINT, {
-        messages: updatedMessages.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
-        })),
+        messages: updatedMessages,
         input: enhancedPrompt,
         credits
-      }, {headers});
+      }, { headers });
+
+      console.log('Chat response received:', {
+        status: response.status,
+        responseLength: response.data.response?.length
+      });
 
       if (response.data.success) {
         const botMessage = {
@@ -240,8 +232,8 @@ function App({ user, setUser }) {
         
         if (!user) {
           setCredits(response.data.credits);
+          console.log('Guest credits updated:', response.data.credits);
         } else {
-          // Update points for logged-in users
           setPoints(prev => {
             const newPoints = prev + 10;
             if (newPoints >= level * 100) {
@@ -254,20 +246,33 @@ function App({ user, setUser }) {
             await axios.post(UPDATE_POINTS_URL, { points: 10 }, {
               headers: { Authorization: `Bearer ${user.token}` }
             });
+            console.log('Points updated successfully');
           } catch (pointsError) {
-            console.error('Error updating points:', pointsError);
+            console.error('Error updating points:', {
+              message: pointsError.message,
+              response: pointsError.response?.data,
+              status: pointsError.response?.status
+            });
           }
         }
       } else {
         throw new Error(response.data.error || 'Failed to get response');
       }
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error('Chat error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        requestData: {
+          messages: updatedMessages.length,
+          inputLength: enhancedPrompt.length
+        }
+      });
       setError(error.response?.data?.details || 'Failed to send message. Please try again.');
       
       const errorMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Error: ${error.response?.data?.details || 'Failed to send message.'}`,
         timestamp: new Date().toLocaleTimeString(),
         id: Date.now() + 1,
         isError: true
@@ -303,9 +308,9 @@ function App({ user, setUser }) {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      // You could add a toast notification here
+      console.log('Text copied to clipboard');
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('Failed to copy text:', err);
     }
   };
 
@@ -315,6 +320,7 @@ function App({ user, setUser }) {
       setMessages(prev => prev.map((msg, i) => 
         i === index ? { ...msg, content: newContent } : msg
       ));
+      console.log('Response edited:', { index });
     }
   };
 
@@ -325,12 +331,13 @@ function App({ user, setUser }) {
           title: 'AccessAI Response',
           text: content
         });
+        console.log('Response shared:', { index });
       } catch (err) {
-        console.log('Error sharing:', err);
+        console.error('Error sharing:', err);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       await copyToClipboard(content);
+      console.log('Response copied to clipboard:', { index });
       alert('Response copied to clipboard!');
     }
   };
@@ -345,31 +352,36 @@ function App({ user, setUser }) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    console.log('Code downloaded:', { language });
   };
 
   const handleFeedback = (messageId, type) => {
     setFeedback(prev => ({ ...prev, [messageId]: type }));
-    // Could send to backend for analysis
+    console.log('Feedback recorded:', { messageId, type });
   };
 
   const addComment = (messageId) => {
     const comment = prompt('Add a comment:');
     if (comment) {
       setComments(prev => ({ ...prev, [messageId]: comment }));
+      console.log('Comment added:', { messageId, comment });
     }
   };
 
   const viewFullCode = (code) => {
     setFullCodeView(code);
+    console.log('Viewing full code');
   };
 
   const closeFullCode = () => {
     setFullCodeView(null);
+    console.log('Closed full code view');
   };
 
   const handleSignupPrompt = () => {
     setShowSignupPrompt(false);
     navigate('/signup');
+    console.log('Navigated to signup');
   };
 
   const logout = () => {
@@ -378,6 +390,7 @@ function App({ user, setUser }) {
     setCredits(5);
     setPoints(0);
     setLevel(1);
+    console.log('User logged out');
   };
 
   const languages = [
@@ -390,6 +403,7 @@ function App({ user, setUser }) {
 
   const startLearning = (path) => {
     navigate(`/learn/${path}`);
+    console.log('Started learning path:', path);
   };
 
   return (
