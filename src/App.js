@@ -213,6 +213,11 @@ function App({ user, setUser }) {
     }
 
     try {
+      const headers = {'Content-Type': 'application/json' };
+      if (user?.token) {
+        headers.Authorization = `Bearer ${user.token}`;
+      }
+
       const response = await axios.post(CHAT_ENDPOINT, {
         messages: updatedMessages.map(msg => ({
           role: msg.role === 'user' ? 'user' : 'model',
@@ -220,12 +225,7 @@ function App({ user, setUser }) {
         })),
         input: enhancedPrompt,
         credits
-      }, {
-        headers: { 
-          Authorization: user ? `Bearer ${user.token}` : '',
-          'Content-Type': 'application/json'
-        }
-      });
+      }, {headers});
 
       if (response.data.success) {
         const botMessage = {

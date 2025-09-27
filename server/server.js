@@ -396,18 +396,32 @@ app.post('/login', async (req, res) => {
 });
 
 // Enhanced chat endpoint with better error handling
-app.post('/chat', authenticateToken, async (req, res) => {
+app.post('/chat', async (req, res) => {
+  let user = null;
+
+  // Try to verify token if provided
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (token) {
+    try {
+      user = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      console.warn('Invalid or expired token, continuing as guest');
+    }
+  }
+
+  req.user = user; // may be null (guest)
+
   console.log('Chat request received:', {
-    user: req.user?.email,
+    user: req.user?.email || 'Guest',
     messageLength: req.body.messages?.length,
     hasInput: !!req.body.input
   });
 
   const { messages, input, credits = 0 } = req.body;
 
-  // Enhanced input validation
+  // Input validation
   if (!input || typeof input !== 'string') {
-    return res.status(400).json({ 
+    return res.status(400).json({
       error: 'Validation failed',
       details: 'Valid input message is required'
     });
@@ -420,9 +434,9 @@ app.post('/chat', authenticateToken, async (req, res) => {
     });
   }
 
-  // Check credits for non-logged-in users
+  // Credit system for guests
   if (!req.user && credits <= 0) {
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Credit limit exceeded',
       details: 'No credits remaining. Please sign up or log in to continue chatting.'
     });
@@ -437,7 +451,7 @@ app.post('/chat', authenticateToken, async (req, res) => {
         topP: 0.95,
         maxOutputTokens: 1024,
       },
-      systemInstruction: "You are a helpful coding tutor. If the user asks for a direct solution to a coding challenge or exercise, encourage them to try solving it on their own first. Say: 'Try to answer on your own and then if not able then use me, I am here to help you.' Only provide hints initially, and the full solution if they insist after trying. Be supportive, clear, and educational in your responses."
+      systemInstruction: "You are a helpful coding tutor..."
     });
 
     const chat = model.startChat({
@@ -451,18 +465,16 @@ app.post('/chat', authenticateToken, async (req, res) => {
     const responseText = result.response.text();
 
     console.log('Chat response generated successfully');
-    
-    // Update user points if logged in
+
     let updatedCredits = credits;
     if (req.user) {
       try {
-        const user = await User.findById(req.user.id);
-        user.points += 10;
-        // Level up logic
-        if (user.points >= user.level * 100) {
-          user.level += 1;
+        const dbUser = await User.findById(req.user.id);
+        dbUser.points += 10;
+        if (dbUser.points >= dbUser.level * 100) {
+          dbUser.level += 1;
         }
-        await user.save();
+        await dbUser.save();
       } catch (userError) {
         console.error('Error updating user points:', userError.message);
       }
@@ -470,28 +482,21 @@ app.post('/chat', authenticateToken, async (req, res) => {
       updatedCredits = credits - 1;
     }
 
-    res.json({ 
+    res.json({
       success: true,
-      response: responseText, 
-      credits: updatedCredits 
+      response: responseText,
+      credits: updatedCredits
     });
 
   } catch (error) {
     console.error('Chat error:', error.message);
-    
-    if (error.message.includes('API key') || error.message.includes('quota')) {
-      return res.status(503).json({ 
-        error: 'Service temporarily unavailable',
-        details: 'AI service is currently unavailable. Please try again later.'
-      });
-    }
-    
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Chat processing failed',
       details: 'Unable to process your message. Please try again.'
     });
   }
 });
+
 
 // Enhanced update points endpoint
 app.post('/update-points', authenticateToken, async (req, res) => {
