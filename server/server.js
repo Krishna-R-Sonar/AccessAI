@@ -419,7 +419,7 @@ app.post('/chat', async (req, res) => {
     ];
 
     console.log('Sending request to OpenRouter:', {
-      model: 'x-ai/grok-4-fast:free',
+      model: 'google/gemini-2.0-flash-exp:free',
       messageCount: fullMessages.length,
       inputLength: input.length
     });
@@ -427,7 +427,7 @@ app.post('/chat', async (req, res) => {
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'x-ai/grok-4-fast:free',
+        model: 'google/gemini-2.0-flash-exp:free',
         messages: fullMessages,
         max_tokens: 1024,
         temperature: 0.7,
